@@ -7,7 +7,7 @@
 	define("MAINDOMAIN", $_SERVER['SERVER_NAME']);
 	define("CHARSET", "utf-8");
 
-	define('BASEURL', 'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/taxi'));
+	define('BASEURL', 'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/car_manager/taxi'));
 
 	if (DEV) {
 		define('_dbhost', 'localhost');
