@@ -6,7 +6,6 @@
 	define('LOGPATH', BASEDIR.'/logs/');
 	define("MAINDOMAIN", $_SERVER['SERVER_NAME']);
 	define("CHARSET", "utf-8");
-
 	define('BASEURL', 'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/car_manager/taxi'));
 
 	if (DEV) {
@@ -14,6 +13,7 @@
 		define('_dbname_default', 'taxi');
 		define('_dbuser', 'root');
 		define('_dbpassword', '');
+		$devUser = '{"id":1573356581,"is_bot":false,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","language_code":"ru"}';
 	} else {
 		define('_dbhost', 'localhost');
 		define('_dbname_default', 'fwadimuz_taxi');
@@ -22,6 +22,8 @@
 	}
 
 	define("APIKEY", "AIzaSyBzErLfg0nBPSCmP2LcYq0Y5A-C0GIuBMM");
+
+	$anti_cache = '?1';
 
 //https://api.telegram.org/bot915848901:AAH-dqgbcU3olF_52Lwc1Uml_sKu9xu3M7s/setWebhook?url=https://vmaya.ru/parashop/bot/index.php
 ?>

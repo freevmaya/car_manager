@@ -58,9 +58,6 @@
 		});
 
 		map.addListener("click", (e) => {
-			//console.log(e);
-			//driverManager.CreateCarToRoute(marker1.position, e.latLng);
-
 			driverManager.CreateRandomCar(e.latLng);
 			trans.SendEvent('CreateDrive', e.latLng);
 		});

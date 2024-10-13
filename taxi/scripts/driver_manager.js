@@ -21,13 +21,12 @@ class DriverManager {
 		this.directionsService.route(request, (function(result, status) {
 			if (status == 'OK') {
 				this.CreateAutoCar(result);
-				//DrawPath(this.map, result);
 			}
 		}).bind(this));
 	}
 
 	CreateRandomCar(center) {
-		let finish = CalcCoordinate(center, Math.random() * 360, Math.random() * 200);
+		let finish = CalcCoordinate(center, Math.random() * 360, 200 + Math.random() * 300);
 		this.CreateCarToRoute(center, finish);
 	}
 

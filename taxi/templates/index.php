@@ -6,7 +6,7 @@
     <title><?=$this->title?></title>
     <link rel="stylesheet" type="text/css" href="css/styles.css">
 <?foreach ($this->scripts as $script) {?>
-    <script src="scripts/<?=$script?>"></script>
+    <script src="scripts/<?=$script.$anti_cache?>"></script>
 <?}?>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>

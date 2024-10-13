@@ -15,7 +15,6 @@ class MoveDriver {
 	}
 
 	onClick(e) {
-
 		if (!this.routeDraw)
 			this.routeDraw = DrawPath(this.map, this.routeData);
 		else this.DestroyPath();

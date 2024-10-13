@@ -6,9 +6,11 @@ class Page {
 	protected $title = "";
 	protected $request;
 	protected $scripts = [];
+	protected $user;
 
 	public function __construct($request) {
 		$this->request = $request;
+		$this->user = isset($devUser) ? json_decode($devUser) : null;
 	}
 
 	protected function getCurrentPage() {
@@ -21,6 +23,7 @@ class Page {
 	}
 
 	public function Render() {
+		GLOBAL $anti_cache;
 		$page = $this->getCurrentPage();
 
 		if ($page == "ajax") {
