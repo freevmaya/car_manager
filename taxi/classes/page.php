@@ -81,7 +81,7 @@ class Page {
 		switch ($action) {
 			case "setUser": 
 				$this->user = $data;
-				break;
+				return ["result"=>"ok"];
 		}
 	}
 }
