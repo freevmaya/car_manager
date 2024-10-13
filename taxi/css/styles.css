@@ -1,0 +1,77 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: Tahoma, Verbana;
+}
+
+body {
+    color: var(--tg-theme-text-color);
+    background-position: top;
+}
+
+.Main {
+    width: 100%;
+    padding: 25px;
+    text-align: center;
+
+}
+
+h1 {
+    margin-top: 40px;
+    margin-bottom: 10px;
+}
+
+img {
+    width: 70px;
+    margin: 30px auto;
+}
+
+.btn {
+    border: 0;
+    border-radius: 5px;
+    margin-top: 50px;
+    height: 60px;
+    width: 200px;
+    font-style: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #40a7e3;
+}
+
+.btn:active {
+    background: #2e76a0;
+}
+
+.wrapper h1 {
+    text-align: center;
+}
+
+.mainmenu .btn {
+    margin: 1em auto;
+}
+
+.mainmenu {
+    align-content: center;
+}
+
+.mainmenu h1, .mainmenu .btn {
+    color: white;
+}
+
+.mainmenu button {
+    display: block;
+}
+
+.marker-auto {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background-image: url(images/car01.png);
+    background-size: contain;
+    margin-left: -32px;
+    margin-top: -32px;
+}

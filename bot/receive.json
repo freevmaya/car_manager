@@ -1,0 +1,2 @@
+{"update_id":565400301,
+"message":{"message_id":251,"from":{"id":1573356581,"is_bot":false,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","language_code":"ru"},"chat":{"id":1573356581,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","type":"private"},"date":1728664113,"text":"/lang","entities":[{"offset":0,"length":5,"type":"bot_command"}]}}

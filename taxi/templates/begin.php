@@ -1,0 +1,1 @@
+<a href="<?=BASEURL?>/map">MAP</a>
