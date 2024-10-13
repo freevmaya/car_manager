@@ -57,9 +57,9 @@ class Page {
 	}
 
 	public function ajax() {
-		if ($this->request['event']) {
+		if (isset($this->request['event'])) {
 			return $this->action($this->request['event'], @$this->request['data']);
-		} else if ($this->request['action'])
+		} else if (isset($this->request['action']))
 			return $this->action($this->request['action'], @$this->request['data']);
 
 		return $this->request;
