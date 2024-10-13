@@ -12,13 +12,17 @@
     <script src="scripts/main.js<?=$anti_cache?>"></script>
     <script type="text/javascript">
 
-        let user = Telegram.WebApp.initDataUnsafe.user;
-        if (user) {
-            console.log(user);
-            Ajax({"action":"setUser", "data": user});
-        }
+        setTimeout(()=>{
 
-        console.log(user);
+            let user = Telegram.WebApp.initDataUnsafe.user;
+            if (user) {
+                console.log(user);
+                Ajax({"action":"setUser", "data": user});
+            }
+
+            console.log(user);
+
+        }, 200);
 
     </script>
 </head>
