@@ -5,9 +5,9 @@ class DriverManager {
 		this.directionsService = new Classes["DirectionsService"]();
 	}
 
-	CreateCar(routes) {
-		let result = new MoveDriver(this.map, routes, "Driver", 
-				this.CreateMarker(routes[0].overview_path[0], 'driver', 'marker-auto'));
+	CreateAutoCar(resultroutes) {
+		let result = new MoveDriver(this.map, resultroutes, "Driver", 
+				this.CreateMarker(resultroutes.routes[0].overview_path[0], 'driver', 'marker-auto'));
 		result.Start(40, 100);
 		return result;
 	}
@@ -19,20 +19,34 @@ class DriverManager {
 		    travelMode: 'DRIVING'
 		};
 		this.directionsService.route(request, (function(result, status) {
-			if (status == 'OK')
-				this.CreateCar(result.routes);
+			if (status == 'OK') {
+				this.CreateAutoCar(result);
+				//DrawPath(this.map, result);
+			}
 		}).bind(this));
 	}
 
-	CreateMarker(position, title, className) {
+	CreateRandomCar(center) {
+		let start = CalcCoordinate(center, Math.random() * 360, Math.random() * 200);
+		let finish = CalcCoordinate(center, Math.random() * 360, Math.random() * 200);
+		this.CreateCarToRoute(start, finish);
+	}
+
+	CreateMarker(position, title, className, onClick = null) {
 		let priceTag = document.createElement("div");
 		priceTag.className = className;
 
-		return new Classes['AdvancedMarkerElement']({
+		let marker = new Classes['AdvancedMarkerElement']({
 		    map: this.map,
 		    position: position,
 		    title: title,
-		    content: priceTag
-		})
+		    content: priceTag,
+  			gmpClickable: onClick != null
+		});
+
+		if (onClick != null)
+			marker.addListener("click", onClick);
+
+		return marker;
 	}
 }

@@ -20,10 +20,18 @@ class Page {
 		return DEFAULTPAGE;
 	}
 
-	public function Render($template = "index") {
+	public function Render() {
+		$page = $this->getCurrentPage();
 
-		$content = $this->getContent($this->getCurrentPage());
-		include(TEMPLATES_PATH."{$template}.php");
+		if ($page == "ajax") {
+			header("Content-Type: application/json; charset=".CHARSET);
+			include(TEMPLATES_PATH."{$page}.php");
+		}
+		else {
+			header("Content-Type: text/html; charset=".CHARSET);
+			$content = $this->getContent($page);
+			include(TEMPLATES_PATH."index.php");
+		}
 	}
 
 	protected function getContent($contentLink) {
@@ -43,6 +51,16 @@ class Page {
 		$result = ob_get_contents();
 		ob_end_clean();
 		return $result;
+	}
+
+	public function ajax() {
+		if ($this->request['event'])
+			switch ($this->request['event']) {
+				case "checkState": 
+					return ["event"=>"moveDrive"];
+					break;
+			}
+		return $this->request;
 	}
 }
 ?>

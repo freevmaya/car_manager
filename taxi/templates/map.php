@@ -24,6 +24,7 @@
 <script type="text/javascript">
 	let map;
 	var Classes = {};
+	var trans;
 
 	async function initMap(crd) {
 
@@ -34,7 +35,6 @@
 		const { DirectionsService } = await google.maps.importLibrary("routes");
 
 		var directionsService = new DirectionsService();
-		var directionsRenderer = new google.maps.DirectionsRenderer();
 
 		map = new Map(document.getElementById("map"), {
 			zoom: 18,
@@ -50,8 +50,6 @@
 
 		var driverManager = new DriverManager(map);
 
-		directionsRenderer.setMap(map);
-
 		var marker1 = new AdvancedMarkerElement({
 			map: map,
 			position: position,
@@ -59,12 +57,29 @@
 		});
 
 		map.addListener("click", (e) => {
-			console.log(e);
-			driverManager.CreateCarToRoute(marker1.position, e.latLng);
+			//console.log(e);
+			//driverManager.CreateCarToRoute(marker1.position, e.latLng);
+
+			driverManager.CreateRandomCar(e.latLng);
+			trans.SendEvent('CreateDrive', e.latLng);
+		});
+
+		trans = new AjaxTransport(1000);
+
+		trans.AddListener('moveDrive', (params)=>{
+			console.log(params);
 		});
 	}
 
-	navigator.geolocation.getCurrentPosition((pos) => {
-		initMap(pos.coords);
-	});
+	function startGeo() {
+		navigator.geolocation.getCurrentPosition((pos) => {
+			initMap(pos.coords);
+		});
+	}
+
+	setTimeout(()=>{
+		if (!map) startGeo();
+	}, 10000);
+	startGeo();
+
 </script>

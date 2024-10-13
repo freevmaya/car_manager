@@ -15,6 +15,5 @@
 
 	include("classes/page.php");
 
-	header('Content-Type: text/html; charset=utf-8');
 	(new Page(array_merge($_GET, $_POST)))->Render();
 ?>
