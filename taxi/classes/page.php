@@ -74,7 +74,7 @@ class Page {
 	}
 
 	protected function checkState($data) {
-		
+		return null;
 	}
 
 	protected function action($action, $data) {

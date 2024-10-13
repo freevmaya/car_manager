@@ -15,14 +15,15 @@ async function Ajax(params) {
             throw new Error(`Response status: ${response.status}`);
         }
 
-        if (response.text())
-            return await response.json();
+        return await response.json();
     } catch (error) {
-        console.error(error.message);
+        //console.error(error.message);
     }
     return null;
 }
 
 let user = Telegram.WebApp.initDataUnsafe.user;
-if (user)
+if (user) {
+    console.log(user);
     Ajax({"action":"setUser", "data": user});
+}
