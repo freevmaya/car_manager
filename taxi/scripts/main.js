@@ -1,4 +1,3 @@
-
 async function Ajax(params) {
     var formData = new FormData();
     for (let key in params) {
@@ -20,10 +19,4 @@ async function Ajax(params) {
         //console.error(error.message);
     }
     return null;
-}
-
-let user = Telegram.WebApp.initDataUnsafe.user;
-if (user) {
-    console.log(user);
-    Ajax({"action":"setUser", "data": user});
 }

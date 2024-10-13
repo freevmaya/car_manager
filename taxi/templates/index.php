@@ -10,6 +10,17 @@
 <?}?>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="scripts/main.js<?=$anti_cache?>"></script>
+    <script type="text/javascript">
+
+        let user = Telegram.WebApp.initDataUnsafe.user;
+        if (user) {
+            console.log(user);
+            Ajax({"action":"setUser", "data": user});
+        }
+
+        console.log(user);
+
+    </script>
 </head>
 <body>
     <?=$content?>
