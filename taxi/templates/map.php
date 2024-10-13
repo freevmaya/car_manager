@@ -25,6 +25,7 @@
 	let map;
 	var Classes = {};
 	var trans;
+	var BASEURL = '<?=BASEURL?>';
 
 	async function initMap(crd) {
 

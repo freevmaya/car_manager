@@ -49,7 +49,7 @@ async function Ajax(params) {
 		formData.append(key, params[key]);
 	}
 
-	const request = new Request(document.location.origin + "/ajax", {
+	const request = new Request(BASEURL + "/ajax", {
 		method: "POST",
 		body: formData
 	});
