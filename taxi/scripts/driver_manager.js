@@ -27,9 +27,8 @@ class DriverManager {
 	}
 
 	CreateRandomCar(center) {
-		let start = CalcCoordinate(center, Math.random() * 360, Math.random() * 200);
 		let finish = CalcCoordinate(center, Math.random() * 360, Math.random() * 200);
-		this.CreateCarToRoute(start, finish);
+		this.CreateCarToRoute(center, finish);
 	}
 
 	CreateMarker(position, title, className, onClick = null) {
