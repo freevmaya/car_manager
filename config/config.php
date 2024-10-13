@@ -23,7 +23,7 @@
 
 	define("APIKEY", "AIzaSyBzErLfg0nBPSCmP2LcYq0Y5A-C0GIuBMM");
 
-	$anti_cache = '?1';
+	$anti_cache = '?2';
 
 //https://api.telegram.org/bot915848901:AAH-dqgbcU3olF_52Lwc1Uml_sKu9xu3M7s/setWebhook?url=https://vmaya.ru/parashop/bot/index.php
 ?>

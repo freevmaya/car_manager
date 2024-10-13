@@ -57,13 +57,32 @@ class Page {
 	}
 
 	public function ajax() {
-		if ($this->request['event'])
-			switch ($this->request['event']) {
-				case "checkState": 
-					return ["event"=>"moveDrive"];
-					break;
-			}
+		if ($this->request['event']) {
+			return $this->action($this->request['event'], @$this->request['data']);
+		} else if ($this->request['action'])
+			return $this->action($this->request['action'], @$this->request['data']);
+
 		return $this->request;
+	}
+
+	protected function event($event, $data) {
+		switch ($action) {
+			case "checkState": 
+				return $this->checkState($data);
+				break;
+		}
+	}
+
+	protected function checkState($data) {
+		
+	}
+
+	protected function action($action, $data) {
+		switch ($action) {
+			case "setUser": 
+				$this->user = $data;
+				break;
+		}
 	}
 }
 ?>

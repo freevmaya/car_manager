@@ -42,30 +42,6 @@ function DrawPath(map, routeData) {
 	return directionsRenderer;
 }
 
-
-async function Ajax(params) {
-	var formData = new FormData();
-	for (let key in params) {
-		formData.append(key, params[key]);
-	}
-
-	const request = new Request(BASEURL + "/ajax", {
-		method: "POST",
-		body: formData
-	});
-	try {
-		const response = await fetch(request);
-		if (!response.ok) {
-			throw new Error(`Response status: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (error) {
-		console.error(error.message);
-	}
-	return null;
-}
-
 class AjaxTransport {
 
 	constructor(periodTime) {
@@ -75,7 +51,7 @@ class AjaxTransport {
 
 	update() {
 		Ajax({"event": "checkState"}).then((value) => {
-		    if (value.event && this.listeners.hasOwnProperty(value.event)) {
+		    if (value && value.event && this.listeners.hasOwnProperty(value.event)) {
 		    	let list = this.listeners[value.event];
 		    	for (let i=0; i<list.length; i++) list[i](value);
 		    }
@@ -89,6 +65,6 @@ class AjaxTransport {
 	}
 
 	SendEvent(event, params) {
-		Ajax({"event": event, "params": params});
+		Ajax({"event": event, "data": params});
 	}
 }
