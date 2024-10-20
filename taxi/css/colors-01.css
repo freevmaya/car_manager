@@ -122,3 +122,11 @@ select.time {
 .info .button {
     background: #333;
 }
+
+.divider {
+    border-color: #4b4b4b;
+}
+
+.view > .title::after {
+    border-bottom: 1px solid #4b4b4b;
+}

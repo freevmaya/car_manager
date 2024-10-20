@@ -1,10 +1,12 @@
 <?
-	$this->scripts[] = "map.js";
-	$this->scripts[] = "driver.js";
-	$this->scripts[] = "driver_manager.js";
-	$this->scripts[] = "mechanics.js";
-	$this->scripts[] = "notifications.js";
 	$this->scripts[] = "jquery-dateformat.min.js";
+	$this->scripts[] = "main.js";
+	$this->scripts[] = "map.js";
+	$this->scripts[] = "views.js";
+	//$this->scripts[] = "driver.js";
+	//$this->scripts[] = "driver-manager.js";
+	$this->scripts[] = "select-target.js";
+	$this->scripts[] = "notifications.js";
 	
 	$this->scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
 	$this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";

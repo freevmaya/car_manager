@@ -18,8 +18,6 @@ foreach ($this->styles as $style) {?>
     <link rel="stylesheet" type="text/css" href="<?=$style?>"></script>
 <?}?>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="scripts/main.js<?=$anti_cache?>"></script>
-    <script src="scripts/views.js<?=$anti_cache?>"></script>
     <script type="text/javascript">
         var BASEURL = '<?=BASEURL?>';
         var app = new App();

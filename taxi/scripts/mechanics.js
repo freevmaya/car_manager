@@ -28,22 +28,6 @@ function Mechanics() {
 		}
 	});
 
-	function SelectPlace(place) {
-
-		app.SendEvent('SelectPlace', place);
-
-		if (!startDialog) {
-			v_map.mainMarker.position = place.latLng;
-
-			startDialog = viewManager.Create({
-				title: 'Route',
-				startPlace: place
-			}, ViewTarget, () => {
-				startDialog = null;
-			});
-		} else startDialog.SelectPlace(place);
-	}
-
 	function showPickMeUpDialog(place) {
 		return viewManager.Create({curtain: $('#map'), content: [
 				{

@@ -122,3 +122,39 @@ function round(x, p) {
     let k = Math.pow(10, p);
     return Math.round(x * k) / k;
 }
+
+
+function toLang(v) {
+    return !lang[v] ? v : lang[v];
+}
+
+function PlaceLatLng(place) {
+    return place.latLng ? place.latLng : place;
+}
+
+function PlaceToText(place) {
+    if (place.displayName)
+        return place.displayName;
+    if (place.latLng)
+        return place.latLng;
+    if (place.lat)
+        return round(place.lat(), 6) + ", " + round(place.lng(), 6);
+}
+
+function PlaceAddress(place) {
+    return place.formattedAddress ? place.formattedAddress : null;
+}
+
+function Classes(bases) {
+    class Bases {
+        constructor() {
+            bases.forEach(base => Object.assign(this, new base()));
+        }
+    }
+    bases.forEach(base => {
+        Object.getOwnPropertyNames(base.prototype)
+        .filter(prop => prop != 'constructor')
+        .forEach(prop => Bases.prototype[prop] = base.prototype[prop])
+    })
+    return Bases;
+}

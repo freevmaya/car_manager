@@ -210,7 +210,6 @@ select.time {
 }
 
 .view > .title::after {
-    border-bottom: 1px solid #4b4b4b;
     content: " ";
     height: 2em;
     position: absolute;
@@ -218,6 +217,13 @@ select.time {
     animation-name: showTitle;
     animation-duration: 1s;
     animation-fill-mode: forwards;
+}
+
+.divider {
+    border-width: 1px;
+    border-style: solid;
+    width: 20%;
+    margin: auto;
 }
 
 @keyframes showTitle {
@@ -356,8 +362,4 @@ select.time {
 
 .info p {
     padding: 0.8em;
-}
-
-.info .button {
-    padding: 1em;
 }

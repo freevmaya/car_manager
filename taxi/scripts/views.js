@@ -19,13 +19,35 @@ class ViewManager {
     }
 }
 
-class View {
+class BaseParentView {
 
     #children;
 
-    constructor(options = {actions: {}}, afterDestroy = null) {
-        this.afterDestroy = afterDestroy;
+    constructor() {}
+
+    setContent(content) {
+        if (this.#children)
+            for (let idx in this.#children)
+                this.#children[idx].destroy();
+
         this.#children = {};
+        for (let i in content) {
+            let idx = i;
+            if (content[i].id) idx = content[i].id;
+            this.#children[idx] = new content[i].class(this, content[i]);
+        }
+    }
+
+    fieldById(idx) {
+        return this.#children[idx];
+    }
+}
+
+class View extends BaseParentView {
+
+    constructor(options = {actions: {}}, afterDestroy = null) {
+        super();
+        this.afterDestroy = afterDestroy;
         this.initView();
         this.setOptions(options);
     }
@@ -50,6 +72,9 @@ class View {
     setOptions(options) {
         this.options = $.extend({content: [], actions: []}, options);
 
+        for (let i in this.options.classes)
+            this.contentElement.addClass(this.options.classes[i]);
+
         if (this.options.title) {
             if (!this.titleElement)
                 this.headerElement.prepend(this.titleElement = $('<h3></h3>'));
@@ -63,19 +88,10 @@ class View {
             this.footerElement.append(btn);
         }
 
-        for (let i in this.options.content) {
-            let idx = i;
-            if (this.options.content[i].id) idx = this.options.content[i].id;
-
-            this.#children[idx] = new this.options.content[i].class(this, this.options.content[i]);
-        }
+        this.setContent(this.options.content);
         
         if (this.options.curtain) this.blockBackground(true);
         this.toAlign();
-    }
-
-    fieldById(idx) {
-        return this.#children[idx];
     }
 
     toAlign() {
@@ -144,95 +160,6 @@ class BottomView extends View {
     }
 }
 
-class ViewTarget extends BottomView {
-
-    routes;
-
-    setOptions(options) {
-        options = $.extend({
-            content: [
-                {
-                    id: 'time',
-                    value: Date.now(),
-                    class: DateTimeField
-                },
-                {
-                    id: 'startPlace',
-                    text: PlaceToText(options.startPlace),
-                    class: TextField
-                },
-                {
-                    id: 'finishPlace',
-                    text: "",
-                    class: TextField
-                },
-                {
-                    label: 'Ok',
-                    action: this.applyPath.bind(this),
-                    class: ButtonField
-                }
-            ]
-        }, options);
-
-        super.setOptions(options);
-
-    }
-
-    SelectPlace(finishPlace) {
-        this.closePath();
-        let request = {
-            origin: PlaceLatLng(this.options.startPlace),
-            destination: PlaceLatLng(this.options.finishPlace = finishPlace),
-            travelMode: 'DRIVING'
-        }
-        v_map.directionsService.route(request, (function(result, status) {
-            if (status == 'OK') {
-                let field = this.fieldById("finishPlace");
-                this.rpath = DrawPath(v_map.map, result);
-                field.view.text(PlaceToText(this.options.finishPlace));
-                this.routes = result;
-                this.afterResize();
-            }
-        }).bind(this))
-    }
-
-    applyPath() {
-
-        let data = {
-            user_id: user.id,
-            pickUpTime: this.fieldById('time').getValue()
-        }
-
-        let start = getRoutePoint(this.routes, 0);
-        let finish = getRoutePoint(this.routes, -1);
-
-        data.start = { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() };
-        data.finish = { placeId: this.options.finishPlace.placeId, lat: finish.lat(), lng: finish.lng() };
-        data.startAddress = PlaceAddress(this.options.startPlace);
-        data.finishAddress = PlaceAddress(this.options.finishPlace);
-        data.meters = Math.round(CalcPathLength(this.routes));
-
-        Ajax({
-            action: "AddOrder",
-            data: JSON.stringify(data)
-        }).then((result) => {
-            this.Close();
-        });
-    }
-
-    closePath() {
-        if (this.rpath) {
-            this.rpath.setMap(null);
-            delete this.rpath;
-        }
-    }
-
-    Close() {
-        this.closePath();
-        return super.Close();
-    }
-}
-
 class BaseField {
     constructor(parent, params) {
         this.options = $.extend({}, params);
@@ -251,11 +178,26 @@ class BaseField {
     }
 }
 
+class DividerField extends BaseField {
+    initView() {
+        this.view = createField(this.parentElement, this.options, '<div class="divider">');
+    }
+}
+
 
 class TextField extends BaseField {
 
     initView() {
         this.view = createField(this.parentElement, this.options, '<p>');
+    }
+}
+
+
+class TextInfoField extends TextField {
+
+    initView() {
+        super.initView();
+        this.infoView = createField(this.parentElement, this.options.info, '<p class="infoView">');
     }
 }
 
@@ -287,38 +229,14 @@ class ButtonField extends BaseField {
 }
 
 
-class GroupFields extends BaseField {
-
+class GroupFields extends Classes([BaseField, BaseParentView]) {
     initView() {
-        this.parentElement.append(this.view = $('<div class="group">'));
+        this.parentElement.append(this.view = this.contentElement = $('<div class="group">'));
         for (let i in this.options.classes)
             this.view.addClass(this.options.classes[i]);
 
-        for (let i in this.options.content)
-            new this.options.content[i].class(this, this.options.content[i]);
+        this.setContent(this.options.content);
     }
-}
-
-
-function toLang(v) {
-    return !lang[v] ? v : lang[v];
-}
-
-function PlaceLatLng(place) {
-    return place.latLng ? place.latLng : place;
-}
-
-function PlaceToText(place) {
-    if (place.formattedAddress)
-        return place.formattedAddress;
-    if (place.latLng)
-        return place.latLng;
-    if (place.lat)
-        return round(place.lat(), 6) + ", " + round(place.lng(), 6);
-}
-
-function PlaceAddress(place) {
-    return place.formattedAddress ? place.formattedAddress : null;
 }
 
 

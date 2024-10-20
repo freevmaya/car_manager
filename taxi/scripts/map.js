@@ -291,7 +291,7 @@ class VMap {
 			Place: Place
 		};
 
-		this.driverManager = new DriverManager(this.#map);
+		//this.driverManager = new DriverManager(this.#map);
 		this.#markerManager = new MarkerManager(this.#map);
 		this.directionsService = new DirectionsService();
 		this.infoWindow = new InfoWindow();

@@ -22,5 +22,6 @@ var lang = {
 	'Departure time': 'Время отправления',
 	'km.': 'км.',
 	'Length': 'Расстояние',
-	'Application received': 'Получена заявка'
+	'Application received': 'Получена заявка',
+	'Select your destination': 'Выберите пункт прибытия'
 };
