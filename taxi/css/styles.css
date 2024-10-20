@@ -8,26 +8,44 @@ html {
     font-family: Tahoma, Verbana;
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
     color: var(--tg-theme-text-color);
     background-position: top;
 }
 
-.Main {
-    width: 100%;
-    padding: 25px;
-    text-align: center;
-
+.datetime {
+    display: inline-block;
 }
 
-h1 {
-    margin-top: 40px;
-    margin-bottom: 10px;
+select.time {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 4em;
 }
 
-img {
-    width: 70px;
-    margin: 30px auto;
+.date, .time {
+    border: none !important;
+    padding: 0.3em;
+    border-radius: 1em !important;
+    height: 2em;
+}
+
+.date {
+    text-align: end;
+    width: 6em;
+}
+
+.ui-widget-content {
+    border-radius: 1em !important;
+    padding: 1em !important;
 }
 
 .btn {
@@ -39,11 +57,6 @@ img {
     font-style: 20px;
     font-weight: 500;
     cursor: pointer;
-    background: #40a7e3;
-}
-
-.btn:active {
-    background: #2e76a0;
 }
 
 .wrapper h1 {
@@ -58,20 +71,293 @@ img {
     align-content: center;
 }
 
-.mainmenu h1, .mainmenu .btn {
-    color: white;
-}
-
 .mainmenu button {
     display: block;
 }
 
-.marker-auto {
+.marker {
     position: absolute;
     width: 64px;
     height: 64px;
-    background-image: url(images/car01.png);
     background-size: contain;
+}
+
+.auto {
     margin-left: -32px;
     margin-top: -32px;
+}
+
+.position {
+    margin-left: -32px;
+    margin-top: -64px;
+}
+
+.user-marker {
+    position: absolute;
+    width: 4em;
+    height: 4em;
+    background-size: contain;
+    margin-left: -2em;
+    margin-top: -4em;
+}
+
+#windows {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+}
+
+.shadow, .ui-widget-content {
+    box-shadow: 0px 0px 1em #000000ba;    
+}
+
+.radius {
+    border-radius: 1em;
+}
+
+.radiusTop {
+    border-radius: 1em 1em 0 0;
+}
+
+.radiusB0ttom {
+    border-radius: 0 0 1em 1em;
+}
+
+.notifications {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    z-index: 2;
+    display: flex;
+    flex-flow: column;
+}
+
+.notifications .item {
+    margin: 0.2em;
+    padding: 0.5em;
+
+    animation-name: showView;
+    animation-duration: 0.2s;  
+}
+
+.notifications .item p {
+    padding: 0.5em 2em 0.5em 0.5em;
+    overflow-wrap: anywhere;
+}
+
+.notifications .item .header {
+    padding: 0 1em;
+}
+
+.view {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    z-index: 1;
+    padding: 0.5em;
+    display: flex;
+    flex-flow: column;
+
+    animation-name: showView;
+    animation-duration: 0.2s;
+}
+
+.dialog {
+    margin: 2em;
+}
+
+.view.bottom {
+    bottom: 0px;
+}
+
+.view > div {
+    width: 100%;
+}
+
+.hide {
+    animation-name: hide !important;
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes showView {
+  0% {
+    scale: 0.7;
+    opacity: 0;
+  }
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+@keyframes hide {
+  0% {
+    scale: 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 0.7;
+    opacity: 0;
+  }
+}
+
+.view > .title {
+    height: 2em;
+    display: flex;
+}
+
+.view > .title::after {
+    border-bottom: 1px solid #4b4b4b;
+    content: " ";
+    height: 2em;
+    position: absolute;
+    pointer-events: none;
+    animation-name: showTitle;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes showTitle {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 95%;
+  }
+}
+
+.view > .title h3 {
+    flex-grow: 1;
+    align-content: center;
+    text-transform: uppercase;
+    font-weight: 100;
+    padding-left: 0.5em;
+}
+
+.view .content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.view .content .group {
+    max-width: 30em;
+    flex-grow: 1;
+    display: flex;
+    flex-flow: column;
+}
+
+.field {
+    margin: 0.1em;
+    display: flex;
+    flex-flow: column;
+}
+
+.field p {
+    padding: 0.2em;
+}
+
+.content .title {
+    font-style: italic;
+    display: block;
+}
+
+.field input {
+    margin-left: 1em;
+    border-style: solid;
+    border-width: 1px;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    border-radius: 1em;
+}
+
+.view .footer {
+    display: flex;
+}
+
+.footer .button {
+    margin-top: 1em !important;
+}
+
+.button {
+    border: 0;
+    background-size: contain;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: 0.5s opacity;
+}
+
+.button:hover {
+    opacity: 1;
+}
+
+.close {
+    width: 2em;
+    height: 2em;
+    right: 0px;
+    float: right;
+    margin: 0.2em;
+}
+
+.btn-block .button {
+    min-width: 6em;
+    max-width: 20em;
+    margin: 0.3em;
+    height: 3em;
+    transition: 0.5s background-color;
+    border-radius: 15em;
+}
+
+.btn-block .button:active {
+}
+
+.btn-block .button:hover {
+}
+
+#map {
+    transition: 0.5 -webkit-filter linear;
+    filter: none;
+    pointer-events: all;
+    position: absolute !important;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+#map.curtain {
+    filter: blur(0.2em);
+    pointer-events: none;
+}
+
+#DriverMenu {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: fit-content;
+    margin: 1em;
+    padding: 1em;
+}
+
+#DriverMenu > a {
+    width: 1.2em;
+    height: 1.2em;
+    background-size: contain;
+    display: block;
+    cursor: pointer;
+}
+
+.info {
+    text-align: center;
+}
+
+.info p {
+    padding: 0.8em;
+}
+
+.info .button {
+    padding: 1em;
 }

@@ -1,13 +1,11 @@
-class MoveDriver {
+class RouteCar {
 	constructor(map, routeData, title, marker) {
 		this.map = map;
 		this.routeData = routeData;
 		this.routeIndex = 0;
 		this.route = routeData.routes[this.routeIndex].overview_path;
 		this.length = [];
-		this.totalLength = 0;
-		for (let i=0; i < this.route.length - 1; i++)
-			this.totalLength += (this.length[i] = Distance(this.route[i], this.route[i + 1]));
+		this.totalLength = CalcPathLength(routeData, this.routeIndex, this.length);
 
 	    this.marker = marker;
 	    this.gmpClickable = true;
@@ -15,10 +13,9 @@ class MoveDriver {
 	}
 
 	onClick(e) {
-		if (!this.routeDraw)
-			this.routeDraw = DrawPath(this.map, this.routeData);
-		else this.DestroyPath();
-		console.log(e);
+		v_map.infoWindow.close();
+	    v_map.infoWindow.setContent('<h3>' + this.marker.title + '</h3><p></p><button>Show path</button>');
+	    v_map.infoWindow.open(this.map, this.marker);
 	}
 
 	Start(driveSpeedKmH, stepTimeMls = 100) {

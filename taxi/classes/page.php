@@ -6,39 +6,57 @@ class Page {
 	protected $title = "";
 	protected $request;
 	protected $scripts = [];
+	protected $styles = [];
 	protected $user;
+	protected $dbp;
+
+	public static function Run($request) {
+
+		$className = 'Page';
+		$page = "";
+		foreach ($request as $key=>$value) {
+			if (empty($value)) {
+				$page = $key;
+				$classFileName = dirname(__FILE__).'/'.$page.'.php';
+
+				if (file_exists($classFileName)) {
+					$className = lcfirst($page);
+					include($classFileName);
+				}
+			}
+		}
+
+		$pageObject = new $className($request);
+		$pageObject->Render($page);
+		$pageObject->Close();
+	}
 
 	public function __construct($request) {
+		GLOBAL $_SESSION, $lang;
+		$this->dbp = new mySQLProvider('localhost', _dbname_default, _dbuser, _dbpassword);
 		$this->request = $request;
-		$this->user = isset($devUser) ? json_decode($devUser) : null;
+
+		if (isset($_SESSION['user'])) {
+			$this->user = $_SESSION['user'];
+			$language = $this->user['language_code'];
+		} else $language = 'en';
+		
+		include_once(BASEDIR.'/languages/'.$language.'.php');
+
+//		$this->user = isset($defUser) ? json_decode($defUser) : null;
 	}
 
-	protected function getCurrentPage() {
-		foreach ($this->request as $key=>$value) {
-			if (empty($value))
-				return $key;
-		}
-
-		return DEFAULTPAGE;
+	public function Render($page) {
+		header("Content-Type: text/html; charset=".CHARSET);
+		$content = $this->getContent($page);
+		include(TEMPLATES_PATH."index.php");
 	}
 
-	public function Render() {
-		GLOBAL $anti_cache;
-		$page = $this->getCurrentPage();
-
-		if ($page == "ajax") {
-			header("Content-Type: application/json; charset=".CHARSET);
-			include(TEMPLATES_PATH."{$page}.php");
-		}
-		else {
-			header("Content-Type: text/html; charset=".CHARSET);
-			$content = $this->getContent($page);
-			include(TEMPLATES_PATH."index.php");
-		}
+	public function Close() {
+		$this->dbp->Close();
 	}
 
 	protected function getContent($contentLink) {
-
 		$content = "";
 		$templateFile = TEMPLATES_PATH."{$contentLink}.php";
 		if (file_exists($templateFile))
@@ -54,35 +72,6 @@ class Page {
 		$result = ob_get_contents();
 		ob_end_clean();
 		return $result;
-	}
-
-	public function ajax() {
-		if (isset($this->request['event'])) {
-			return $this->action($this->request['event'], @$this->request['data']);
-		} else if (isset($this->request['action']))
-			return $this->action($this->request['action'], @$this->request['data']);
-
-		return $this->request;
-	}
-
-	protected function event($event, $data) {
-		switch ($action) {
-			case "checkState": 
-				return $this->checkState($data);
-				break;
-		}
-	}
-
-	protected function checkState($data) {
-		return null;
-	}
-
-	protected function action($action, $data) {
-		switch ($action) {
-			case "setUser": 
-				$this->user = $data;
-				return ["result"=>"ok"];
-		}
 	}
 }
 ?>

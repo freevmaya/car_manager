@@ -1,0 +1,124 @@
+.date, .time {
+    color: #cdcdcd;
+}
+
+
+
+.ui-datepicker-calendar a {
+    background-color: transparent !important;
+    color: gray !important;
+}
+
+.ui-datepicker-calendar a:hover {
+    color: white !important;
+}
+
+.ui-state-active {
+    color: blue !important;
+}
+
+.ui-widget-content {
+    background-color: #333 !important;
+}
+
+.mainmenu h1, .mainmenu .btn {
+    color: white;
+}
+
+.notifications .item p {
+    color: burlywood;
+}
+
+.notifications .item .header {
+    color: white;
+}
+
+.view > .title h3 {
+    color: #8d8d8d;
+}
+
+.field p {
+    color: cadetblue;
+}
+
+.content .title {
+    color: #ffffff75;
+}
+
+.button {
+    color: white;
+    background-color: transparent;
+}
+
+.btn-block .button {
+    background-color: #ffffff54;
+    box-shadow: 0px 0px 12px black;
+}
+
+.btn-block .button:active {
+    color: black;
+    background-color: white;
+    box-shadow: 0px 0px 12px white;
+}
+
+.btn-block .button:hover {
+    box-shadow: 0px 0px 12px #ffffff40;
+}
+
+.btn-block .button:hover {
+    box-shadow: 0px 0px 12px #ffffff40;
+}
+
+#DriverMenu {
+    background-color: #333;
+    background-image: url(images/menu.png);
+}
+
+select.time {
+    background: #333 !important;
+}
+
+.date, .time {
+    background: transparent !important;
+}
+
+.btn {
+    background: #40a7e3;
+}
+
+.btn:active {
+    background: #2e76a0;
+}
+
+.auto {
+    background-image: url(images/car01.png);
+}
+
+.position {
+    background-image: url('images/position.png');
+}
+
+.user-marker {
+    background-image: url('images/user-marker.png');
+}
+
+.notifications .item {
+    background: #333;
+}
+
+.view {
+    background: #333;
+}
+
+.field input {
+    background: darkgray;
+    border-color: black;
+}
+
+.close {
+    background-image: url(images/close-w.png);
+}
+
+.info .button {
+    background: #333;
+}

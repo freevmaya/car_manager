@@ -12,8 +12,7 @@
 	include(INCLUDE_PATH."/console.php");
 	include(INCLUDE_PATH."/fdbg.php");
     include(INCLUDE_PATH.'/db/mySQLProvider.php');
-
 	include("classes/page.php");
 
-	(new Page(array_merge($_GET, $_POST)))->Render();
+	Page::Run(array_merge($_GET, $_POST));
 ?>

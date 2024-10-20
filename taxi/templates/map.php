@@ -2,19 +2,16 @@
 	$this->scripts[] = "map.js";
 	$this->scripts[] = "driver.js";
 	$this->scripts[] = "driver_manager.js";
+	$this->scripts[] = "mechanics.js";
+	$this->scripts[] = "notifications.js";
+	$this->scripts[] = "jquery-dateformat.min.js";
+	
+	$this->scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
+	$this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
+	$this->styles[] = 'css/colors-01.css';
 ?>
-<style type="text/css">
-	#map {
-	  height: 100%;
-	}
-
-	html,
-	body {
-	  height: 100%;
-	  margin: 0;
-	  padding: 0;
-	}
-</style>
+<div id="windows">
+</div>
 <div id="map"></div>
 
 <script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
@@ -22,62 +19,36 @@
 
 
 <script type="text/javascript">
-	let map;
-	var Classes = {};
-	var trans;
-	var BASEURL = '<?=BASEURL?>';
 
-	async function initMap(crd) {
+	var transport = new AjaxTransport(1000);
+	new Notifications();
 
-		const position = { lat: crd.latitude, lng: crd.longitude };
+	var dateTinyFormat = "dd.MM HH:mm";
+	var dateShortFormat = "dd.MM.yy HH:mm";
+	var dateLongFormat = "dd.MM.yyyy HH:mm";
+	var dateOnlyFormat = "dd.MM.yyyy";
 
-		const { Map } = await google.maps.importLibrary("maps");
-		const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-		const { DirectionsService } = await google.maps.importLibrary("routes");
+	
+	var v_map = new VMap();
 
-		var directionsService = new DirectionsService();
-
-		map = new Map(document.getElementById("map"), {
-			zoom: 18,
-			disableDefaultUI: true,
-			center: position,
-			mapId: "MAIN_MAP_ID",
-			zoomControl: true,
-			scaleControl: true
-		});
-
-		Classes["AdvancedMarkerElement"] = AdvancedMarkerElement;
-		Classes["DirectionsService"] = DirectionsService;
-
-		var driverManager = new DriverManager(map);
-
-		var marker1 = new AdvancedMarkerElement({
-			map: map,
-			position: position,
-			title: "Main position",
-		});
-
-		map.addListener("click", (e) => {
-			driverManager.CreateRandomCar(e.latLng);
-			trans.SendEvent('CreateDrive', e.latLng);
-		});
-
-		trans = new AjaxTransport(1000);
-
-		trans.AddListener('moveDrive', (params)=>{
-			console.log(params);
-		});
-	}
-
+<?if (DEV) {?>
+	v_map.initMap({latitude: 32.044704, longitude: 76.726152}).then(()=>{
+		viewManager = new ViewManager();
+		Mechanics();
+	});
+<?} else {?>
 	function startGeo() {
 		navigator.geolocation.getCurrentPosition((pos) => {
-			initMap(pos.coords);
+			v_map.initMap(pos.coords).then(()=>{
+				Mechanics();
+			});
 		});
 	}
 
 	setTimeout(()=>{
-		if (!map) startGeo();
-	}, 10000);
+		if (!v_map.map) startGeo();
+	}, 20000);
 	startGeo();
+<?}?>
 
 </script>
