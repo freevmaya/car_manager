@@ -172,10 +172,6 @@ select.time {
     bottom: 0px;
 }
 
-.view > div {
-    width: 100%;
-}
-
 .hide {
     animation-name: hide !important;
     animation-duration: 0.2s;
@@ -281,11 +277,55 @@ select.time {
 }
 
 .view .footer {
-    display: flex;
+    /*display: flex;*/
+    padding: 0.5em;
 }
 
-.footer .button {
-    margin-top: 1em !important;
+.sliderView {
+    overflow-x: scroll;
+    scroll-behavior: smooth;
+}
+
+.slider, .slider-group {
+    display: flex;
+    width: max-content;
+    align-items: center;
+}
+
+.slider .notify {
+    color: gray;
+    display: flex;
+    align-items: center;
+    max-width: 20em;
+    size: 1em;
+    padding: 0 0.5em;
+    flex-direction: column;
+}
+
+.closed:after {
+    content: " ";
+    background-size: contain;
+    width: 1em;
+    height: 1em;
+    align-self: flex-start;
+    flex-shrink: 0;
+}
+
+.car-image {
+    width: 8em;
+    height: 4em;
+    background-image: url(images/car-bodys.png);
+    flex-shrink: 0;
+}
+
+.microcar {
+    background-size: 1000%;
+    background-position: -16px -10px;
+}
+
+.smallcar {
+    background-size: 1000%;
+    background-position: -16px -10px;
 }
 
 .button {
@@ -308,10 +348,21 @@ select.time {
     margin: 0.2em;
 }
 
-.btn-block .button {
+.footer .button, .datetime-field {
+    font-size: 1em;
+}
+
+.datetime-field {
+
+    display: flex;
+    align-items: center;
+}
+
+.btn-block .button, .datetime-field {
     min-width: 6em;
     max-width: 20em;
     margin: 0.3em;
+    padding: 0 1.5em;
     height: 3em;
     transition: 0.5s background-color;
     border-radius: 15em;
@@ -321,6 +372,20 @@ select.time {
 }
 
 .btn-block .button:hover {
+}
+
+.infoView {
+    margin-left: 0px;
+    opacity: 1;
+    display: block;
+    font-size: 0.6em;
+    transition: 0.8s opacity, margin 0.6s ease;
+    transition-timing-function: cubic-bezier(.68,-.6,.32,1.6);
+}
+
+.hidden {
+    margin-left: -50%;
+    opacity: 0;
 }
 
 #map {
@@ -362,4 +427,13 @@ select.time {
 
 .info p {
     padding: 0.8em;
+}
+
+.datetime > .now {
+    cursor: pointer;
+    display: block;
+}
+
+.target-view {
+    margin: 1em;
 }

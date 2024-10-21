@@ -57,7 +57,7 @@ function ShowDriverMenu() {
 		$('body').append(menu = $('<div id="DriverMenu" class="radius shadow">'));
 		menu.append(btn = $('<a>'));
 		btn.click(() => {window.ShowDriverSubmenu();});
-        afterMap(() => {v_map.markerManager.ShowOrders();});
+        afterMap(() => {v_map.MarkerManager.ShowOrders();});
 	}
 
 	menu.css('display', 'block');
@@ -153,7 +153,7 @@ class MarkerManager {
 			    travelMode: 'DRIVING'
 			};
 
-			v_map.directionsService.route(request, (function(result, status) {
+			v_map.DirectionsService.route(request, (function(result, status) {
 				if (status == 'OK') {
 					if (this.selectPath) this.selectPath.setMap(null);
 					this.selectPath = DrawPath(this.map, result);
@@ -228,9 +228,11 @@ function getOrderInfo(order) {
 
 class AjaxTransport {
 
+	#incIndex;
 	constructor(periodTime) {
 		this.listeners = {};
 	    this.intervalID = setInterval(this.update.bind(this), periodTime);
+	    this.#incIndex = 0;
 	}
 
 	update() {
@@ -239,15 +241,30 @@ class AjaxTransport {
 			for (let n in value)
 			    if (this.listeners.hasOwnProperty(n)) {
 			    	let list = this.listeners[n];
-			    	for (let i=0; i<list.length; i++) list[i](value[n]);
+			    	for (let i in list) 
+			    		list[i](value[n]);
 			    }
 		});
 	}
 
-	AddListener(event, callback) {
-		if (!this.listeners[event]) this.listeners[event] = [];
+	ConfirmReceive(data) {
+        Ajax({
+            action: 'StateNotification',
+            data: { id: data.id, state: 'receive' }
+        });
+	}
 
-		this.listeners[event].push(callback);
+	AddListener(event, callback) {
+		if (!this.listeners[event]) this.listeners[event] = {};
+
+		this.#incIndex++;
+		this.listeners[event][this.#incIndex] = callback;
+		return this.#incIndex;
+	}
+
+	RemoveListener(event, idx) {
+		if (idx > -1) 
+			delete this.listeners[event][idx];
 	}
 }
 
@@ -256,11 +273,31 @@ class VMap {
 	#map;
 	#classes;
 	#view;
+	#driverManager;
+	#directionsService;
 
 	get map() { return this.#map; }
-	get markerManager() { return this.#markerManager; }
 	get Classes() { return this.#classes; }
 	get View() { return this.#view; }
+
+	get DriverManager() {
+		if (!this.#driverManager)
+			this.#driverManager = new DriverManager(this.#map);
+		return this.#driverManager; 
+	}
+
+
+	get DirectionsService() {
+		if (!this.#directionsService)
+			this.#directionsService = new this.Classes['DirectionsService'](this.#map);
+		return this.#directionsService; 
+	}
+
+	get MarkerManager() {
+		if (!this.#markerManager)
+			this.#markerManager = new MarkerManager(this.#map);
+		return this.#markerManager; 
+	}
 
 	async initMap(crd) {
 
@@ -290,16 +327,12 @@ class VMap {
 			InfoWindow: InfoWindow,
 			Place: Place
 		};
-
-		//this.driverManager = new DriverManager(this.#map);
-		this.#markerManager = new MarkerManager(this.#map);
-		this.directionsService = new DirectionsService();
+		
 		this.infoWindow = new InfoWindow();
-
 		this.mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
 	}
 
 	CreateMarker(position, title, className, onClick = null) {
-		return this.#markerManager.CreateMarker(position, 'my-position', 'marker position');
+		return this.MarkerManager.CreateMarker(position, 'my-position', 'marker position');
 	}
 }

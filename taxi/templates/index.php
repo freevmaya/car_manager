@@ -21,11 +21,8 @@ foreach ($this->styles as $style) {?>
     <script type="text/javascript">
         var BASEURL = '<?=BASEURL?>';
         var app = new App();
-        var user;
-        setTimeout(()=>{
-            user = Telegram.WebApp.initDataUnsafe.user ? Telegram.WebApp.initDataUnsafe.user : <?=$defUser?>;
-            app.SetUser(user);
-        }, 200);
+        var user = Telegram.WebApp.initDataUnsafe.user ? Telegram.WebApp.initDataUnsafe.user : <?=$defUser?>;
+        app.SetUser(user);
 
     </script>
 </head>

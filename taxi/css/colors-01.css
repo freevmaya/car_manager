@@ -2,8 +2,6 @@
     color: #cdcdcd;
 }
 
-
-
 .ui-datepicker-calendar a {
     background-color: transparent !important;
     color: gray !important;
@@ -48,6 +46,10 @@
 .button {
     color: white;
     background-color: transparent;
+}
+
+.datetime-field {
+    color: gray;
 }
 
 .btn-block .button {
@@ -115,7 +117,7 @@ select.time {
     border-color: black;
 }
 
-.close {
+.close, .closed:after {
     background-image: url(images/close-w.png);
 }
 
@@ -129,4 +131,21 @@ select.time {
 
 .view > .title::after {
     border-bottom: 1px solid #4b4b4b;
+}
+
+.infoView {
+    color: gray;
+}
+
+.datetime > .now {
+    color: #8b8b8b;
+}
+
+.button {
+    opacity: 1;
+}
+
+.button:disabled {
+  background-color: #69696929 !important;
+  opacity: 0.4 !important;
 }

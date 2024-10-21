@@ -6,7 +6,7 @@ class DriverManager {
 
 	CreateRouteCar(resultroutes) {
 		let result = new RouteCar(this.map, resultroutes, "Driver", 
-				markerManager.CreateDriver(getRoutePoint(resultroutes), 'driver'));
+				v_map.MarkerManager.CreateDriver(getRoutePoint(resultroutes), 'driver'));
 		result.Start(40, 100);
 		return result;
 	}
@@ -17,7 +17,7 @@ class DriverManager {
 		    destination: destination,
 		    travelMode: 'DRIVING'
 		};
-		v_map.directionsService.route(request, (function(result, status) {
+		v_map.DirectionsService.route(request, (function(result, status) {
 			if (status == 'OK') {
 				let car = this.CreateRouteCar(result);
 				Ajax({

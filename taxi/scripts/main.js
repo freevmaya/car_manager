@@ -1,3 +1,7 @@
+var dateTinyFormat = "dd.MM HH:mm";
+var dateShortFormat = "dd.MM.yy HH:mm";
+var dateLongFormat = "dd.MM.yyyy HH:mm";
+var dateOnlyFormat = "dd.MM.yyyy";
 
 class App {
 
@@ -64,17 +68,35 @@ async function Ajax(params) {
 class DateTime {
     DataFormat = 'dd.mm.yy';
     TimyFormat = "dd.MM HH:mm";
+    #mstep;
+    #datetime;
 
     constructor(element, datetime, mstep = 30) {
 
-        if ($.type(datetime) == 'number') {
-            let sstep = mstep * 60 * 1000;
-            datetime = Math.ceil(datetime / sstep) * sstep;
-            datetime = $.format.date(datetime, dateLongFormat);
-        }
-        let dta = datetime.split(" ");
+        this.#mstep = mstep;
         this.view = element;
         this.view.addClass('datetime');
+        this.view.empty();
+
+        if ($.type(datetime) == 'string')
+            datetime = Date.parse(datetime);
+
+        if ($.type(datetime) == 'number') {
+            this.#datetime = this.Format(datetime);
+
+            if (this.Format(Date.now()) == this.#datetime) {
+                this.view.text(toLang('Now')).click(this.onNowClick.bind(this));
+            }
+            else InitInputs();
+        } else console.log("Unknown datetime format");
+    }
+
+    onNowClick() {
+        if (!this.date) this.InitInputs();
+    }
+
+    InitInputs() {
+        let dta = this.#datetime.split(" ");
 
         this.view.empty();
         this.view.append(this.date = $('<input type="text" class="date">'));
@@ -89,14 +111,20 @@ class DateTime {
         if (dta.length > 1)
             inTime = dta[1];
 
-        let timeCount = 24 * 60 / mstep;
+        let timeCount = 24 * 60 / this.#mstep;
         for (let i=0; i < timeCount; i++) {
-            let time = this.MinuteToStr(i * mstep);
+            let time = this.MinuteToStr(i * this.#mstep);
             let o = $('<option>').text(time);
             this.time.append(o);
             if (time == inTime)
                 o.attr('selected', 'true');
         }
+    }
+
+    Format(millisec) {
+        let sstep = this.#mstep * 60 * 1000;
+        let datetime = Math.ceil(millisec / sstep) * sstep;
+        return $.format.date(datetime, dateLongFormat);
     }
 
     MinuteToStr(m) {
@@ -114,7 +142,9 @@ class DateTime {
     }
 
     getValue() {
-        return this.getDate() + ' ' + this.getTime();
+        if (this.date)
+            return this.getDate() + ' ' + this.getTime();
+        else return this.#datetime;
     }
 }
 
@@ -132,7 +162,7 @@ function PlaceLatLng(place) {
     return place.latLng ? place.latLng : place;
 }
 
-function PlaceToText(place) {
+function PlaceName(place) {
     if (place.displayName)
         return place.displayName;
     if (place.latLng)
@@ -157,4 +187,17 @@ function Classes(bases) {
         .forEach(prop => Bases.prototype[prop] = base.prototype[prop])
     })
     return Bases;
+}
+
+function closeView(view, duration='slow') {
+    view.css('scale', 1);
+    view.animate({
+        scale: '-=1',
+        opacity: '0',
+        width: '-=50%'
+    }, duration, 
+        ()=>{
+            view.remove();
+        }
+    );
 }

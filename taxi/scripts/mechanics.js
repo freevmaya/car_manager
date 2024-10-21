@@ -125,7 +125,7 @@ function Mechanics() {
 								}).then((result) => {
 									delete user.asDriver;
 									HideDriverMenu();
-									v_map.markerManager.ClearAllUsers();
+									v_map.MarkerManager.ClearAllUsers();
 								});
 							}
 						}]

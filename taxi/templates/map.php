@@ -6,7 +6,7 @@
 	//$this->scripts[] = "driver.js";
 	//$this->scripts[] = "driver-manager.js";
 	$this->scripts[] = "select-target.js";
-	$this->scripts[] = "notifications.js";
+	//$this->scripts[] = "notifications.js";
 	
 	$this->scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
 	$this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
@@ -23,14 +23,6 @@
 <script type="text/javascript">
 
 	var transport = new AjaxTransport(1000);
-	new Notifications();
-
-	var dateTinyFormat = "dd.MM HH:mm";
-	var dateShortFormat = "dd.MM.yy HH:mm";
-	var dateLongFormat = "dd.MM.yyyy HH:mm";
-	var dateOnlyFormat = "dd.MM.yyyy";
-
-	
 	var v_map = new VMap();
 
 <?if (DEV) {?>

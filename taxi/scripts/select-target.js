@@ -4,18 +4,11 @@ class ViewTarget extends BottomView {
 
     setOptions(options) {
         options = $.extend({
-            actions: {
-                Ok: this.applyPath.bind(this)
-            },
+            classes: ['target-view'],
             content: [
                 {
-                    id: 'time',
-                    value: Date.now(),
-                    class: DateTimeField
-                },
-                {
                     id: 'startPlace',
-                    text: PlaceToText(options.startPlace),
+                    text: PlaceName(options.startPlace),
                     info: PlaceAddress(options.startPlace),
                     class: TextInfoField
                 },
@@ -25,13 +18,29 @@ class ViewTarget extends BottomView {
                 {
                     id: 'finishPlace',
                     text: "Select your destination",
-                    class: TextField
+                    class: TextInfoField
                 }
             ]
         }, options);
 
         super.setOptions(options);
 
+        this.footerElement.addClass('sliderView');
+        this.footerElement.append(this.footerSlider = $('<div class="slider">'));
+
+        this.footerSlider.append(this.sendButton = $('<button class="button" disabled>').text(toLang('Send')));
+        this.sendButton.click(this.applyPath.bind(this));
+
+        this.footerSlider.append(this.datetimeElement = $('<div class="datetime-field shadow">'));
+        this.datetime = new DateTime(this.datetimeElement, Date.now());
+/*
+        setTimeout((()=>{
+            this.addTextInSlider("Нейросеть онлайн для текста — это один из самых удобных способов создания контента.");
+        }).bind(this), 2000);*/
+    }
+
+    addTextInSlider(text) {
+        this.footerSlider.append($('<div class="notify">').text(text));
     }
 
     SelectPlace(finishPlace) {
@@ -41,22 +50,35 @@ class ViewTarget extends BottomView {
             destination: PlaceLatLng(this.options.finishPlace = finishPlace),
             travelMode: 'DRIVING'
         }
-        v_map.directionsService.route(request, (function(result, status) {
+        v_map.DirectionsService.route(request, (function(result, status) {
             if (status == 'OK') {
                 let field = this.fieldById("finishPlace");
                 this.rpath = DrawPath(v_map.map, result);
-                field.view.text(PlaceToText(this.options.finishPlace));
+                field.view.text(PlaceName(this.options.finishPlace));
+                field.infoView.text(PlaceAddress(this.options.finishPlace));
                 this.routes = result;
                 this.afterResize();
+                this.footerElement.find('button').prop('disabled', false);
+                this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this));
             }
         }).bind(this))
+    }
+
+    onNotification(data) {
+        for (let i in data)
+            if (data[i].content_type == 'orderReceive') {
+                this.footerSlider.empty();
+                this.addTextInSlider(data[i].text);
+                transport.ConfirmReceive(data[i]);
+                transport.RemoveListener('notificationList', this.listenerId);
+            }
     }
 
     applyPath() {
 
         let data = {
             user_id: user.id,
-            pickUpTime: this.fieldById('time').getValue()
+            pickUpTime: this.datetime.getValue()
         }
 
         let start = getRoutePoint(this.routes, 0);
@@ -71,9 +93,7 @@ class ViewTarget extends BottomView {
         Ajax({
             action: "AddOrder",
             data: JSON.stringify(data)
-        }).then((result) => {
-            this.Close();
-        });
+        }).then();
     }
 
     closePath() {

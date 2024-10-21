@@ -81,10 +81,11 @@ class View extends BaseParentView {
             this.titleElement.text(toLang(this.options.title));
         }
 
-        for (let action in this.options.actions) {
+        let actions = this.options.actions;
+        for (let action in actions) {
             let btn = $('<button class="button">');
             btn.text(toLang(action));
-            btn.click(this.options.actions[action]);
+            setValues(btn, actions[action]);
             this.footerElement.append(btn);
         }
 
@@ -197,7 +198,12 @@ class TextInfoField extends TextField {
 
     initView() {
         super.initView();
-        this.infoView = createField(this.parentElement, this.options.info, '<p class="infoView">');
+        this.parentElement.append((this.infoView = $('<span class="infoView hidden">')).text(this.options.info));
+        this.view.click(this.onViewClick.bind(this));
+    }
+
+    onViewClick() {
+        this.infoView.toggleClass("hidden");
     }
 }
 
@@ -276,4 +282,16 @@ function createField(parent, fieldParam, tag) {
         element.text(toLang(fieldParam.value));
 
     return element;
+}
+
+function setValues(elem, attibutes) {
+
+    if ($.type(attibutes) == 'object') {
+        for (let i in attibutes)
+            if ($.type(attibutes[i]) == 'function')
+                elem.click(attibutes[i]);
+            else elem.prop(i, attibutes[i]);
+    }
+    else if ($.type(attibutes) == 'function') 
+        elem.click(attibutes);
 }

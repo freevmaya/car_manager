@@ -23,5 +23,7 @@ var lang = {
 	'km.': 'км.',
 	'Length': 'Расстояние',
 	'Application received': 'Получена заявка',
-	'Select your destination': 'Выберите пункт прибытия'
+	'Select your destination': 'Выберите пункт прибытия',
+	'Now': 'Сейчас',
+	'Send': 'Отправить'
 };
