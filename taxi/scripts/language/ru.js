@@ -25,5 +25,6 @@ var lang = {
 	'Application received': 'Получена заявка',
 	'Select your destination': 'Выберите пункт прибытия',
 	'Now': 'Сейчас',
-	'Send': 'Отправить'
+	'Send': 'Отправить',
+	'Accept': 'Принять'
 };

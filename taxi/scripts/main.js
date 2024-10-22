@@ -13,7 +13,7 @@ class App {
 
     SetUser(user) {
         Ajax({"action":"setUser", "data": JSON.stringify(user)}).then((data) => {
-            if (data['asDriver']) {
+            if (data && data['asDriver']) {
                 user.asDriver = data['asDriver'];
                 ShowDriverMenu();
             }
@@ -200,4 +200,13 @@ function closeView(view, duration='slow') {
             view.remove();
         }
     );
+}
+
+function templateClone(tmpl, data) {
+    let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, group) => {
+        if (data[group])
+            return data[group];
+        return toLang(group);
+    });
+    return $(html);
 }

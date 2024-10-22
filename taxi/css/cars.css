@@ -1,0 +1,19 @@
+.microcar {
+    background-image: url(images/minicar.png);
+}
+
+.smallcar {
+    background-image: url(images/smallcar.png);
+}
+
+.mediumcar {
+    background-image: url(images/mediumcar.png);
+}
+
+.largecar {
+    background-image: url(images/largecar.png);
+}
+
+.largecar-luxurycar {
+    background-image: url(images/largecar-luxurycar.png);
+}
