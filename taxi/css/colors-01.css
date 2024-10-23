@@ -43,7 +43,7 @@
     color: #ffffff75;
 }
 
-.button {
+.button, .toolbar a {
     color: white;
     background-color: transparent;
 }
@@ -166,4 +166,41 @@ select.time {
 .button:disabled {
   background-color: #69696929 !important;
   opacity: 0.4 !important;
+}
+
+.toolbar {
+    background: #333;
+}
+
+.toolbar a {
+    color: #AAA;
+}
+
+.menu img {
+    filter: brightness(0.7);
+}
+
+.submenu {
+    background: #333;
+}
+
+.submenu {
+    color: #aaa;
+}
+
+.submenu a {
+    color: #aaa !important;
+}
+
+.submenu a:hover {
+    color: white;
+}
+
+.submenu i {
+    text-shadow: 1px 1px 2px black;
+    color: #777;
+}
+
+.submenu .item {
+    box-shadow: 1px 1px 3px #00000052;
 }

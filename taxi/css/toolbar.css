@@ -1,0 +1,88 @@
+.toolbar {
+	padding: 0.5em;
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	display: flex;
+	z-index: 2;
+}
+
+.toolbar, .submenu {
+	transition: 0.3s left;
+    transition-timing-function: cubic-bezier(.68,-.3,.32,1.3);
+}
+
+.toolbar::-webkit-scrollbar {
+	display: none;
+}
+
+.top {
+	top: 0px;
+	border-radius: 0 0 1em 1em;
+}
+
+.toolbar a {
+    border-radius: 1em;
+    padding: 0.3em;
+    font-size: 1em;
+    min-width: 2em;
+    height: 2em;
+    display: block;
+    margin-right: 0.5em;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.toolbar a span {
+	margin: 0 1em;
+}
+
+.menu img {
+	width: 1em;
+}
+
+.submenu {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	padding-left: 5%;
+	left: -85%;
+	width: 80%;
+	border-radius: 0 1em 1em 0;
+	display: flex;
+	flex-direction: column;
+	z-index: 2;
+}
+
+.submenu a {
+	display: block;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none !important;
+    text-transform: uppercase;
+}
+
+.submenu div {
+    border-radius: 1em;
+    padding: 0.3em;
+    font-size: 1em;
+    font-weight: 400;
+    margin: 0.3em 0.6em;
+}
+
+.open .submenu {
+	left: -5%;
+}
+
+.open .toolbar {
+	left: 75%;
+}
+
+.open .top {
+	border-radius: 0 0 1em 0;
+    margin-left: -2em;
+    padding-left: 2em;
+}

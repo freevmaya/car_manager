@@ -18,6 +18,26 @@ body {
     background-position: top;
 }
 
+.wrapper {
+    max-width: 900px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;    
+    margin: auto;
+    overflow: hidden;
+}
+
+
+.wrapper > .content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 3em;
+    bottom: 0;
+}
+
 .templates {
     display: none;
 }
@@ -300,18 +320,27 @@ select.time {
 .slider .notify {
     color: gray;
     max-width: 16em;
-    size: 1em;
+    font-size: 0.8em;
     padding: 0 0.5em;
     flex-direction: column;
 }
 
 .car .notify p {
     padding: 0;
+    font-size: 0.8em;
 }
 
 .car .notify {
     min-width: 20em;
     font-size: 0.8em;
+}
+
+.notify.car .block {
+    padding: 0.3em;
+}
+
+.notify.car div {
+    overflow: hidden;
 }
 
 .car button {
@@ -333,7 +362,7 @@ select.time {
 }
 
 .car-image-box {
-    padding: 0.3em;
+    padding: 0.5em;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -345,7 +374,7 @@ select.time {
 }
 
 .car-image {
-    height: 2em;
+    height: 3em;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;

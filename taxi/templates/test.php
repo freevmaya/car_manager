@@ -12,7 +12,6 @@
     $this->scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
 
     $this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
-    $this->styles[] = 'css/colors-01.css';
     $this->styles[] = 'css/cars.css';
 
     $carbodies = $this->dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodys`");
@@ -45,8 +44,12 @@
         <div class="car-image-box chess light">
             <img class="car-image" src="css/images/{symbol}.png"></img>
         </div>
-        <div>{symbol}</div>
-        <p>Driver: {driver}<br>Number: {number}</p>
+        <button>{Go}</button>
+        <div class="block">
+            <div>{symbol}</div>
+            <div>Driver: {driver}</div>
+            <div>Number: {number}</div>
+        </div>
     </div>
 </div>
 

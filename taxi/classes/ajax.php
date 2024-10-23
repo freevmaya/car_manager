@@ -94,18 +94,6 @@ class Ajax extends Page {
 			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE `state`='wait'");
 	}
 
-	protected function setUser($data) {
-		GLOBAL $_SESSION;
-
-		$_SESSION['user'] = $this->user = $data;
-		if ($set = isset($this->user['id'])) {
-			$this->dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$this->user['id']}");
-			$this->user['asDriver'] = $this->dbp->line("SELECT * FROM driverOnTheLine WHERE user_id={$this->user['id']} AND active=1");
-		}
-
-		return ["result"=>$set ? "ok" : "fail", 'asDriver' => @$this->user['asDriver']];
-	}
-
 	public function Notify($content_id, $content_type, $user_id, $text='') {
 		$query = "INSERT INTO notifications (`content_id`, `content_type`, `user_id`, `text`) VALUES ". 
 				"({$content_id}, '{$content_type}', {$user_id}, '{$text}')";

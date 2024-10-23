@@ -13,10 +13,8 @@ class App {
 
     SetUser(user) {
         Ajax({"action":"setUser", "data": JSON.stringify(user)}).then((data) => {
-            if (data && data['asDriver']) {
+            if (data && data['asDriver'])
                 user.asDriver = data['asDriver'];
-                ShowDriverMenu();
-            }
         });
         $.getScript('scripts/language/' + user.language_code + '.js');
     }

@@ -1,5 +1,6 @@
 <?
-
+	
+	define('BASEDIR', dirname(__FILE__, 2));
 	define("BOTTOKEN", "7915848901:AAH-dqgbcU3olF_52Lwc1Uml_sKu9xu3M7s");
 	define("DEV", (strpos($_SERVER['SERVER_NAME'], 'test') > -1) || isset($_GET['dev']));
 	define("INCLUDE_PATH", BASEDIR."/include/");
@@ -7,6 +8,7 @@
 	define("MAINDOMAIN", $_SERVER['SERVER_NAME']);
 	define("CHARSET", "utf-8");
 	define('BASEURL', 'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/car_manager/taxi'));
+	define('SCRIPTURL', BASEURL.'/scripts');
 
 	if (DEV) {
 
