@@ -1,11 +1,11 @@
 <?
-class DriverModel {
+class PrepareTripModel {
 
 	public function getItem($user_id) {
 		GLOBAL $dbp;
 
 		if ($user_id) {
-			$query = "SELECT u.*, d.* FROM users u ".
+			$query = "SELECT CONCAT(u.username, ' ', u.phone) as driver, d.car_id FROM users u ".
 					"LEFT JOIN driverOnTheLine d ON d.user_id = u.id ".
 					"WHERE u.id = {$user_id}";
 
@@ -17,17 +17,9 @@ class DriverModel {
 
 	public function getFields() {
 		return [
-			'first_name' => [
-				'label'=> 'First name',
-				'required' => true
-			],
-			'last_name' => [
-				'label'=> 'Last name'
-			],
-			'phone' => [
-				'label' => 'Phone',
-				'type' => 'phone',
-				'required' => true
+			'driver' => [
+				'label'=> 'Driver',
+				'readonly' => true
 			],
 			'car' => [
 				'type' => 'Car',

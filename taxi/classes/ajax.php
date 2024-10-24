@@ -20,28 +20,32 @@ class Ajax extends Page {
 		return $this->request;
 	}
 	protected function BeganRouteCar($data) {
+		GLOBAL $dbp;
 		
-		$this->dbp->query("INSERT INTO route (`driver_id`, `car_id`, `path`) VALUES ({$data['driver_id']}, {$data['car_id']}, '{$data['path']}')");
+		$dbp->query("INSERT INTO route (`driver_id`, `car_id`, `path`) VALUES ({$data['driver_id']}, {$data['car_id']}, '{$data['path']}')");
 
-		return ["guid"=>$this->dbp->lastID()];
+		return ["guid"=>$dbp->lastID()];
 	}
 
 	protected function finishWork($data) {
-		$result = $this->dbp->query("UPDATE driverOnTheLine SET `active`=0, `closeTime`=NOW() WHERE user_id={$data['user_id']}");
+		GLOBAL $dbp;
+		$result = $dbp->query("UPDATE driverOnTheLine SET `active`=0, `closeTime`=NOW() WHERE user_id={$data['user_id']}");
 
 		return ["result"=>$result];
 	}
 
 	protected function BeginDriver($data) {
-		$result = $this->dbp->query("REPLACE driverOnTheLine (`user_id`, `car_id`, `active`, `activationTime`, `closeTime`) VALUES ({$this->user['id']}, {$data['car_id']}, 1, NOW(), null)");
+		GLOBAL $dbp;
+		$result = $dbp->query("REPLACE driverOnTheLine (`user_id`, `car_id`, `active`, `activationTime`, `closeTime`) VALUES ({$this->user['id']}, {$data['car_id']}, 1, NOW(), null)");
 
 		return ["result"=>$result];
 	}
 
 	protected function checkState($data) {
+		GLOBAL $dbp;
 
 		$result = [];
-		$notificationList = $this->dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$this->user['id']}");
+		$notificationList = $dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$this->user['id']}");
 
 		for ($i=0;$i<count($notificationList);$i++) {
 			if ($notificationList[$i]['content_type'] == 'orderCreated')
@@ -54,11 +58,13 @@ class Ajax extends Page {
 	}
 
 	protected function StateNotification($data) {
-		$result = $this->dbp->query("UPDATE notifications SET state = '{$data['state']}' WHERE id = {$data['id']}");
+		GLOBAL $dbp;
+		$result = $dbp->query("UPDATE notifications SET state = '{$data['state']}' WHERE id = {$data['id']}");
 		return ['result'=> $result];
 	}
 
 	protected function AddOrder($data) {
+		GLOBAL $dbp;
 
 		$start = json_encode($data['start']);
 		$finish = json_encode($data['finish']);
@@ -68,9 +74,9 @@ class Ajax extends Page {
 
 		$pickUpTime = date('Y-m-d H:i:s', strtotime($data['pickUpTime']));
 
-		$this->dbp->query("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `startPlace`, `finishPlace`, `startAddress`, `finishAddress`, `meters`) ".
+		$dbp->query("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `startPlace`, `finishPlace`, `startAddress`, `finishAddress`, `meters`) ".
 				"VALUES ({$data['user_id']}, NOW(), '{$pickUpTime}', '{$start}', '{$finish}', '{$startAddress}', '{$finishAddress}', '{$data['meters']}')");
-		$order_id = $this->dbp->lastID();
+		$order_id = $dbp->lastID();
 
 		$this->Notify($order_id, 'orderReceive', $this->user['id'], Lang("OrderToProcess"));
 		$this->NotifyOrderToDrivers($order_id);
@@ -79,25 +85,29 @@ class Ajax extends Page {
 	}
 
 	protected function NotifyOrderToDrivers($order_id) {
-		$drivers = $this->dbp->asArray("SELECT * FROM driverOnTheLine WHERE `active` = 1 AND activationTime > DATE_SUB(NOW(),INTERVAL 1 DAY)");
+		GLOBAL $dbp;
+		$drivers = $dbp->asArray("SELECT * FROM driverOnTheLine WHERE `active` = 1 AND activationTime > DATE_SUB(NOW(),INTERVAL 1 DAY)");
 		foreach ($drivers as $driver)
 			$this->Notify($order_id, 'orderCreated', $driver['user_id']);
 	}
 
 	protected function getOrder($order_id) {
-		return $this->dbp->line("SELECT *, u.first_name, u.last_name, u.username ".
+		GLOBAL $dbp;
+		return $dbp->line("SELECT *, u.first_name, u.last_name, u.username ".
 			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.id={$order_id}");
 	}
 
 	protected function getOrders($data) {
-		return $this->dbp->asArray("SELECT *, u.first_name, u.last_name, u.username ".
+		GLOBAL $dbp;
+		return $dbp->asArray("SELECT *, u.first_name, u.last_name, u.username ".
 			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE `state`='wait'");
 	}
 
 	public function Notify($content_id, $content_type, $user_id, $text='') {
+		GLOBAL $dbp;
 		$query = "INSERT INTO notifications (`content_id`, `content_type`, `user_id`, `text`) VALUES ". 
 				"({$content_id}, '{$content_type}', {$user_id}, '{$text}')";
-		$this->dbp->query($query);
+		$dbp->query($query);
 	}
 }
 

@@ -14,7 +14,6 @@ body {
 }
 
 body {
-    color: var(--tg-theme-text-color);
     background-position: top;
 }
 
@@ -30,7 +29,7 @@ body {
 }
 
 
-.wrapper > .content {
+.wrapper .pageContent {
     position: absolute;
     left: 0;
     right: 0;
@@ -289,6 +288,13 @@ select.time {
     display: block;
 }
 
+.pageContent .form {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
 .field input {
     margin-left: 1em;
     border-style: solid;
@@ -304,25 +310,54 @@ select.time {
 }
 
 .sliderView {
-    overflow-x: scroll;
     scroll-behavior: smooth;
+}
+
+.footer.sliderView, .footer .sliderView {
+    overflow-x: scroll;
+}
+
+.pageContent .sliderView {
+    overflow-y: scroll;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 4.5em;
+}
+
+.pageContent .footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.5em;
+    display: flex;
+    justify-content: center;
 }
 
 .sliderView::-webkit-scrollbar {
 }
 
-.slider, .slider-group {
+.content .slider {
+    height: max-content;
+}
+
+.footer .slider, .slider-group {
     display: flex;
     width: max-content;
     align-items: center;
 }
 
-.slider .notify {
-    color: gray;
+.footer .slider .notify, .car {
     max-width: 16em;
     font-size: 0.8em;
     padding: 0 0.5em;
     flex-direction: column;
+}
+
+.field .car {
+    margin: 1em 0;
 }
 
 .car .notify p {
@@ -339,7 +374,7 @@ select.time {
     padding: 0.3em;
 }
 
-.notify.car div {
+.car div {
     overflow: hidden;
 }
 
@@ -392,6 +427,22 @@ select.time {
     opacity: 1;
 }
 
+.btn-block .button, form .button, .datetime-field {
+    min-width: 6em;
+    max-width: 20em;
+    margin: 0.3em;
+    padding: 0 1.5em;
+    height: 3em;
+    transition: 0.5s background-color;
+    border-radius: 15em;
+}
+
+.btn-block .button:active {
+}
+
+.btn-block .button:hover {
+}
+
 .close {
     width: 2em;
     height: 2em;
@@ -408,22 +459,6 @@ select.time {
 
     display: flex;
     align-items: center;
-}
-
-.btn-block .button, .datetime-field {
-    min-width: 6em;
-    max-width: 20em;
-    margin: 0.3em;
-    padding: 0 1.5em;
-    height: 3em;
-    transition: 0.5s background-color;
-    border-radius: 15em;
-}
-
-.btn-block .button:active {
-}
-
-.btn-block .button:hover {
 }
 
 .infoView {

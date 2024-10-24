@@ -14,7 +14,7 @@
     $this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
     $this->styles[] = 'css/cars.css';
 
-    $carbodies = $this->dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodys`");
+    $carbodies = $dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodys`");
 ?>
 <style type="text/css">
     .content > div {

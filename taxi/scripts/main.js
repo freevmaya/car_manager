@@ -208,3 +208,13 @@ function templateClone(tmpl, data) {
     });
     return $(html);
 }
+
+function PrepareInput() {
+    $('input.phone').each((i, item) => {
+        $(item).inputmask($(item).data('mask'));
+    });
+}
+
+$(window).ready(()=>{
+    PrepareInput();
+});

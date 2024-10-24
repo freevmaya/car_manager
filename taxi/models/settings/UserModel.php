@@ -1,5 +1,5 @@
 <?
-class DriverModel {
+class UserModel {
 
 	public function getItem($user_id) {
 		GLOBAL $dbp;

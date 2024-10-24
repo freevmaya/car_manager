@@ -1,22 +1,35 @@
 <?
-	$this->styles[] = 'css/toolbar.css';
+	$this->styles[] = BASEURL.'/css/toolbar.css';
+
+
+	$menu = [
+		lang('Services')=> [
+			[ Page::link('map'), lang('Go') ],
+			[ Page::link(['driver','prepare_trip']), lang('Give a ride') ]
+		],
+		lang('Settings')=> [
+			[ Page::link(['settings', 'user']), lang('User') ]
+		]
+	]
+
+
 ?>
 <div id="toolbarMenu">
 	<div class="toolbar top shadow sliderView">
 		<div class="slider">
-			<a class="menu" onclick="$('#toolbarMenu').toggleClass('open')"><img src="css/images/menu.png"></a>
+			<a class="menu" onclick="$('#toolbarMenu').toggleClass('open')"><img src="<?=BASEURL?>/css/images/menu.png"></a>
 		</div>
 	</div>
+
 	<div class="submenu shadow">
 		<div class="header"></div>
-<?if ($this->user) {?>		
-		<div><i>Services:</i></div>
-		<div class="item"><a href="/map">Go</a></div>
-		<div class="item"><a href="/driver">Give a ride</a></div>
-<?} else {?>
-		<div><i>Menu:</i></div>
-		<div class="item"><a href="/login">Login</a></div>
-<?}?>
+<?
+	foreach ($menu as $title=>$submenuList) {
+		echo "<div><i>{$title}:</i></div>\n";
+		foreach ($submenuList as $submenu)
+			echo "<div class=\"item\"><a href=\"{$submenu[0]}\">{$submenu[1]}</a></div>";
+	}
+?>
 	</div>
 </div>
 

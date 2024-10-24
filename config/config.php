@@ -7,7 +7,7 @@
 	define('LOGPATH', BASEDIR.'/logs/');
 	define("MAINDOMAIN", $_SERVER['SERVER_NAME']);
 	define("CHARSET", "utf-8");
-	define('BASEURL', 'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/car_manager/taxi'));
+	define('BASEURL', '//'.MAINDOMAIN);//'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/car_manager/taxi'));
 	define('SCRIPTURL', BASEURL.'/scripts');
 
 	if (DEV) {
