@@ -11,7 +11,7 @@
 		<input type="hidden" name="form-request-id" value="<?=$this->createRequestId(get_class($this->model))?>">
 		<div class="<?=Page::$page?> sliderView">
 			<div class="form slider">
-				<?=html::GetFields($this->model->getItem($this->user['id']), $this->model, 5);?>
+				<?=html::GetFields($this->model->getItem($this->getId()), $this->model, 5);?>
 			</div>
 		</div>
 		<div class="footer">

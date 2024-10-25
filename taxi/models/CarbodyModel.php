@@ -1,0 +1,5 @@
+<?
+class CarbodyModel extends BaseModel {
+	
+}
+?>

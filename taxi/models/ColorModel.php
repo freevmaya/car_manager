@@ -1,0 +1,5 @@
+<?
+class ColorModel extends BaseModel {
+	
+}
+?>

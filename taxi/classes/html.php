@@ -5,6 +5,7 @@ class html {
 	public static $jscode = [];
 	public static $field_id = 0;
 	protected static $autoKey = 0;
+
 	public static function GetFields($data, $fieldsOrModel=null, $group=0) {
 
 		$fieldsList = [];
@@ -44,11 +45,13 @@ class html {
 
 				$value = '';
 				if (isset($data[$key]))
-					$value = $data[$key];
+					$value = $data[$key] ? $data[$key] : @$fieldOptions['default'];
 				else if (isset($fieldOptions['indexField'])) {
-					$model = new $key();
-					$value = $model->getItem($data[$fieldOptions['indexField']]);
-				}
+					$model = new $fieldOptions['model']();
+					if (@$data[$fieldOptions['indexField']])
+						$value = $model->getItem($data[$fieldOptions['indexField']]);
+					else $value = @$fieldOptions['default'];
+				} else $value = @$fieldOptions['default'];
 
 				if ($group > 0) {
 					$groupBuffer .= html::RenderField($fieldOptions , $value, $nameModel);
@@ -78,20 +81,38 @@ class html {
 			html::$jscode[$key] = $code;
 	}
 
+	public static function AddScriptFile($fileName) {
+		if (!in_array($fileName, html::$scripts))
+			html::$scripts[] = $fileName;
+	}
+
 	public static function FiledId() {
 		return 'field-'.html::$field_id;
 	}
 
+	protected static function addValidator($validator, $options, $nameModel) {
+		html::AddScriptFile('validator.js');
+
+		if (is_array($validator)) {
+			foreach ($validator as $v)
+				html::AddJsCode('validator.add(new '.$v."Validator('{$options['name']}', '{$nameModel}'));\n");
+		} else html::AddJsCode('validator.add(new '.$validator."Validator('{$options['name']}', '{$nameModel}'));\n");
+	}
+
 	public static function RenderField($options, $value, $nameModel=null) {
-		ob_start();
-		include(TEMPLATES_PATH.'/fields/'.$options['type'].'.html');
-		$result = ob_get_contents();
-		ob_end_clean();
-		if (isset($options['validator']) && $nameModel) {
-			html::$scripts[] = 'validator.js';
-			html::AddJsCode('validator.add(new '.$options['validator']."Validator('{$options['name']}', '{$nameModel}'));\n");
-		}
-		html::$field_id++;
+		$fileName = TEMPLATES_PATH.'/fields/'.$options['type'].'.php';
+
+		if (file_exists($fileName)) {
+			ob_start();
+			include($fileName);
+			$result = ob_get_contents();
+			ob_end_clean();
+
+			if (isset($options['validator']) && $nameModel)
+				html::addValidator($options['validator'], $options, $nameModel);
+
+			html::$field_id++;
+		} else $result = "File {$fileName} not found";
 		return $result;
 	}
 }

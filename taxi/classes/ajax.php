@@ -10,7 +10,8 @@ class Ajax extends Page {
 
 		if (isset(Page::$request['action'])) {
 			$action = Page::$request['action'];
-			if (method_exists($this, $action)) {
+			$requestId = @Page::$request['ajax-request-id'];
+			if (method_exists($this, $action) && Page::requiestIdModel($requestId)) {
 				$data = isset(Page::$request['data']) ? json_decode(Page::$request['data'], true) : null;
 
 				return $this->$action($data);

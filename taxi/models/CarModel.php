@@ -8,17 +8,34 @@ class CarModel extends BaseModel {
 
 	public function getFields() {
 		return [
-			'driver' => [
-				'label'=> 'Driver',
-				'readonly' => true
+			'id' => [
+				'type' => 'hidden'
 			],
-			'car' => [
-				'type' => 'Car',
-				'label' => 'Car',
-				'indexField' => 'car_id',
-				'required' => true
+			'user_id' => [
+				'type' => 'hidden',
+				'default' => Page::$current->getUser()['id']
+			],
+			'number' => [
+				'label'=> 'Number',
+				'validator'=> 'required'
+			],
+			'car_body' => [
+				'label'=> 'Carbody',
+				'type'=> 'carbody',
+				'model'=> 'CarbodyModel',
+				'indexField'=>'car_body_id'
+			],
+			'color' => [
+				'label'=> 'Color',
+				'type'=> 'color',
+				'model'=> 'ColorModel',
+				'indexField'=>'color_id'
 			]
 		];
+	}
+
+	public function getTitle() {
+		return lang(Page::$current->getId() ? 'Edit car' : 'Add car');
 	}
 }
 ?>

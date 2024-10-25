@@ -5,6 +5,8 @@ class Page {
 	protected $styles = [];
 	protected $user;
 	protected $model;
+	protected $dataId;
+	public static $current;
 	public static $page;
 	public static $request;
 	public static $subpage;
@@ -41,9 +43,9 @@ class Page {
 		Page::$page = $page;
 		Page::$subpage = $subpage;
 
-		$pageObject = new $className();
-		$pageObject->Render(Page::$page.(Page::$subpage ? ('/'.Page::$subpage) : ''));
-		$pageObject->Close();
+		Page::$current = new $className();
+		Page::$current->Render(Page::$page.(Page::$subpage ? ('/'.Page::$subpage) : ''));
+		Page::$current->Close();
 	}
 
 	public function __construct() {
@@ -64,6 +66,8 @@ class Page {
 		include_once(BASEDIR.'/languages/'.$language.'.php');
 
 		if ($this->user) {
+
+			$this->dataId = $this->user['id'];
 			$this->model = $this->initModel();
 
 			if ($this->model && isset(Page::$request['form-request-id'])) {
@@ -105,7 +109,7 @@ class Page {
 	}
 
 	protected function requiestIdModel($requestId) {
-		if ($requestIds = Page::getSession('requestIds')) {
+		if ($requestId && ($requestIds = Page::getSession('requestIds'))) {
 			foreach ($requestIds as $model=>$value)
 				if ($value == $requestId)
 					return $model;
@@ -124,6 +128,10 @@ class Page {
 		}
 
 		return $requestIds[$classModel];
+	}
+
+	public function getUser() {
+		return $this->user;
 	}
 
 	protected function setUser($data) {
@@ -186,6 +194,10 @@ class Page {
 		}
 
 		return $content;
+	}
+
+	public function getId() {
+		return $this->dataId;
 	}
 
 	protected function RenderContent($templateFile) {

@@ -24,6 +24,7 @@ class DriverModel extends BaseModel {
 			'car' => [
 				'type' => 'Car',
 				'label' => 'Car',
+				'model' => 'CarModel',
 				'indexField' => 'car_id',
 				'required' => true
 			]

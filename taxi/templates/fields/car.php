@@ -12,7 +12,7 @@
             <div>Number: ER 131321 DF</div>
         </div>
         <?} else {?>
-        	<a class="button" href="<?=Page::link(['driver', 'createcar']);?>">+</a>
+        	<a class="button" href="<?=Page::link(['driver', 'editcar', 123]);?>">+</a>
         <?}?>
     </div>
 </div>

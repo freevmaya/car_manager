@@ -1,6 +1,5 @@
 <?
 class BaseModel {
-
 	public function Update($values) {}
 	public function getItem($id) {}
 	public function getFields() {return [];}
