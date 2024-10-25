@@ -1,5 +1,6 @@
 body {
     background-color: #2b2427;
+    color: #888;
 }
 
 .date, .time {
@@ -223,3 +224,14 @@ form .field {
     background-color: #333;
     box-shadow: 0px 0px 8px #00000059;
 }
+
+.warning, .warning::before {    
+    background-color: #975224;
+    color: white;
+}
+
+.warning {
+    box-shadow: 8px 8px 1px #0000009c;
+    border-radius: 0.5em;
+}
+

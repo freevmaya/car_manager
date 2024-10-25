@@ -8,16 +8,16 @@ class Ajax extends Page {
 
 	public function ajax() {
 
-		if (isset($this->request['action'])) {
-			$action = $this->request['action'];
+		if (isset(Page::$request['action'])) {
+			$action = Page::$request['action'];
 			if (method_exists($this, $action)) {
-				$data = isset($this->request['data']) ? json_decode($this->request['data'], true) : null;
+				$data = isset(Page::$request['data']) ? json_decode(Page::$request['data'], true) : null;
 
 				return $this->$action($data);
 			}
 		}
 
-		return $this->request;
+		return Page::$request;
 	}
 	protected function BeganRouteCar($data) {
 		GLOBAL $dbp;
@@ -109,25 +109,10 @@ class Ajax extends Page {
 				"({$content_id}, '{$content_type}', {$user_id}, '{$text}')";
 		$dbp->query($query);
 	}
-}
 
-
-function getGUID() {
-    if (function_exists('com_create_guid')){
-        return com_create_guid();
-    }
-    else {
-        mt_srand((double)microtime()*10000);//optional for php 4.2.0 and up.
-        $charid = strtoupper(md5(uniqid(rand(), true)));
-        $hyphen = chr(45);// "-"
-        $uuid = chr(123)// "{"
-            .substr($charid, 0, 8).$hyphen
-            .substr($charid, 8, 4).$hyphen
-            .substr($charid,12, 4).$hyphen
-            .substr($charid,16, 4).$hyphen
-            .substr($charid,20,12)
-            .chr(125);// "}"
-        return $uuid;
-    }
+	public function checkUnique($data) {
+		$model = new $data['model']();
+		return $model->checkUnique($data['value']);
+	}
 }
 ?>

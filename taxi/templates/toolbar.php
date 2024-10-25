@@ -5,10 +5,11 @@
 	$menu = [
 		lang('Services')=> [
 			[ Page::link('map'), lang('Go') ],
-			[ Page::link(['driver','prepare_trip']), lang('Give a ride') ]
+			[ Page::link(['driver','trip']), lang('Give a ride') ]
 		],
 		lang('Settings')=> [
-			[ Page::link(['settings', 'user']), lang('User') ]
+			[ Page::link(['settings', 'user']), lang('User') ],
+			[ Page::link('driver'), lang('Driver') ]
 		]
 	]
 

@@ -1,6 +1,6 @@
 <?
 	include_once(TEMPLATES_PATH.'/toolbar.php');
-	$this->scripts[] = 'https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js';
+	html::$scripts[] = 'https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js';
 ?>
 <div class="pageContent">
 	<form method="POST" action="<?=Page::currentURL()?>">

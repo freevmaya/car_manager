@@ -1,5 +1,5 @@
 <?
-class PrepareTripModel {
+class PrepareTripModel extends BaseModel {
 
 	public function getItem($user_id) {
 		GLOBAL $dbp;
@@ -16,18 +16,7 @@ class PrepareTripModel {
 	}
 
 	public function getFields() {
-		return [
-			'driver' => [
-				'label'=> 'Driver',
-				'readonly' => true
-			],
-			'car' => [
-				'type' => 'Car',
-				'label' => 'Car',
-				'indexField' => 'car_id',
-				'required' => true
-			]
-		];
+		return [];
 	}
 }
 ?>

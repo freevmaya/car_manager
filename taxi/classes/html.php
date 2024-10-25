@@ -1,67 +1,80 @@
 <?
 
 class html {
-
+	public static $scripts = [];
 	public static $jscode = [];
 	public static $field_id = 0;
-	public static function GetFields($data, $fields=null, $group=0) {
+	protected static $autoKey = 0;
+	public static function GetFields($data, $fieldsOrModel=null, $group=0) {
 
 		$fieldsList = [];
-
-		if (!$fields) $fieldsList = array_keys($data);
-		else {
-			foreach ($fields as $key=>$value)
-				$fieldsList[$key] = is_string($key) ? $key: $value;
-		}
-
+		$nameModel = null;
 		$result = '';
-		$groupBuffer = '';
-		$i = 0;
 
-		foreach ($fieldsList as $key) {
+		if ($fieldsOrModel instanceof BaseModel) {
+			$nameModel = get_class($fieldsOrModel);
+			$fields = $fieldsOrModel->getFields();
+		} else $fields = $fieldsOrModel;
 
-			$defaulField = [						// this minimal require options structure
-				'name'=>$key,
-				'type'=>'input',
-				'label'=>lang($key)
-			];
+		if ($fields) {
 
-			if (isset($fields[$key])) {
-
-				if (is_string($fields[$key]))
-					$fieldOptions = array_merge($defaulField, ['name'=>$fields[$key]]);
-				else $fieldOptions = array_merge($defaulField, $fields[$key]);
+			if (!$fields) $fieldsList = array_keys($data);
+			else {
+				foreach ($fields as $key=>$value)
+					$fieldsList[$key] = is_string($key) ? $key: $value;
 			}
-			else $fieldOptions = $defaulField;
+			$groupBuffer = '';
+			$i = 0;
 
-			$value = '';
-			if (isset($data[$key]))
-				$value = $data[$key];
-			else if (isset($fieldOptions['indexField'])) {
-				$model = new $key($data[$fieldOptions['indexField']]);
-				$value = $model->getItem();
-			}
+			foreach ($fieldsList as $key) {
 
-			if ($group > 0) {
-				$groupBuffer .= html::RenderField($fieldOptions , $value);
-				$i++;
+				$defaulField = [						// this minimal require options structure
+					'name'=>$key,
+					'type'=>'input',
+					'label'=>lang($key)
+				];
 
-				if ($i >= $group) {
-					$result .= '<div class="group">'.$groupBuffer.'</div>';
-					$groupBuffer = '';
-					$i=0;
+				if (isset($fields[$key])) {
+
+					if (is_string($fields[$key]))
+						$fieldOptions = array_merge($defaulField, ['name'=>$fields[$key]]);
+					else $fieldOptions = array_merge($defaulField, $fields[$key]);
 				}
-			} else $result .= html::RenderField($fieldOptions , $value);
-		}
+				else $fieldOptions = $defaulField;
 
-		if (($group > 0) && ($i > 0))
-			$result .= '<div class="group">'.$groupBuffer.'</div>';
+				$value = '';
+				if (isset($data[$key]))
+					$value = $data[$key];
+				else if (isset($fieldOptions['indexField'])) {
+					$model = new $key();
+					$value = $model->getItem($data[$fieldOptions['indexField']]);
+				}
+
+				if ($group > 0) {
+					$groupBuffer .= html::RenderField($fieldOptions , $value, $nameModel);
+					$i++;
+
+					if ($i >= $group) {
+						$result .= '<div class="group">'.$groupBuffer.'</div>';
+						$groupBuffer = '';
+						$i=0;
+					}
+				} else $result .= html::RenderField($fieldOptions , $value, $nameModel);
+			}
+
+			if (($group > 0) && ($i > 0))
+				$result .= '<div class="group">'.$groupBuffer.'</div>';
+		}
 
 		return $result;
 	}
 
-	public static function AddJsCode($key, $code) {
-		if (!isset(html::$jscode[$key]))
+	public static function AddJsCode($code, $key=null) {
+		if (!$key) {
+			html::$jscode[html::$autoKey] = $code;
+			html::$autoKey++;
+		}
+		else if (!isset(html::$jscode[$key]))
 			html::$jscode[$key] = $code;
 	}
 
@@ -69,11 +82,15 @@ class html {
 		return 'field-'.html::$field_id;
 	}
 
-	public static function RenderField($options, $value) {
+	public static function RenderField($options, $value, $nameModel=null) {
 		ob_start();
 		include(TEMPLATES_PATH.'/fields/'.$options['type'].'.html');
 		$result = ob_get_contents();
 		ob_end_clean();
+		if (isset($options['validator']) && $nameModel) {
+			html::$scripts[] = 'validator.js';
+			html::AddJsCode('validator.add(new '.$options['validator']."Validator('{$options['name']}', '{$nameModel}'));\n");
+		}
 		html::$field_id++;
 		return $result;
 	}

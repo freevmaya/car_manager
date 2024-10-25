@@ -1,15 +1,15 @@
 <?
-    $this->scripts[] = "jquery-dateformat.min.js";
-    $this->scripts[] = "main.js";
-    $this->scripts[] = "map.js";
-    $this->scripts[] = "color.js";
-    $this->scripts[] = "views.js";
-    //$this->scripts[] = "driver.js";
-    //$this->scripts[] = "driver-manager.js";
-    $this->scripts[] = "select-target.js";
-    //$this->scripts[] = "notifications.js";
+    html::$scripts[] = "jquery-dateformat.min.js";
+    html::$scripts[] = "main.js";
+    html::$scripts[] = "map.js";
+    html::$scripts[] = "color.js";
+    html::$scripts[] = "views.js";
+    //html::$scripts[] = "driver.js";
+    //html::$scripts[] = "driver-manager.js";
+    html::$scripts[] = "select-target.js";
+    //html::$scripts[] = "notifications.js";
     
-    $this->scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
+    html::$scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
 
     $this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
     $this->styles[] = 'css/cars.css';

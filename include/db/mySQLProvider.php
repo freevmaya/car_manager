@@ -19,13 +19,23 @@
 		}
 
 		public function close() {
-			//trace('close', 'display', 3);
 			$this->mysqli->close();
 		}
 
 		public function safeVal($str) {
 			if (is_array($str) || is_object($str)) $str = json_encode($str);
 	        return $this->mysqli->real_escape_string($str);
+	    }
+
+	    public function bquery($query, $types, $params) {
+			$stmt = $this->mysqli->prepare($query);
+
+			$stmt->bind_param($types, ...$params);
+			$result = $stmt->execute();
+			$stmt->store_result();
+			$stmt->close();
+
+			return $result;
 	    }
 
 		public function query($query) {

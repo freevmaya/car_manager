@@ -28,7 +28,6 @@ body {
     overflow: hidden;
 }
 
-
 .wrapper .pageContent {
     position: absolute;
     left: 0;
@@ -80,12 +79,17 @@ select.time {
     cursor: pointer;
 }
 
-.wrapper h1 {
+h1, h2, h3, h4 {
     text-align: center;
+    font-weight: 200;
+}
+
+h1, h2 {
+    margin: 0.8em;
 }
 
 .mainmenu .btn {
-    margin: 1em auto;
+    margin: 0.8em auto;
 }
 
 .mainmenu {
@@ -322,7 +326,7 @@ select.time {
     position: absolute;
     left: 0;
     right: 0;
-    top: 0;
+    top: 4em;
     bottom: 4.5em;
 }
 
@@ -378,7 +382,7 @@ select.time {
     overflow: hidden;
 }
 
-.car button {
+.car button, .car .button {
     border-radius:1.5em;
     border: 3px solid gray;
     float: right;
@@ -421,6 +425,9 @@ select.time {
     cursor: pointer;
     opacity: 0.8;
     transition: 0.5s opacity;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .button:hover {
@@ -428,10 +435,9 @@ select.time {
 }
 
 .btn-block .button, form .button, .datetime-field {
-    min-width: 6em;
+    min-width: 1em;
     max-width: 20em;
     margin: 0.3em;
-    padding: 0 1.5em;
     height: 3em;
     transition: 0.5s background-color;
     border-radius: 15em;
@@ -453,6 +459,7 @@ select.time {
 
 .footer .button, .datetime-field {
     font-size: 1em;
+    padding: 0 1em;
 }
 
 .datetime-field {
@@ -523,4 +530,24 @@ select.time {
 
 .target-view {
     margin: 1em;
+}
+
+.warning {
+    padding: 0.8em;
+    font-size: 0.8em;
+    margin-top: 0.5em;
+    animation-name: showView;
+    animation-duration: 0.2s;
+}
+
+.warning::before {
+    content: ' ';
+    width: 20px;
+    height: 20px;
+    display: block;
+    rotate: 50grad;
+    position: absolute;
+    margin-top: -18px;
+    margin-left: 30px;
+    border-radius: 0 0 50px 0;
 }

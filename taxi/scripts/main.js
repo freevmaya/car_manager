@@ -37,6 +37,16 @@ class App {
                 this.#listeners[event][i](params);
         }
     }
+
+    ToggleWarning(elem, visible, text) {
+        let w = elem.parent().find('.warning');
+
+        if (visible) {
+            if (w.length > 0)
+                w.text(text);
+            else elem.parent().append(w = $('<div class="warning" style="width: ' + elem.width() + 'px">' + text + '</div>'));
+        } else w.Remove();
+    }
 }
 
 async function Ajax(params) {
@@ -45,6 +55,8 @@ async function Ajax(params) {
         let data = params[key];
         formData.append(key, (typeof data == 'string') ? data : JSON.stringify(data));
     }
+
+    formData.append('ajax-request-id', ajaxRequestId);
 
     const request = new Request(BASEURL + "/ajax", {
         method: "POST",
@@ -218,3 +230,10 @@ function PrepareInput() {
 $(window).ready(()=>{
     PrepareInput();
 });
+
+(function( $ ){
+    $.fn.Remove = function() {
+        this.addClass('hide');
+        setTimeout(this.remove.bind(this), 400);
+    }; 
+})( jQuery );
