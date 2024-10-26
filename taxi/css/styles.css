@@ -96,10 +96,6 @@ h1, h2 {
     align-content: center;
 }
 
-.mainmenu button {
-    display: block;
-}
-
 .marker {
     position: absolute;
     width: 64px;
@@ -197,6 +193,13 @@ h1, h2 {
     bottom: 0px;
 }
 
+.show {
+    display: block !important;
+    animation-name: showView !important;
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+}
+
 .hide {
     animation-name: hide !important;
     animation-duration: 0.2s;
@@ -207,10 +210,12 @@ h1, h2 {
   0% {
     scale: 0.7;
     opacity: 0;
+    display: none;
   }
   100% {
     scale: 1;
     opacity: 1;
+    display: block;
   }
 }
 
@@ -218,10 +223,12 @@ h1, h2 {
   0% {
     scale: 1;
     opacity: 1;
+    display: block;
   }
   100% {
     scale: 0.7;
     opacity: 0;
+    display: none;
   }
 }
 
@@ -287,6 +294,10 @@ h1, h2 {
     padding: 0.2em;
 }
 
+.field label {
+    margin-bottom: 0.5em;
+}
+
 .content .title {
     font-style: italic;
     display: block;
@@ -304,7 +315,6 @@ h1, h2 {
     border-style: solid;
     border-width: 1px;
     padding: 0.5em;
-    margin-top: 0.5em;
     border-radius: 1em;
 }
 
@@ -328,6 +338,15 @@ h1, h2 {
     right: 0;
     top: 4em;
     bottom: 4.5em;
+}
+
+#windows .sliderView {
+    overflow-y: scroll;
+    position: absolute;
+    left: 1em;
+    right: 1em;
+    top: 3em;
+    bottom: 1em;
 }
 
 .pageContent .footer {
@@ -360,10 +379,6 @@ h1, h2 {
     flex-direction: column;
 }
 
-.field .car {
-    margin: 1em 0;
-}
-
 .car .notify p {
     padding: 0;
     font-size: 0.8em;
@@ -380,15 +395,6 @@ h1, h2 {
 
 .car div {
     overflow: hidden;
-}
-
-.car button, .car .button {
-    border-radius:1.5em;
-    border: 3px solid gray;
-    float: right;
-    margin-top: -10px;
-    width: 3em;
-    height: 3em;
 }
 
 .closed:after {
@@ -419,47 +425,12 @@ h1, h2 {
     background-position: center;
 }
 
-.button {
-    border: 0;
-    background-size: contain;
-    cursor: pointer;
-    opacity: 0.8;
-    transition: 0.5s opacity;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.button:hover {
-    opacity: 1;
-}
-
-.btn-block .button, form .button, .datetime-field {
-    min-width: 1em;
-    max-width: 20em;
-    margin: 0.3em;
-    height: 3em;
-    transition: 0.5s background-color;
-    border-radius: 15em;
-}
-
-.btn-block .button:active {
-}
-
-.btn-block .button:hover {
-}
-
 .close {
     width: 2em;
-    height: 2em;
-    right: 0px;
+    height: 2em !important;
     float: right;
     margin: 0.2em;
-}
-
-.footer .button, .datetime-field {
-    font-size: 1em;
-    padding: 0 1em;
+    background-size: contain;
 }
 
 .datetime-field {
@@ -493,7 +464,7 @@ h1, h2 {
     bottom: 0px;
 }
 
-#map.curtain {
+.curtain {
     filter: blur(0.2em);
     pointer-events: none;
 }
@@ -550,4 +521,125 @@ h1, h2 {
     margin-top: -18px;
     margin-left: 30px;
     border-radius: 0 0 50px 0;
+}
+
+.selectView .block {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.field .car {
+    margin-left: 1em;
+    border-radius: 1em;
+    padding: 1em;
+}
+
+.selectView .value {
+    display: flex;
+    align-items: center;
+}
+
+.popup {
+    display: none;
+}
+
+.windows .popup {
+    position: absolute;
+    padding: 1em;
+    margin: 2em;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+}
+
+.popup .option {
+    padding: 0.5em;
+}
+
+.popup .option img {
+    height: 3em;
+}
+
+.field .sliderView {
+    left: 1em;
+    right: 1em;
+    bottom: 1em;
+    top: 0em;
+}
+
+
+
+/*--------------------BUTTONS-------------------------*/
+
+
+
+.mainmenu button {
+    display: block;
+}
+
+.button {
+    border: 0;
+    background-size: contain;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: 0.5s opacity;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button:hover {
+    opacity: 1;
+}
+
+.button, .datetime-field {
+    min-width: 1em;
+    max-width: 20em;
+    margin: 0.3em;
+    height: 3em;
+    transition: 0.5s background-color;
+    border-radius: 15em;
+}
+
+.button:active {
+}
+
+.button:hover {
+}
+
+.car button, .car .button {
+    border-radius:1.5em;
+    border: 3px solid gray;
+    float: right;
+    margin-top: -10px;
+    width: 3em;
+    height: 3em;
+}
+
+.footer .button, .datetime-field {
+    font-size: 1em;
+    padding: 0 1em;
+}
+
+.field .button::before {
+    content: ' ';
+    width: 0.1em;
+    height: 0.1em;
+    display: block;
+    position: absolute;
+    border: 7px solid transparent;
+    margin: -0.2em 0.6em;
+    rotate: 250grad;
+    transition: 0.5s rotate;
+}
+
+.field .button.open::before {
+    rotate: 50grad;
+}
+
+.selectView .button {
+    margin: 0;
 }

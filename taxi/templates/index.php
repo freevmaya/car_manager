@@ -38,7 +38,6 @@ foreach ($this->styles as $style) {?>
         $.getScript('<?=SCRIPTURL?>/language/en.js');
 
     <?}?>
-
     <?
     if (count(html::$jscode) > 0) {
         echo "$(window).ready(() => {\n";

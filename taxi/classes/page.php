@@ -43,13 +43,15 @@ class Page {
 		Page::$page = $page;
 		Page::$subpage = $subpage;
 
-		Page::$current = new $className();
-		Page::$current->Render(Page::$page.(Page::$subpage ? ('/'.Page::$subpage) : ''));
-		Page::$current->Close();
+		$page = new $className();
+		$page->Render(Page::$page.(Page::$subpage ? ('/'.Page::$subpage) : ''));
+		$page->Close();
 	}
 
 	public function __construct() {
 		GLOBAL $lang, $defUser, $dbp, $_GET;
+
+		Page::$current = $this;
 		$dbp = new mySQLProvider('localhost', _dbname_default, _dbuser, _dbpassword);
 
 		if (isset($_GET['username']))

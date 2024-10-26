@@ -1,3 +1,4 @@
+var windowsLayerId = 'windows';
 
 class ViewManager {
     openedViews = {};
@@ -56,6 +57,10 @@ class View extends BaseParentView {
         this.view = $('<div class="view shadow radius dialog">');
         this.view.append(this.headerElement = $('<div class="title">'));
         this.headerElement.append(this.closeBtn = $('<button class="close button">'));
+        
+        this.windows = $('#' + windowsLayerId);
+        this.windows.append(this.view);
+
         this.closeBtn.click(this.Close.bind(this));
     }
 
@@ -64,8 +69,6 @@ class View extends BaseParentView {
 
         this.view.append(this.contentElement = $('<div class="content">'));
         this.view.append(this.footerElement = $('<div class="footer btn-block">'));
-        this.windows = $('#windows');
-        this.windows.append(this.view);
         $(window).on('resize', this.onResize.bind(this));
     }
 
@@ -92,10 +95,12 @@ class View extends BaseParentView {
         this.setContent(this.options.content);
         
         if (this.options.curtain) this.blockBackground(true);
-        this.toAlign();
+
+        setTimeout(this.toAlign.bind(this), 10);
     }
 
     toAlign() {
+        let size = { x: $(window).width(), y: $(window).height() };
         if (!this.options.topAlign) {
             if (this.options.bottomAlign)
                 this.view.css('bottom', 0);
@@ -248,7 +253,7 @@ class GroupFields extends Classes([BaseField, BaseParentView]) {
 
 function createButton(parent, caption, action) {
     let result;
-    parent.append(result = $('<button class="button">'));
+    parent.append(result = $('<button class="button radius shadow">'));
     result.text(toLang(caption));
     result.click(action);
     return result;
@@ -295,3 +300,10 @@ function setValues(elem, attibutes) {
     else if ($.type(attibutes) == 'function') 
         elem.click(attibutes);
 }
+
+var viewManager;
+$(window).ready(()=>{
+    viewManager = new ViewManager();
+    if ($('#' + windowsLayerId).length == 0)
+        $('body').prepend($('<div id="' + windowsLayerId + '">'));
+});

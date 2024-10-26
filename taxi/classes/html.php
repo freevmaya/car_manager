@@ -45,13 +45,20 @@ class html {
 
 				$value = '';
 				if (isset($data[$key]))
-					$value = $data[$key] ? $data[$key] : @$fieldOptions['default'];
+					$value = $data[$key];
 				else if (isset($fieldOptions['indexField'])) {
+
 					$model = new $fieldOptions['model']();
-					if (@$data[$fieldOptions['indexField']])
-						$value = $model->getItem($data[$fieldOptions['indexField']]);
-					else $value = @$fieldOptions['default'];
-				} else $value = @$fieldOptions['default'];
+					$value = ['items' => $model->getItems($fieldOptions)];
+					if (@$data[$fieldOptions['indexField']]) {
+						$item = $model->getItem($data[$fieldOptions['indexField']]);
+						$value['item'] = $item ? $item : @$fieldOptions['default'];
+					} else $value['item'] = @$fieldOptions['default'];
+
+				}
+
+				if (!$value) 
+					$value = @$fieldOptions['default'];
 
 				if ($group > 0) {
 					$groupBuffer .= html::RenderField($fieldOptions , $value, $nameModel);
