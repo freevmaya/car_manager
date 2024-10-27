@@ -26,5 +26,6 @@ var lang = {
 	'Select your destination': 'Выберите пункт прибытия',
 	'Now': 'Сейчас',
 	'Send': 'Отправить',
-	'Accept': 'Принять'
+	'Accept': 'Принять',
+	'This value is already taken. Try entering another value.': 'Это значение уже занято. Попробуйте ввести другое значение.'
 };

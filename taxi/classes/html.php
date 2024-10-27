@@ -44,21 +44,17 @@ class html {
 				else $fieldOptions = $defaulField;
 
 				$value = '';
-				if (isset($data[$key]))
-					$value = $data[$key];
-				else if (isset($fieldOptions['indexField'])) {
+				if (isset($fieldOptions['model'])) {
 
 					$model = new $fieldOptions['model']();
 					$value = ['items' => $model->getItems($fieldOptions)];
-					if (@$data[$fieldOptions['indexField']]) {
-						$item = $model->getItem($data[$fieldOptions['indexField']]);
+					if (isset($data[$key])) {
+						$item = $model->getItem($data[$key]);
 						$value['item'] = $item ? $item : @$fieldOptions['default'];
 					} else $value['item'] = @$fieldOptions['default'];
 
-				}
-
-				if (!$value) 
-					$value = @$fieldOptions['default'];
+				} else
+					$value = isset($data[$key]) ? $data[$key] : @$fieldOptions['default'];
 
 				if ($group > 0) {
 					$groupBuffer .= html::RenderField($fieldOptions , $value, $nameModel);

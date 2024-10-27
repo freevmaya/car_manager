@@ -166,8 +166,8 @@ form .field {
     border-color: #4b4b4b;
 }
 
-.view > .title::after {
-    border-bottom: 1px solid #4b4b4b;
+.hr {
+    border-color: #4b4b4b;
 }
 
 .infoView {
@@ -239,28 +239,44 @@ form .field {
     border-radius: 0.5em;
 }
 
-.field .button::before {
+.selectView .block .button::before {
     border-top-color: black;
     border-left-color: black;
 }
 
-.field .button {
+.selectView .block .button {
     background-color: #EEE;
-}
-
-.field .car {
-    background-color: #454545;
-    border-color: #0000008c;
 }
 
 .windows .popup {
     background-color: white;
 }
 
-.popup .option:hover {
-    background-color: #EEE;
+/*------------------selectView----------------*/
+
+.selectView .block {
+    border-color: gray;
+    background-color: #a7a7a7;
+    box-shadow: inset 0 0 1em black;
 }
 
-.popup .option:active {
-    background-color: #EEE;
+
+.selectView .value {
+    color: #2b2427;
+}
+
+.items {
+    background-color: #DDD;
+}
+
+.items .option:hover {
+    background-color: white;
+}
+
+.items .option:active {
+    background-color: white;
+}
+
+.items .option .header {
+    color: #737373;
 }

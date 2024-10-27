@@ -1,16 +1,25 @@
 <?
 class CarModel extends BaseModel {
+	
+	protected function getTable() {
+		return 'car';
+	}
 
 	public function getItem($id) {
 		GLOBAL $dbp;
-		return $id ? $dbp->line("SELECT * FROM car WHERE id={$id}") : null;
+		return $id ? $dbp->line("SELECT * FROM {$this->getTable()} WHERE id={$id}") : null;
+	}
+
+	public function getItems($options) {
+		GLOBAL $dbp;
+		return $dbp->asArray("SELECT * FROM {$this->getTable()} WHERE user_id={$options['user_id']}");
 	}
 
 	public function Update($values) {
 		GLOBAL $dbp;
 
 		if (!$values['id']) {
-			$dbp->bquery("INSERT car (`user_id`, `number`, `car_body_id`, `color_id`) VALUES (?, ?, ?, ?)", 
+			$dbp->bquery("INSERT {$this->getTable()} (`user_id`, `number`, `car_body_id`, `color_id`) VALUES (?, ?, ?, ?)", 
 				'isii', 
 				[$values['user_id'], $values['number'], $values['car_body_id'], 2]);
 		}
@@ -27,22 +36,28 @@ class CarModel extends BaseModel {
 			],
 			'number' => [
 				'label'=> 'Number',
-				'validator'=> 'required'
+				'validator'=> 'unique'
 			],
-			'car_body' => [
+			'car_body_id' => [
+				'model'=> 'CarbodyModel',
 				'label'=> 'Carbody',
 				'type'=> 'carbody',
-				'model'=> 'CarbodyModel',
-				'default' => ['symbol'=> 'compact-minivan'],
-				'indexField'=>'car_body_id'
+				'default' => ['symbol'=> 'default'],
+				'validator'=> 'required'
 			],
-			'color' => [
+			'color_id' => [
+				'model'=> 'ColorModel',
 				'label'=> 'Color',
 				'type'=> 'color',
-				'model'=> 'ColorModel',
-				'indexField'=>'color_id'
+				'default' => ['name'=> 'default', 'rgb' => '#AAA'],
+				'validator'=> 'required'
 			]
 		];
+	}
+
+	public function checkUnique($value) { 
+		GLOBAL $dbp;
+		return $dbp->one("SELECT `number` FROM {$this->getTable()} WHERE `number` = '{$value}'") === false; 
 	}
 
 	public function getTitle() {

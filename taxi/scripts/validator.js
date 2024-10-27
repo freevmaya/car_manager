@@ -12,8 +12,12 @@ class Validator {
 
 	isSendAllowed() {
 		let result = true;
-		for (let i in this.#items)
-			result = result && this.#items[i].getAllowed();
+		for (let i in this.#items) {
+			this.#items[i].refreshFieldMessage();
+
+			if (!this.#items[i].getAllowed()) 
+				return false;
+		}
 		return result;
 	}
 
@@ -34,7 +38,7 @@ class Validator {
 class BaseValidator {
 	parent;
 	#elem;
-	#allowed = true;
+	_allowed = true;
 	#model;
 	constructor(name, model) {
 		this.#elem = $('*[name="' + name + '"]');
@@ -45,16 +49,21 @@ class BaseValidator {
 	getModel() { return this.#model; }
 
 	setAllowed(value) {
-		this.#allowed = value;
-		this.parent.refresh();
+		this._allowed = value;
+		this.refreshFieldMessage();
 	}
 
 	getAllowed() {
-		return this.#allowed;
+		return this._allowed;
 	}
 
 	getMessage() {
 		return '';
+	}
+
+	refreshFieldMessage() {
+		console.log(this.getAllowed());
+		app.ToggleWarning(this.getElem(), !this.getAllowed(), this.getMessage());
 	}
 }
 
@@ -63,16 +72,14 @@ class inputValidator extends BaseValidator {
 		super(name, model);
 
 		this.getElem()
-			.on('input', (()=>{ this.setAllowed(false); }).bind(this))
-			.on('change', (() => { this.validate(this.afterValidate.bind(this)); }).bind(this));
+			.change((() => { this.onChange(this.afterValidate.bind(this)); }).bind(this));
 	}
 
 	afterValidate(a_allowed) {
 		this.setAllowed(a_allowed);
-		app.ToggleWarning(this.getElem(), !this.getAllowed(), this.getMessage());
 	}
 
-	validate(action) {
+	onChange(action) {
 		action(true);
 	}
 
@@ -83,8 +90,24 @@ class inputValidator extends BaseValidator {
 
 class requiredValidator extends inputValidator {
 
-	validate(action) {
-		action(this.getElem().val().length > 0);
+	constructor(name, model) {
+		super(name, model);
+		this._allowed = this.isNotEmpty();
+	}
+
+	isNotEmpty() {
+		let elem = this.getElem();
+		if (elem.attr('type') == 'hidden')
+			return elem.val() > 0;
+
+		return elem.val().length > 0;
+	}
+
+	onChange(action) {
+		let na = this.isNotEmpty();
+		let hm = na && !this._allowed;
+		action(na);
+		if (hm) this.refreshFieldMessage();
 	}
 }
 
@@ -96,8 +119,8 @@ class uniqueValidator extends requiredValidator {
 	}
 
 
-	validate(action) {
-		super.validate(((allowed)=>{
+	onChange(action) {
+		super.onChange(((allowed)=>{
 			if (allowed) {
 				if (this.getElem().val() != this.#origin) {
 					Ajax({

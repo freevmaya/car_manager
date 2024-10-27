@@ -20,27 +20,32 @@ class ViewManager {
     }
 }
 
-class BaseParentView {
+ViewManager.setContent = (parent, content)=> {
 
-    #children;
+    if (parent.children)
+        for (let idx in parent.children)
+            parent.children[idx].destroy();
+    parent.children = {};
 
-    constructor() {}
-
-    setContent(content) {
-        if (this.#children)
-            for (let idx in this.#children)
-                this.#children[idx].destroy();
-
-        this.#children = {};
+    parent.children = {};
+    if ($.type(content) === 'array') {
         for (let i in content) {
             let idx = i;
             if (content[i].id) idx = content[i].id;
-            this.#children[idx] = new content[i].class(this, content[i]);
+            parent.children[idx] = new content[i].class(parent, content[i]);
         }
-    }
+    } else
+        parent.contentElement.append(parent.children[0] = $(content).clone());
+}
+
+class BaseParentView {
+
+    children;
+
+    constructor() {}
 
     fieldById(idx) {
-        return this.#children[idx];
+        return this.children[idx];
     }
 }
 
@@ -57,6 +62,7 @@ class View extends BaseParentView {
         this.view = $('<div class="view shadow radius dialog">');
         this.view.append(this.headerElement = $('<div class="title">'));
         this.headerElement.append(this.closeBtn = $('<button class="close button">'));
+        this.view.append($('<div class="hr">'));
         
         this.windows = $('#' + windowsLayerId);
         this.windows.append(this.view);
@@ -92,11 +98,12 @@ class View extends BaseParentView {
             this.footerElement.append(btn);
         }
 
-        this.setContent(this.options.content);
+        ViewManager.setContent(this, this.options.content);
         
         if (this.options.curtain) this.blockBackground(true);
-
+        
         setTimeout(this.toAlign.bind(this), 10);
+        setTimeout(this.checkOverflow.bind(this), 500);
     }
 
     toAlign() {
@@ -106,6 +113,14 @@ class View extends BaseParentView {
                 this.view.css('bottom', 0);
             else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);
         }
+    }
+
+    checkOverflow() {
+        let elem = this.contentElement[0];
+        if (elem.offsetHeight < elem.scrollHeight)
+            this.contentElement.css('overflow-y', 'scroll');
+        if (elem.offsetWidth < elem.scrollWidth)
+            this.contentElement.css('overflow-x', 'scroll');
     }
 
     onResize() {
@@ -142,9 +157,10 @@ class BottomView extends View {
 
     initMainView() {
         this.view = $('<div class="view shadow radiusTop">');
-
         this.view.append(this.headerElement = $('<div class="title">'));
         this.headerElement.append(this.closeBtn = $('<button class="close button">'));
+        this.view.append($('<div class="hr">'));
+
         this.closeBtn.click(this.Close.bind(this));
 
         setTimeout(this.afterResize.bind(this), 500);
@@ -240,13 +256,16 @@ class ButtonField extends BaseField {
 }
 
 
-class GroupFields extends Classes([BaseField, BaseParentView]) {
+class GroupFields extends BaseField {
+
+    children = null;
+
     initView() {
         this.parentElement.append(this.view = this.contentElement = $('<div class="group">'));
         for (let i in this.options.classes)
             this.view.addClass(this.options.classes[i]);
 
-        this.setContent(this.options.content);
+        ViewManager.setContent(this, this.options.content);
     }
 }
 

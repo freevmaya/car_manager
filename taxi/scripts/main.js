@@ -39,12 +39,16 @@ class App {
     }
 
     ToggleWarning(elem, visible, text) {
-        let w = elem.parent().find('.warning');
+
+        let parent = elem.closest('.field');
+        if (parent.length == 0) parent = elem.parent();
+
+        let w = parent.find('.warning');
 
         if (visible) {
             if (w.length > 0)
                 w.text(text);
-            else elem.parent().append(w = $('<div class="warning" style="width: ' + elem.width() + 'px">' + text + '</div>'));
+            else parent.append(w = $('<div class="warning" style="width: ' + elem.width() + 'px">' + text + '</div>'));
         } else w.Remove();
     }
 }
