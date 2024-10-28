@@ -11,8 +11,8 @@
     
     html::$scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
 
-    $this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
-    $this->styles[] = 'css/cars.css';
+    html::$styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
+    html::$styles[] = 'css/cars.css';
 
     $carbodies = $dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodys`");
 ?>

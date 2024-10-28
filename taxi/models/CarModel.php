@@ -1,6 +1,6 @@
 <?
 class CarModel extends BaseModel {
-	
+
 	protected function getTable() {
 		return 'car';
 	}
@@ -21,7 +21,9 @@ class CarModel extends BaseModel {
 		if (!$values['id']) {
 			$dbp->bquery("INSERT {$this->getTable()} (`user_id`, `number`, `car_body_id`, `color_id`) VALUES (?, ?, ?, ?)", 
 				'isii', 
-				[$values['user_id'], $values['number'], $values['car_body_id'], 2]);
+				[$values['user_id'], $values['number'], $values['car_body_id'], $values['color_id']]);
+		} else {
+
 		}
 	}
 

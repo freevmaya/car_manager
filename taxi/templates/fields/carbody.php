@@ -1,6 +1,5 @@
 <?
 	html::AddScriptFile('select-view.js');
-	//html::AddScriptFile('window.js');
 	html::AddScriptFile('views.js');
 
 	$symbol = $value['item']['symbol'];

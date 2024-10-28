@@ -1,5 +1,16 @@
 <?
-	$this->styles[] = BASEURL.'/css/toolbar.css';
+	html::AddScriptFile('views.js');
+	$notifyModel = new NotificationModel();
+
+	$options = ['user_id' => Page::$current->user['id'], 'state'=>['receive', 'active'];
+
+	html::addStyleFile(BASEURL.'/css/toolbar.css');
+	html::AddScriptFile("toolbar.js");
+	html::AddJsCode("
+		$(window).ready(()=>{
+			new ToolbarUser($('.toolbar .user'), ".json_encode($notifyModel->getItems($options)).");
+		});
+	");
 
 
 	$menu = [
@@ -16,10 +27,13 @@
 
 ?>
 <div id="toolbarMenu">
-	<div class="toolbar top shadow sliderView">
-		<div class="slider">
+	<div class="toolbar top shadow">
+		<div>
 			<a class="menu" onclick="$('#toolbarMenu').toggleClass('open')"><img src="<?=BASEURL?>/css/images/menu.png"></a>
 		</div>
+		<a class="user">
+			<div class="warning"></div>
+		</a>
 	</div>
 
 	<div class="submenu shadow">
@@ -33,13 +47,3 @@
 ?>
 	</div>
 </div>
-
-
-
-<script type="text/javascript">
-	$('body').click((e)=>{
-		let tm = $('#toolbarMenu');
-		if (($(e.target).parents('#toolbarMenu').length == 0) && (tm.hasClass('open')))
-			tm.removeClass('open');
-	});
-</script>

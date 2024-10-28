@@ -146,7 +146,7 @@ h1, h2 {
     border-radius: 1em 1em 0 0;
 }
 
-.radiusB0ttom {
+.radiusBottom {
     border-radius: 0 0 1em 1em;
 }
 
@@ -194,6 +194,11 @@ h1, h2 {
 
 .view.bottom {
     bottom: 0px;
+    left: 0px;
+    right: 0px;
+    position: absolute;
+    margin: 0px;
+
 }
 
 .show {
@@ -314,6 +319,11 @@ h1, h2 {
     margin-bottom: 0.5em;
 }
 
+form .field {
+    margin: 1em;
+    min-width: 20em;
+}
+
 .content .title {
     font-style: italic;
     display: block;
@@ -334,9 +344,14 @@ h1, h2 {
     border-radius: 1em;
 }
 
+.field input[type="checkbox"] {
+    display: none;
+}
+
 .view .footer {
-    /*display: flex;*/
+    display: flex;
     padding: 0.5em;
+    justify-content: center;
 }
 
 .sliderView {
@@ -345,8 +360,10 @@ h1, h2 {
 
 .footer.sliderView, .footer .sliderView {
     overflow-x: scroll;
+    height: 5em;
 }
 
+/*
 .pageContent .sliderView {
     overflow-y: scroll;
     position: absolute;
@@ -364,6 +381,7 @@ h1, h2 {
     top: 3em;
     bottom: 1em;
 }
+*/
 
 .pageContent .footer {
     position: absolute;
@@ -516,7 +534,7 @@ h1, h2 {
     margin: 1em;
 }
 
-.warning {
+form .warning {
     padding: 0.8em;
     font-size: 0.8em;
     margin-top: 0.5em;
@@ -524,7 +542,7 @@ h1, h2 {
     animation-duration: 0.2s;
 }
 
-.warning::before {
+form .warning::before {
     content: ' ';
     width: 20px;
     height: 20px;
@@ -538,7 +556,7 @@ h1, h2 {
 
 .field .container {
     margin-left: 1em;
-    padding: 1em;
+    /*padding: 1em;*/
 }
 
 .popup {
@@ -594,13 +612,13 @@ h1, h2 {
 .selectView .value {
     display: flex;
     align-items: center;
-    padding: 0.5em;
+    padding: 0.5em 1em;
     position: absolute;
     height: 2.8em;
     font-size: 0.8em;
 }
 
-.selectView .block .button {
+.selectView .button {
     border-radius:1.5em;
     border: 2px solid gray;
     float: right;
@@ -609,7 +627,7 @@ h1, h2 {
     position: sticky;
 }
 
-.selectView .block .button::before {
+.selectView .button::before {
     content: ' ';
     width: 0.1em;
     height: 0.1em;
@@ -638,10 +656,6 @@ h1, h2 {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-}
-
-.field .color-demo {
-    height: 3em;
 }
 
 .field .item-image {

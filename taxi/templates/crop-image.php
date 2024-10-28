@@ -10,9 +10,9 @@
     
     html::$scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
 
-    $this->styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
-    $this->styles[] = 'css/colors-01.css';
-    $this->styles[] = 'css/cars.css';
+    html::$styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
+    html::$styles[] = 'css/colors-01.css';
+    html::$styles[] = 'css/cars.css';
 ?>
 
 <script type="text/javascript">

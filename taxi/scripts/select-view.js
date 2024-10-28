@@ -1,12 +1,13 @@
 var SelectViewCallback = {};
 
-function InitSelectView(fieldId, indexField, onSelect) {
+function InitSelectView(fieldId, indexField, onSelect, title='', actions=[]) {
 
 	let view;
 	$('#' + fieldId + ' .popup-button').click(()=>{
 		view = viewManager.Create({curtain: $('.wrapper'),
-						title: 'selectView',
-						content: $('#' + fieldId + ' .items')});
+						title: title ? title : toLang('Select item'),
+						content: $('#' + fieldId + ' .items'),
+						actions: actions});
 		view.contentElement.find('.option').each((i, item)=>{
 			$(item).click(onClickItem);
 		});

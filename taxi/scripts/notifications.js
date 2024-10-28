@@ -1,11 +1,8 @@
 class Notifications {
-	constructor() {
-        this.initView();
-        transport.AddListener('notificationList', this.onNotificationList.bind(this));
-    }
-
-    initView() {
-    	$('body').prepend(this.view = $('<div class="notifications">'));
+    #listenerId;
+	constructor(parentElem) {
+        this.view = parentElem;
+        this.#listenerId = transport.AddListener('notificationList', this.onNotificationList.bind(this));
     }
 
     receiveNotification(data) {
@@ -20,6 +17,10 @@ class Notifications {
     onNotificationList(list) {
         for (let i in list)
             this.receiveNotification(list[i]);
+    }
+
+    destroy() {
+        transport.RemoveListener(this.#listenerId);
     }
 }
 

@@ -3,10 +3,7 @@ class Driver extends Page {
 
 	protected function initModel() {
 
-		if (Page::$subpage == 'prepare_trip')
-			return new PrepareTripModel();
-
-		else if (Page::$subpage == 'editcar') {
+		if (Page::$subpage == 'editcar') {
 			$this->dataId = @Page::$request['id'];
 			return new CarModel();
 		}

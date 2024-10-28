@@ -135,10 +135,6 @@ select.time {
     background: #333;
 }
 
-form .field {
-    margin: 1em;
-}
-
 .field label {
     color: #888;
 }
@@ -229,22 +225,22 @@ form .field {
     box-shadow: 0px 0px 8px #00000059;
 }
 
-.warning, .warning::before {    
+form .warning, form .warning::before {    
     background-color: #975224;
     color: white;
 }
 
-.warning {
+form .warning {
     box-shadow: 8px 8px 1px #0000009c;
     border-radius: 0.5em;
 }
 
-.selectView .block .button::before {
+.selectView .button::before {
     border-top-color: black;
     border-left-color: black;
 }
 
-.selectView .block .button {
+.selectView .button {
     background-color: #EEE;
 }
 

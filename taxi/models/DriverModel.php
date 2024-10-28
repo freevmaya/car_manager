@@ -8,10 +8,19 @@ class DriverModel extends BaseModel {
 	public function Update($values) {
 		GLOBAL $dbp;
 
-		if (!$values['car_id']) {
-			$dbp->bquery("UPDATE {$this->getTable()} (`user_id`, `number`, `car_body_id`, `color_id`) VALUES (?, ?, ?, ?)", 
-				'isii', 
-				[$values['user_id'], $values['number'], $values['car_body_id'], 2]);
+		if (isset($values['car_id']) && $values['car_id']) {
+
+			$active = isset($values['active']) ? 1 : 0;
+
+			if ($dbp->line("SELECT `id` FROM {$this->getTable()} WHERE `user_id` = {$values['user_id']}")) {
+				$dbp->bquery("UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?".($active ? ', `activationTime` = NOW()':'')." WHERE `user_id`= ?", 
+					'iii', 
+					[$values['car_id'], $active, $values['user_id']]);
+			} else {
+				$dbp->bquery("INSERT {$this->getTable()} (`user_id`, `car_id`, `active`, `activationTime`) VALUES (?, ?, ?, NOW())", 
+					'iii', 
+					[$values['user_id'], $values['car_id'], $active]);
+			}
 		}
 	}
 
@@ -19,7 +28,7 @@ class DriverModel extends BaseModel {
 		GLOBAL $dbp;
 
 		if ($user_id) {
-			$query = "SELECT CONCAT(u.username, ' ', u.phone) as driver, d.car_id FROM users u ".
+			$query = "SELECT CONCAT(u.username, ' ', u.phone) as driver, d.car_id, d.active FROM users u ".
 					"LEFT JOIN {$this->getTable()} d ON d.user_id = u.id ".
 					"WHERE u.id = {$user_id}";
 
@@ -31,6 +40,10 @@ class DriverModel extends BaseModel {
 
 	public function getFields() {
 		return [
+			'user_id' => [
+				'type'=> 'hidden',
+				'default' => Page::$current->getUser()['id']
+			],
 			'driver' => [
 				'label'=> 'Driver',
 				'readonly' => true
@@ -41,6 +54,10 @@ class DriverModel extends BaseModel {
 				'user_id'=> Page::$current->getUser()['id'],
 				'model' => 'CarModel',
 				'required' => true
+			],
+			'active' => [
+				'label' => 'Active',
+				'type' => 'bool'
 			]
 		];
 	}

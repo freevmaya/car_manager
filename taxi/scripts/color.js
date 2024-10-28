@@ -2,7 +2,9 @@
 
 class Color {
   constructor(r, g, b) {
-    this.set(this.check(r), this.check(g), this.check(b));
+    if (typeof r === 'string') {
+      this.setAsString(r);
+    } else this.set(this.check(r), this.check(g), this.check(b));
   }
 
   check(v) {
@@ -12,17 +14,25 @@ class Color {
   }
 
   light() {
-    return (this.r > 40) && (this.g > 60) && (this.b > 100);
+    return (this.r + this.g + this.b) / 3 > 128;
   }
   
   toString() {
     return `rgb(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)})`;
   }
 
+  setAsString(str) {
+    const regexp = /rgb\(([\d\s]+),([\d\s]+),([\d\s]+)\)/gm;
+    const result = str.matchAll(regexp).toArray();
+    if (result)
+      this.set(parseInt(result[0][1]), parseInt(result[0][2]), parseInt(result[0][3]));
+  }
+
   set(r, g, b) {
     this.r = this.clamp(r);
     this.g = this.clamp(g);
     this.b = this.clamp(b);
+    return this;
   }
 
   hueRotate(angle = 0) {
@@ -41,6 +51,7 @@ class Color {
       0.715 - cos * 0.715 + sin * 0.715,
       0.072 + cos * 0.928 + sin * 0.072,
     ]);
+    return this;
   }
 
   grayscale(value = 1) {
@@ -55,6 +66,7 @@ class Color {
       0.7152 - 0.7152 * (1 - value),
       0.0722 + 0.9278 * (1 - value),
     ]);
+    return this;
   }
 
   sepia(value = 1) {
@@ -69,6 +81,7 @@ class Color {
       0.534 - 0.534 * (1 - value),
       0.131 + 0.869 * (1 - value),
     ]);
+    return this;
   }
 
   saturate(value = 1) {
@@ -83,6 +96,7 @@ class Color {
       0.715 - 0.715 * value,
       0.072 + 0.928 * value,
     ]);
+    return this;
   }
 
   multiply(matrix) {
@@ -92,25 +106,30 @@ class Color {
     this.r = newR;
     this.g = newG;
     this.b = newB;
+    return this;
   }
 
   brightness(value = 1) {
     this.linear(value);
+    return this;
   }
   contrast(value = 1) {
     this.linear(value, -(0.5 * value) + 0.5);
+    return this;
   }
 
   linear(slope = 1, intercept = 0) {
     this.r = this.clamp(this.r * slope + intercept * 255);
     this.g = this.clamp(this.g * slope + intercept * 255);
     this.b = this.clamp(this.b * slope + intercept * 255);
+    return this;
   }
 
   invert(value = 1) {
     this.r = this.clamp((value + this.r / 255 * (1 - 2 * value)) * 255);
     this.g = this.clamp((value + this.g / 255 * (1 - 2 * value)) * 255);
     this.b = this.clamp((value + this.b / 255 * (1 - 2 * value)) * 255);
+    return this;
   }
 
   hsl() {
@@ -151,6 +170,7 @@ class Color {
   }
 
   clamp(value) {
+    value = parseInt(value);
     if (value > 255) {
       value = 255;
     } else if (value < 0) {

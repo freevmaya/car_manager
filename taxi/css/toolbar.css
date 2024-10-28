@@ -3,8 +3,9 @@
 	position: absolute;
 	left: 0px;
 	right: 0px;
-	display: flex;
 	z-index: 2;
+	display: flex;
+	justify-content: space-between;
 }
 
 .toolbar, .submenu {
@@ -19,6 +20,32 @@
 .top {
 	top: 0px;
 	border-radius: 0 0 1em 1em;
+}
+
+.toolbar .user, .user .warning {
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.toolbar .user {
+    width: 2em;
+    height: 2em;
+    background-image: url(images/user-white.png);
+    float: right;
+    cursor: pointer;
+}
+
+.user .warning {
+	width: 1em;
+	height: 1em;
+    background-image: url(images/warning.png);
+    box-shadow: 4px 4px 4px #0000009c;
+    border-radius: 0.5em;
+    margin-left: 0.8em;
+    margin-top: 0.8em;
+    display: none;
 }
 
 .toolbar a {

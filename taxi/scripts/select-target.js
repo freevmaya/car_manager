@@ -1,7 +1,6 @@
 class ViewTarget extends BottomView {
 
     routes;
-
     setOptions(options) {
         options = $.extend({
             classes: ['target-view'],
@@ -25,13 +24,13 @@ class ViewTarget extends BottomView {
 
         super.setOptions(options);
 
-        this.footerElement.addClass('sliderView');
-        this.footerElement.append(this.footerSlider = $('<div class="slider">'));
+        this.footerElement.addClass('sliderView')
+            .append(this.footerSlider = $('<div class="slider">'));
 
-        this.footerSlider.append(this.sendButton = $('<button class="button" disabled>').text(toLang('Send')));
+        this.footerSlider.append(this.sendButton = $('<button class="button" disabled>').text(toLang('Send')))
+            .append(this.datetimeElement = $('<div class="datetime-field shadow">'));
+
         this.sendButton.click(this.applyPath.bind(this));
-
-        this.footerSlider.append(this.datetimeElement = $('<div class="datetime-field shadow">'));
         this.datetime = new DateTime(this.datetimeElement, Date.now());
 /*
         setTimeout((()=>{
@@ -59,7 +58,6 @@ class ViewTarget extends BottomView {
                 this.routes = result;
                 this.afterResize();
                 this.footerElement.find('button').prop('disabled', false);
-                this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this));
             }
         }).bind(this))
     }
@@ -69,12 +67,14 @@ class ViewTarget extends BottomView {
             if (data[i].content_type == 'orderReceive') {
                 this.footerSlider.empty();
                 this.addTextInSlider(data[i].text);
-                transport.ConfirmReceive(data[i]);
-                transport.RemoveListener('notificationList', this.listenerId);
-            }
+                transport.SendStatusNotify(data[i], 'read');
+            } else if (data[i].content_type == 'orderCreated') 
+                transport.SendStatusNotify(data[i], 'read');
     }
 
     applyPath() {
+
+        this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this));
 
         let data = {
             user_id: user.id,
@@ -104,6 +104,8 @@ class ViewTarget extends BottomView {
     }
 
     Close() {
+        if (this.listenerId > 0) 
+            transport.RemoveListener('notificationList', this.listenerId);
         this.closePath();
         return super.Close();
     }

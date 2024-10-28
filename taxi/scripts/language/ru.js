@@ -1,4 +1,5 @@
 var lang = {
+	'Add': 'Добавить',
 	'User': 'Заказчик',
 	'Dialog': 'Диалог',
 	'Car brand': 'Марка авто',
@@ -27,5 +28,8 @@ var lang = {
 	'Now': 'Сейчас',
 	'Send': 'Отправить',
 	'Accept': 'Принять',
+	'Select item': 'Выберите значение',
+	'Select auto': 'Выберите авто',
+	'Notifications': 'Сообщения',
 	'This value is already taken. Try entering another value.': 'Это значение уже занято. Попробуйте ввести другое значение.'
 };

@@ -7,9 +7,8 @@
     $fieldId = html::FiledId();
 
     html::AddJsCode("InitSelectView('{$fieldId}', '{$options['name']}', (elem, option)=>{
-        //elem.find('.color-demo').css('background-color', option.find('.img').css('background-color'));
         elem.find('.value').text(option.find('.header').text());
-    });");
+    }, toLang('Select auto'), {Add: ()=>{document.location.href = '".Page::link(['driver', 'editcar'])."';}});");
 ?>
 <div class="field" id="<?=$fieldId?>">
     <label for="<?=$options['name']?>"><?=lang($options['label'])?></label>

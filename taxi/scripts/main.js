@@ -79,6 +79,49 @@ async function Ajax(params) {
     return null;
 }
 
+class AjaxTransport {
+
+    #incIndex;
+    constructor(periodTime) {
+        this.listeners = {};
+        this.intervalID = setInterval(this.update.bind(this), periodTime);
+        this.#incIndex = 0;
+    }
+
+    update() {
+        Ajax({"action": "checkState"}).then(this.onRecive.bind(this));
+    }
+
+    onRecive(value) {
+        for (let n in value)
+            if (this.listeners.hasOwnProperty(n)) {
+                let list = this.listeners[n];
+                for (let i in list) 
+                    list[i](value[n]);
+            }
+    }
+
+    SendStatusNotify(data, a_status = 'receive') {
+        Ajax({
+            action: 'StateNotification',
+            data: { id: data.id, state: a_status }
+        });
+    }
+
+    AddListener(event, callback) {
+        if (!this.listeners[event]) this.listeners[event] = {};
+
+        this.#incIndex++;
+        this.listeners[event][this.#incIndex] = callback;
+        return this.#incIndex;
+    }
+
+    RemoveListener(event, idx) {
+        if (idx > -1) 
+            delete this.listeners[event][idx];
+    }
+}
+
 class DateTime {
     DataFormat = 'dd.mm.yy';
     TimyFormat = "dd.MM HH:mm";

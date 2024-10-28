@@ -18,14 +18,15 @@ foreach (html::$scripts as $script) {
     <script src="<?=$scriptUrl?>"></script>
 <?
 }
-$this->styles = array_unique($this->styles);
-foreach ($this->styles as $style) {?>
+html::$styles = array_unique(html::$styles);
+foreach (html::$styles as $style) {?>
     <link rel="stylesheet" type="text/css" href="<?=$style?>"></script>
 <?}?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>
     <script type="text/javascript">
         var BASEURL = '<?=BASEURL?>';
         var ajaxRequestId = '<?=$this->createRequestId(get_class($this))?>';
+        var transport = new AjaxTransport(1000);
         var app = new App();
     <?if ($this->user) {?>
 

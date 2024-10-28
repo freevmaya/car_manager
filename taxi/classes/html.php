@@ -2,6 +2,7 @@
 
 class html {
 	public static $scripts = [];
+	public static $styles = [];
 	public static $jscode = [];
 	public static $field_id = 0;
 	protected static $autoKey = 0;
@@ -11,6 +12,8 @@ class html {
 		$fieldsList = [];
 		$nameModel = null;
 		$result = '';
+
+		//print_r($data);
 
 		if ($fieldsOrModel instanceof BaseModel) {
 			$nameModel = get_class($fieldsOrModel);
@@ -87,6 +90,11 @@ class html {
 	public static function AddScriptFile($fileName) {
 		if (!in_array($fileName, html::$scripts))
 			html::$scripts[] = $fileName;
+	}
+
+	public static function AddStyleFile($fileName) {
+		if (!in_array($fileName, html::$styles))
+			html::$styles[] = $fileName;
 	}
 
 	public static function FiledId() {

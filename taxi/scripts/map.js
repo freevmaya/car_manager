@@ -95,7 +95,7 @@ class MarkerManager {
 			users: []
 		};
 
-		transport.AddListener('notificationList', this.onNotificationList.bind(this));
+		//transport.AddListener('notificationList', this.onNotificationList.bind(this));
 	}
 
     onNotificationList(list) {
@@ -224,48 +224,6 @@ function getOrderInfo(order) {
 	return toLang("User") + ': ' + (order.username ? order.username : (order.Vadim + " " + order.Frolov)) + ". " + 
 			toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat) + ". " + 
 			toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
-}
-
-class AjaxTransport {
-
-	#incIndex;
-	constructor(periodTime) {
-		this.listeners = {};
-	    this.intervalID = setInterval(this.update.bind(this), periodTime);
-	    this.#incIndex = 0;
-	}
-
-	update() {
-		Ajax({"action": "checkState"}).then((value) => {
-
-			for (let n in value)
-			    if (this.listeners.hasOwnProperty(n)) {
-			    	let list = this.listeners[n];
-			    	for (let i in list) 
-			    		list[i](value[n]);
-			    }
-		});
-	}
-
-	ConfirmReceive(data) {
-        Ajax({
-            action: 'StateNotification',
-            data: { id: data.id, state: 'receive' }
-        });
-	}
-
-	AddListener(event, callback) {
-		if (!this.listeners[event]) this.listeners[event] = {};
-
-		this.#incIndex++;
-		this.listeners[event][this.#incIndex] = callback;
-		return this.#incIndex;
-	}
-
-	RemoveListener(event, idx) {
-		if (idx > -1) 
-			delete this.listeners[event][idx];
-	}
 }
 
 class VMap {

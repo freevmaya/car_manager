@@ -2,7 +2,6 @@
 
 class Page {
 	protected $title = "";
-	protected $styles = [];
 	protected $user;
 	protected $model;
 	protected $dataId;
@@ -72,13 +71,17 @@ class Page {
 			$this->dataId = $this->user['id'];
 			$this->model = $this->initModel();
 
-			if ($this->model && isset(Page::$request['form-request-id'])) {
+			if ($this->model && $this->isReciveData()) {
 				if ($this->requiestIdModel(Page::$request['form-request-id']) == get_class($this->model)) {
 					$this->requiestRemove(Page::$request['form-request-id']);
 					$this->model->Update(Page::$request);
 				}
 			}
 		}
+	}
+
+	protected function isReciveData() {
+		return isset(Page::$request['form-request-id']);
 	}
 
 	protected function initModel() {

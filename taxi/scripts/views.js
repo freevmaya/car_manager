@@ -109,9 +109,12 @@ class View extends BaseParentView {
     toAlign() {
         let size = { x: $(window).width(), y: $(window).height() };
         if (!this.options.topAlign) {
-            if (this.options.bottomAlign)
-                this.view.css('bottom', 0);
-            else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);
+            if (this.options.bottomAlign) {
+                this.view.removeClass('radius')
+                    .addClass('bottom')
+                    .addClass('radiusTop');
+            }
+            //else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);
         }
     }
 
@@ -154,17 +157,6 @@ class View extends BaseParentView {
 }
 
 class BottomView extends View {
-
-    initMainView() {
-        this.view = $('<div class="view shadow radiusTop">');
-        this.view.append(this.headerElement = $('<div class="title">'));
-        this.headerElement.append(this.closeBtn = $('<button class="close button">'));
-        this.view.append($('<div class="hr">'));
-
-        this.closeBtn.click(this.Close.bind(this));
-
-        setTimeout(this.afterResize.bind(this), 500);
-    }
 
     setOptions(options) {
         options = $.extend({bottomAlign: true}, options);
