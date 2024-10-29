@@ -64,21 +64,15 @@ class Ajax extends Page {
 		return ['result'=> $result];
 	}
 
+	protected function offerToPerform($data) {
+		if ($order = (new OrderModel())->getItem($data['id']))
+			(new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], Lang('OfferToPerform'));
+		return $order;
+	}
+
 	protected function AddOrder($data) {
-		GLOBAL $dbp;
 
-		$start = json_encode($data['start']);
-		$finish = json_encode($data['finish']);
-
-		$startAddress = $data['startAddress'];
-		$finishAddress = $data['finishAddress'];
-
-		$pickUpTime = date('Y-m-d H:i:s', strtotime($data['pickUpTime']));
-
-		$dbp->query("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `startPlace`, `finishPlace`, `startAddress`, `finishAddress`, `meters`) ".
-				"VALUES ({$data['user_id']}, NOW(), '{$pickUpTime}', '{$start}', '{$finish}', '{$startAddress}', '{$finishAddress}', '{$data['meters']}')");
-		$order_id = $dbp->lastID();
-
+		$order_id = (new OrderModel())->AddOrder($data);
 		$this->Notify($order_id, 'orderReceive', $this->user['id'], Lang("OrderToProcess"));
 		$this->NotifyOrderToDrivers($order_id);
 
@@ -89,7 +83,7 @@ class Ajax extends Page {
 		GLOBAL $dbp;
 		$drivers = $dbp->asArray("SELECT * FROM driverOnTheLine WHERE `active` = 1 AND activationTime > DATE_SUB(NOW(),INTERVAL 1 DAY)");
 		foreach ($drivers as $driver)
-			$this->Notify($order_id, 'orderCreated', $driver['user_id']);
+			$this->Notify($order_id, 'orderCreated', $driver['user_id'], Lang("OrderCreated"));
 	}
 
 	protected function getOrder($order_id) {
@@ -106,9 +100,9 @@ class Ajax extends Page {
 
 	public function Notify($content_id, $content_type, $user_id, $text='') {
 		GLOBAL $dbp;
-		$query = "INSERT INTO notifications (`content_id`, `content_type`, `user_id`, `text`) VALUES ". 
-				"({$content_id}, '{$content_type}', {$user_id}, '{$text}')";
-		$dbp->query($query);
+
+		$model = new NotificationModel();
+		$model->AddNotify($content_id, $content_type, $user_id, $text);
 	}
 
 	public function checkUnique($data) {

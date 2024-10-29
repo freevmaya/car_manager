@@ -1,5 +1,6 @@
-var lang = {
+lang = {
 	'Add': 'Добавить',
+	'Order': 'Заявка',
 	'User': 'Заказчик',
 	'Dialog': 'Диалог',
 	'Car brand': 'Марка авто',
@@ -19,7 +20,7 @@ var lang = {
 	'Select your travel destination on the map': 'Выберите цель поездки на карте',
 	'ManualForDriver': 'Руководство для водителей',
 	'Finish work': 'Завершить работу',
-	'InfoPath': 'Информация о заявке',
+	'InfoPath': 'Информация о маршруте',
 	'Departure time': 'Время отправления',
 	'km.': 'км.',
 	'Length': 'Расстояние',
@@ -31,5 +32,6 @@ var lang = {
 	'Select item': 'Выберите значение',
 	'Select auto': 'Выберите авто',
 	'Notifications': 'Сообщения',
+	'Offer to perform': 'Предложить выполнить',
 	'This value is already taken. Try entering another value.': 'Это значение уже занято. Попробуйте ввести другое значение.'
 };

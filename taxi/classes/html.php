@@ -92,6 +92,11 @@ class html {
 			html::$scripts[] = $fileName;
 	}
 
+	public static function AddScriptFiles($fileNames) {
+		foreach ($fileNames as $fileName)
+			html::AddScriptFile($fileName);
+	}
+
 	public static function AddStyleFile($fileName) {
 		if (!in_array($fileName, html::$styles))
 			html::$styles[] = $fileName;

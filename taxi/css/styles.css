@@ -178,6 +178,7 @@ h1, h2 {
 
 .view {
     max-height: 90%;
+    max-width: 100%;
 
     z-index: 1;
     padding: 0.5em;
@@ -351,7 +352,6 @@ form .field {
 .view .footer {
     display: flex;
     padding: 0.5em;
-    justify-content: center;
 }
 
 .sliderView {
@@ -406,11 +406,13 @@ form .field {
     align-items: center;
 }
 
-.footer .slider .notify, .car {
-    max-width: 16em;
+.footer .slider .notify {
+    max-height: 5em;
+    width: 25em;
     font-size: 0.8em;
     padding: 0 0.5em;
-    flex-direction: column;
+    flex-direction: row;
+    display: flex;
 }
 
 .car .notify p {
@@ -421,6 +423,21 @@ form .field {
 .car .notify {
     min-width: 20em;
     font-size: 0.8em;
+}
+
+.car-image-box {
+    height: 5em;
+    width: 12em;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    flex-direction: column;
+}
+
+.car-image-box img {
+    object-fit: contain;
+    width: 90%;
+    height: 90%;
 }
 
 .notify.car .block {
@@ -496,8 +513,8 @@ form .field {
 }
 
 .curtain {
-    filter: blur(0.4em);
-    pointer-events: none;
+    filter: blur(0.4em) !important;
+    pointer-events: none !important;
 }
 
 #DriverMenu {

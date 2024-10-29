@@ -101,13 +101,23 @@ class MarkerManager {
     onNotificationList(list) {
         for (let i in list) {
         	let item = list[i];
-        	if (item.content_type == "orderCreated") {
-        		item.order.startPlace = JSON.parse(item.order.startPlace);
-        		item.order.finishPlace = JSON.parse(item.order.finishPlace);
-        		let latLng = { lat: item.order.startPlace.lat, lng: item.order.startPlace.lng };
-        		this.#createFromOrder(latLng, item.order);
-        	}
+        	if (item.content_type == "orderCreated") 
+        		this.AddOrder(item.order);
         }
+    }
+
+    AddOrder(order) {
+
+		order.startPlace = JSON.parse(order.startPlace);
+		order.finishPlace = JSON.parse(order.finishPlace);
+		let latLng = { lat: order.startPlace.lat, lng: order.startPlace.lng };
+
+    	this.#createFromOrder(latLng, order);
+    }
+
+    AddOrders(orders) {
+		for (let i in orders)
+        	this.AddOrder(orders[i]);
     }
 
 	CreateMarker(position, title, className, onClick = null) {
@@ -161,6 +171,7 @@ class MarkerManager {
 			}).bind(this));
 
 			this.selectPathView = viewManager.Create({
+				title: "Order",
 				bottomAlign: true,
 				content: [
 					{
@@ -168,7 +179,15 @@ class MarkerManager {
 						text: getOrderInfo(data),
 						class: TextField
 					}
-				]
+				],
+				actions: {
+					'Offer to perform': (() => {
+						Ajax({
+							action: 'offerToPerform',
+							data: JSON.stringify({id: data.id})
+						}).then(this.selectPathView.Close.bind(this.selectPathView))
+					}).bind(this)
+				}
 			}, View, this.#closePathView.bind(this));
 		}
 
@@ -221,7 +240,7 @@ class MarkerManager {
 }
 
 function getOrderInfo(order) {
-	return toLang("User") + ': ' + (order.username ? order.username : (order.Vadim + " " + order.Frolov)) + ". " + 
+	return toLang("User") + ': ' + (order.username ? order.username : (order.first_name + " " + order.last_name)) + ". " + 
 			toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat) + ". " + 
 			toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
 }

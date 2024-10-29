@@ -2,6 +2,20 @@ class ViewTarget extends BottomView {
 
     routes;
     setOptions(options) {
+
+        let finishPart = {
+            id: 'finishPlace',
+            text: "Select your destination",
+            class: TextInfoField
+        };
+        if (options.finishPlace) {
+             finishPart = {
+                id: 'finishPlace',
+                text: PlaceName(options.finishPlace),
+                info: PlaceAddress(options.finishPlace),
+                class: TextInfoField
+            }
+        }
         options = $.extend({
             classes: ['target-view'],
             content: [
@@ -13,12 +27,7 @@ class ViewTarget extends BottomView {
                 },
                 {
                     class: DividerField
-                },
-                {
-                    id: 'finishPlace',
-                    text: "Select your destination",
-                    class: TextInfoField
-                }
+                }, finishPart
             ]
         }, options);
 
@@ -27,11 +36,15 @@ class ViewTarget extends BottomView {
         this.footerElement.addClass('sliderView')
             .append(this.footerSlider = $('<div class="slider">'));
 
-        this.footerSlider.append(this.sendButton = $('<button class="button" disabled>').text(toLang('Send')))
-            .append(this.datetimeElement = $('<div class="datetime-field shadow">'));
+        if (options.id) {
+            this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this));
+        } else {
+            this.footerSlider.append(this.sendButton = $('<button class="button" disabled>').text(toLang('Send')))
+                .append(this.datetimeElement = $('<div class="datetime-field shadow">'));
 
-        this.sendButton.click(this.applyPath.bind(this));
-        this.datetime = new DateTime(this.datetimeElement, Date.now());
+            this.sendButton.click(this.applyPath.bind(this));
+            this.datetime = new DateTime(this.datetimeElement, Date.now());
+        }
 /*
         setTimeout((()=>{
             this.addTextInSlider("Нейросеть онлайн для текста — это один из самых удобных способов создания контента.");
@@ -42,24 +55,31 @@ class ViewTarget extends BottomView {
         this.footerSlider.append($('<div class="notify">').text(text));
     }
 
-    SelectPlace(finishPlace) {
+    showPath(startPlace, finishPlace, afterAction) {
         this.closePath();
         let request = {
             origin: PlaceLatLng(this.options.startPlace),
-            destination: PlaceLatLng(this.options.finishPlace = finishPlace),
+            destination: PlaceLatLng(finishPlace),
             travelMode: 'DRIVING'
         }
         v_map.DirectionsService.route(request, (function(result, status) {
             if (status == 'OK') {
-                let field = this.fieldById("finishPlace");
-                this.rpath = DrawPath(v_map.map, result);
-                field.view.text(PlaceName(this.options.finishPlace));
-                field.infoView.text(PlaceAddress(this.options.finishPlace));
                 this.routes = result;
-                this.afterResize();
-                this.footerElement.find('button').prop('disabled', false);
+                afterAction(DrawPath(v_map.map, result));
             }
         }).bind(this))
+    }
+
+    SelectPlace(finishPlace) {
+        this.showPath(this.options.startPlace, this.options.finishPlace = finishPlace, ((rpath)=>{
+            this.rpath = rpath;
+            let field = this.fieldById("finishPlace");
+            field.view.text(PlaceName(this.options.finishPlace));
+            field.infoView.text(PlaceAddress(this.options.finishPlace));
+            this.afterResize();
+            this.footerElement.find('button').prop('disabled', false);
+
+        }).bind(this));
     }
 
     onNotification(data) {
@@ -70,6 +90,11 @@ class ViewTarget extends BottomView {
                 transport.SendStatusNotify(data[i], 'read');
             } else if (data[i].content_type == 'orderCreated') 
                 transport.SendStatusNotify(data[i], 'read');
+            else if (data[i].content_type == 'offerToPerform') {
+                let offerView;
+                this.footerSlider.append(offerView = $('<div class="notify car">'));
+                transport.SendStatusNotify(data[i], 'read');
+            } 
     }
 
     applyPath() {
@@ -86,8 +111,13 @@ class ViewTarget extends BottomView {
 
         data.start = { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() };
         data.finish = { placeId: this.options.finishPlace.placeId, lat: finish.lat(), lng: finish.lng() };
+
+        data.startName = PlaceName(this.options.startPlace);
+        data.finishName = PlaceName(this.options.finishPlace);
+
         data.startAddress = PlaceAddress(this.options.startPlace);
         data.finishAddress = PlaceAddress(this.options.finishPlace);
+
         data.meters = Math.round(CalcPathLength(this.routes));
 
         Ajax({
@@ -111,26 +141,33 @@ class ViewTarget extends BottomView {
     }
 }
 
-
-
+var currentOrder = null;
 function Mechanics() {
 
-    var startDialog;
+    var routeDialog;
+
+    if (currentOrder) {
+
+        currentOrder.title = 'Route';
+        routeDialog = new ViewTarget(currentOrder, () => {
+            routeDialog = null;
+        });
+    }
 
     function SelectPlace(place) {
 
         app.SendEvent('SelectPlace', place);
 
-        if (!startDialog) {
+        if (!routeDialog) {
             v_map.mainMarker.position = place.latLng;
 
-            startDialog = new ViewTarget({
+            routeDialog = new ViewTarget({
                 title: 'Route',
                 startPlace: place
             }, () => {
-                startDialog = null;
+                routeDialog = null;
             });
-        } else startDialog.SelectPlace(place);
+        } else routeDialog.SelectPlace(place);
     }
 
     async function getPlaceDetails(placeId) {

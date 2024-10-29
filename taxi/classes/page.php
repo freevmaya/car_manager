@@ -48,17 +48,19 @@ class Page {
 	}
 
 	public function __construct() {
-		GLOBAL $lang, $defUser, $dbp, $_GET;
+		GLOBAL $lang, $dbp, $_GET;
 
 		Page::$current = $this;
 		$dbp = new mySQLProvider('localhost', _dbname_default, _dbuser, _dbpassword);
+
+		//trace($_SERVER['HTTP_USER_AGENT']);
 
 		if (isset($_GET['username']))
 			$this->setUser($_GET);
 		else if (Page::getSession('user'))
 			$this->user = Page::getSession('user');
-		else if (isset($defUser)) 
-			$this->setUser(json_decode($defUser, true));
+		else if (DEV) 
+			$this->setUser(json_decode(DEVUSER, true));
 
 		if ($this->user) {
 			$language = $this->user['language_code'];
@@ -143,10 +145,21 @@ class Page {
 		GLOBAL $dbp;
 		if (!Page::getSession('user'))
 			Page::setSession('user', $this->user = $data);
-		
+
 		if ($set = isset($this->user['id'])) {
-			$dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$this->user['id']}");
-			$this->user['asDriver'] = $dbp->line("SELECT * FROM driverOnTheLine WHERE user_id={$this->user['id']} AND active=1");
+			$userModel = new UserModel();
+			$item = $userModel->getItem($this->user['id']);
+			
+			if ($item) {
+				$dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$this->user['id']}");
+				$this->user['asDriver'] = $dbp->line("SELECT * FROM driverOnTheLine WHERE user_id={$this->user['id']} AND active=1");
+			} else {
+				$query = "INSERT INTO users (`id`, `first_name`, `last_name`, `username`, `language_code`, `create_date`, `last_time`) VALUES ({$this->user['id']}, '{$this->user['first_name']}', '{$this->user['last_name']}', '{$this->user['username']}', '{$this->user['language_code']}', NOW(), NOW())";
+				trace($query);
+				$dbp->query($query);
+
+				$this->user['asDriver'] = false;
+			}
 		}
 
 		return ["result"=>$set ? "ok" : "fail", 'asDriver' => @$this->user['asDriver']];

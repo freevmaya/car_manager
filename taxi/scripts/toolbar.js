@@ -10,8 +10,8 @@ class ToolbarUser {
 
 		this.#view.click(this.onUserClick.bind(this));
 
-		this.#listenerId = transport.AddListener('notificationList', this.onReceiveNotifyList.bind(this));
-		this.onReceiveNotifyList(notifyList);
+		this.#listenerId = transport.AddListener('notificationList', this.setReceiveNotifyList.bind(this));
+		this.setReceiveNotifyList(notifyList);
 	}
 
 	onUserClick() {
@@ -24,12 +24,13 @@ class ToolbarUser {
 		return this.#notifyList && (this.#notifyList.length > 0);
 	}
 
-	onReceiveNotifyList(data) {
+	setReceiveNotifyList(data) {
 		this.#notifyList = data;
-		for (let i in data) {
-            if (data[i].state == 'active')
-				transport.SendStatusNotify(data[i], 'receive');
-        }
+		if (this.isNotify())
+			for (let i in data) {
+	            if (data[i].state == 'active')
+					transport.SendStatusNotify(data[i], 'receive');
+	        }
 		this.showWarning(this.isNotify());
 	}
 
@@ -48,7 +49,9 @@ class ToolbarUser {
 			content.append(option);
 		}
 
-		this.#listView = viewManager.Create({curtain: $('.wrapper'),
+		let map = $('#map');
+
+		this.#listView = viewManager.Create({curtain: map.length > 0 ? map : $('.wrapper'),
 						title: toLang('Notifications'),
 						content: content});
 		this.notifyOptionList().click(this.onClickItem.bind(this));
@@ -64,7 +67,7 @@ class ToolbarUser {
 		$(e.currentTarget).remove();
 		if (this.notifyOptionList().length == 0) {
 			this.#listView.Close();
-			this.showWarning(false);
+			this.setReceiveNotifyList(null);
 		}
 	}
 

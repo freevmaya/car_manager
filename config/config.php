@@ -11,19 +11,19 @@
 	define('SCRIPTURL', BASEURL.'/scripts');
 
 	if (DEV) {
-
 		define('_dbhost', 'localhost');
 		define('_dbname_default', 'taxi');
 		define('_dbuser', 'root');
 		define('_dbpassword', '');
-		$defUser = '{"id":1573356581,"is_bot":false,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","language_code":"ru"}';
+
+		if (strpos($_SERVER['HTTP_USER_AGENT'], 'YaBrowser') > -1)
+			define('DEVUSER', '{"id":1573351000,"is_bot":false,"first_name":"Fedor","last_name":"Petrov","username":"Fedor","language_code":"en"}');
+		else define('DEVUSER', '{"id":1573356581,"is_bot":false,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","language_code":"ru"}');
 	} else {
 		define('_dbhost', 'localhost');
 		define('_dbname_default', 'fwadimuz_taxi');
 		define('_dbuser', 'fwadimuz_taxi');
 		define('_dbpassword', 'Vthkby2010');
-
-		$defUser = '{"id":0,"is_bot":false,"first_name":"Guest","last_name":"User","username":"Guest","language_code":"ru"}';
 	}
 
 	define("APIKEY", "AIzaSyBzErLfg0nBPSCmP2LcYq0Y5A-C0GIuBMM");

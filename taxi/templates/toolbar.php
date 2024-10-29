@@ -1,8 +1,9 @@
 <?
 	html::AddScriptFile('views.js');
 	$notifyModel = new NotificationModel();
+	$driverModel = new DriverModel();
 
-	$options = ['user_id' => Page::$current->user['id'], 'state'=>['receive', 'active'];
+	$options = ['user_id' => Page::$current->user['id'], 'state'=>['receive', 'active']];
 
 	html::addStyleFile(BASEURL.'/css/toolbar.css');
 	html::AddScriptFile("toolbar.js");
@@ -12,11 +13,14 @@
 		});
 	");
 
+	$driverOnTheLine = $driverModel->getItem(Page::$current->user['id']);
 
 	$menu = [
 		lang('Services')=> [
 			[ Page::link('map'), lang('Go') ],
-			[ Page::link(['driver','trip']), lang('Give a ride') ]
+			(@$driverOnTheLine['active'] == 1) ?
+				[ Page::link(['map','driver']), lang('Give a ride') ] :
+			[ Page::link('driver'), lang('Driver') ]
 		],
 		lang('Settings')=> [
 			[ Page::link(['settings', 'user']), lang('User') ],

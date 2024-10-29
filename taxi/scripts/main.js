@@ -228,6 +228,28 @@ function PlaceName(place) {
         return round(place.lat(), 6) + ", " + round(place.lng(), 6);
 }
 
+JSON.parsePlace = function(placeStr) {
+    let result = JSON.parse(placeStr);
+    let lat = result.lat;
+    let lng = result.lng;
+    result.lat = ()=>{return lat;};
+    result.lng = ()=>{return lng;};
+    return result;
+}
+
+function cnvDbOrder(dbOrder) {
+    let result = dbOrder;
+    result.startPlace = JSON.parsePlace(dbOrder.startPlace);
+    result.finishPlace = JSON.parsePlace(dbOrder.finishPlace);
+    
+    result.startPlace.displayName = dbOrder.startName;
+    result.finishPlace.displayName = dbOrder.finishName;
+
+    result.startPlace.formattedAddress = dbOrder.startAddress;
+    result.finishPlace.formattedAddress = dbOrder.finishAddress;
+    return result;
+}
+
 function PlaceAddress(place) {
     return place.formattedAddress ? place.formattedAddress : null;
 }

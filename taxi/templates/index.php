@@ -28,6 +28,8 @@ foreach (html::$styles as $style) {?>
         var ajaxRequestId = '<?=$this->createRequestId(get_class($this))?>';
         var transport = new AjaxTransport(1000);
         var app = new App();
+        var lang = {};
+        
     <?if ($this->user) {?>
 
         var user = <?=json_encode($this->user)?>;
