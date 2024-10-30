@@ -3,9 +3,56 @@ var dateShortFormat = "dd.MM.yy HH:mm";
 var dateLongFormat = "dd.MM.yyyy HH:mm";
 var dateOnlyFormat = "dd.MM.yyyy";
 
+
+class EventProvider {
+    #incIndex;  
+    constructor(periodTime) {
+        this.listeners = {};
+        this.#incIndex = 0;
+    }
+
+    #toArray(event) {
+        let result = [];
+        if (this.listeners.hasOwnProperty(event)) {
+            for (let i in this.listeners[event])
+                result.push(this.listeners[event][i]);
+            result.sort((item1, item2) => { return item2.priority - item1.priority;});
+        }
+        return result;
+    }
+
+    SendEvent(event, value) {
+        let list = this.#toArray(event);
+        let stop = false;
+        for (let i in list)
+            if (!stop)
+                list[i].callback({
+                    event: event,
+                    value: value,
+                    StopPropagation: ()=>{
+                        stop = true;
+                    }
+                });
+    }
+
+    AddListener(event, callback, priority=0) {
+        if (!this.listeners[event]) this.listeners[event] = {};
+
+        this.#incIndex++;
+        this.listeners[event][this.#incIndex] = {callback: callback, priority: priority};
+        return this.#incIndex;
+    }
+
+    RemoveListener(event, idx) {
+        if (idx > -1) 
+            delete this.listeners[event][idx];
+    }
+}
+
 class App {
 
     #listeners;
+    #question;
 
     constructor() {
         this.#listeners = {};
@@ -51,6 +98,33 @@ class App {
             else parent.append(w = $('<div class="warning" style="width: ' + elem.width() + 'px">' + text + '</div>'));
         } else w.Remove();
     }
+
+    showQuestion(text, afterOk) {
+        if (this.#question == null) {
+            this.#question = viewManager.Create({curtain: $('#map'),
+                title: 'Warning!',
+                content: [
+                    {
+                        text: text,
+                        class: TextField
+                    }
+                ],
+                actions: {
+
+                    'Ok': (()=>{
+                        this.#question.Close();
+                        afterOk();
+                    }).bind(this),
+
+                    'Cancel': (()=>{
+                        this.#question.Close();
+                    }).bind(this)
+                }
+            }, View, (()=>{
+                this.#question = null;
+            }).bind(this));
+        }
+    }
 }
 
 async function Ajax(params) {
@@ -79,26 +153,26 @@ async function Ajax(params) {
     return null;
 }
 
-class AjaxTransport {
+class AjaxTransport extends EventProvider {
 
-    #incIndex;
     constructor(periodTime) {
-        this.listeners = {};
+        super();
         this.intervalID = setInterval(this.update.bind(this), periodTime);
-        this.#incIndex = 0;
     }
 
     update() {
         Ajax({"action": "checkState"}).then(this.onRecive.bind(this));
     }
 
+    #toArray(event) {
+        let result = [];
+        if (this.listeners.hasOwnProperty(event)) {
+        }
+    }
+
     onRecive(value) {
         for (let n in value)
-            if (this.listeners.hasOwnProperty(n)) {
-                let list = this.listeners[n];
-                for (let i in list) 
-                    list[i](value[n]);
-            }
+            this.SendEvent(n, value[n]);
     }
 
     SendStatusNotify(data, a_status = 'receive') {
@@ -106,19 +180,6 @@ class AjaxTransport {
             action: 'StateNotification',
             data: { id: data.id, state: a_status }
         });
-    }
-
-    AddListener(event, callback) {
-        if (!this.listeners[event]) this.listeners[event] = {};
-
-        this.#incIndex++;
-        this.listeners[event][this.#incIndex] = callback;
-        return this.#incIndex;
-    }
-
-    RemoveListener(event, idx) {
-        if (idx > -1) 
-            delete this.listeners[event][idx];
     }
 }
 
@@ -223,7 +284,7 @@ function PlaceName(place) {
     if (place.displayName)
         return place.displayName;
     if (place.latLng)
-        return place.latLng;
+        return round(place.latLng.lat(), 6) + ", " + round(place.latLng.lng(), 6);
     if (place.lat)
         return round(place.lat(), 6) + ", " + round(place.lng(), 6);
 }
@@ -234,6 +295,7 @@ JSON.parsePlace = function(placeStr) {
     let lng = result.lng;
     result.lat = ()=>{return lat;};
     result.lng = ()=>{return lng;};
+    result.latLng = { lat: lat, lng: lng};
     return result;
 }
 

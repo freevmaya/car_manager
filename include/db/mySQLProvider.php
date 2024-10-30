@@ -29,11 +29,16 @@
 
 	    public function bquery($query, $types, $params) {
 			$stmt = $this->mysqli->prepare($query);
+			$result = false;
 
-			$stmt->bind_param($types, ...$params);
-			$result = $stmt->execute();
-			$stmt->store_result();
-			$stmt->close();
+			try {
+				$stmt->bind_param($types, ...$params);
+				$result = $stmt->execute();
+				$stmt->store_result();
+				$stmt->close();
+			} catch (Exception $e) {
+				trace($e->getMessage(), 'file', 3, true);
+			}
 
 			return $result;
 	    }

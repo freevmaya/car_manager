@@ -5,7 +5,7 @@ class Map extends Page {
 			"jquery-dateformat.min.js",
 			"map.js",
 			"views.js",
-			"notifications.js",
+			//"notifications.js",
 			"https://code.jquery.com/ui/1.14.0/jquery-ui.js",
 			"https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css"
 		]);

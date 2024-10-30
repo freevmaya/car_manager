@@ -37,7 +37,13 @@ class ViewTarget extends BottomView {
             .append(this.footerSlider = $('<div class="slider">'));
 
         if (options.id) {
-            this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this));
+            this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this), 10);
+
+            this.showPath(options.startPlace, options.finishPlace);
+
+            if (ListOffers.length == 0)
+                this.addTextInSlider(toLang('Order sent. Wait for offers or close the order.'));
+            else this.AddOffers(ListOffers);
         } else {
             this.footerSlider.append(this.sendButton = $('<button class="button" disabled>').text(toLang('Send')))
                 .append(this.datetimeElement = $('<div class="datetime-field shadow">'));
@@ -51,11 +57,28 @@ class ViewTarget extends BottomView {
         }).bind(this), 2000);*/
     }
 
+    AddOffers(list) {
+        for (let i in list) {
+            let item = list[i];
+            console.log(item);
+            let elem = templateClone($('.templates .car'), item);
+            if (elem.length > 0) {
+                const rgb = hexToRgb(item.rgb);
+                const color = new Color(rgb[0], rgb[1], rgb[2]);
+                const solver = new Solver(color);
+                const result = solver.solve();
+                elem.find('img').attr('src', BASEURL + '/css/images/' + item.symbol + '.png')
+                    .attr('style', result.filter + ' drop-shadow(0px 0px 2px black)');
+                this.footerSlider.append(elem);
+            }
+        }
+    }
+
     addTextInSlider(text) {
         this.footerSlider.append($('<div class="notify">').text(text));
     }
 
-    showPath(startPlace, finishPlace, afterAction) {
+    showPath(startPlace, finishPlace, afterRequest = null) {
         this.closePath();
         let request = {
             origin: PlaceLatLng(this.options.startPlace),
@@ -65,14 +88,15 @@ class ViewTarget extends BottomView {
         v_map.DirectionsService.route(request, (function(result, status) {
             if (status == 'OK') {
                 this.routes = result;
-                afterAction(DrawPath(v_map.map, result));
+                this.rpath = DrawPath(v_map.map, result);
+                if (afterRequest)
+                    afterRequest();
             }
         }).bind(this))
     }
 
     SelectPlace(finishPlace) {
-        this.showPath(this.options.startPlace, this.options.finishPlace = finishPlace, ((rpath)=>{
-            this.rpath = rpath;
+        this.showPath(this.options.startPlace, this.options.finishPlace = finishPlace, (()=>{
             let field = this.fieldById("finishPlace");
             field.view.text(PlaceName(this.options.finishPlace));
             field.infoView.text(PlaceAddress(this.options.finishPlace));
@@ -82,24 +106,39 @@ class ViewTarget extends BottomView {
         }).bind(this));
     }
 
-    onNotification(data) {
+    onNotification(e) {
+        let data = e.value;
         for (let i in data)
             if (data[i].content_type == 'orderReceive') {
+
                 this.footerSlider.empty();
                 this.addTextInSlider(data[i].text);
                 transport.SendStatusNotify(data[i], 'read');
-            } else if (data[i].content_type == 'orderCreated') 
+                e.StopPropagation();
+            } else if (data[i].content_type == 'orderCreated') {
+
                 transport.SendStatusNotify(data[i], 'read');
-            else if (data[i].content_type == 'offerToPerform') {
+                e.StopPropagation();
+            } else if (data[i].content_type == 'offerToPerform') {
+
                 let offerView;
-                this.footerSlider.append(offerView = $('<div class="notify car">'));
-                transport.SendStatusNotify(data[i], 'read');
+
+                Ajax({
+                    action: 'getOffers',
+                    data: {notify_id: data[i].id}
+                }).then(((response)=>{
+                    this.AddOffers(response);
+                }).bind(this));
+                e.StopPropagation();
+
+                //this.footerSlider.append(offerView = $('<div class="notify car">'));
+                //transport.SendStatusNotify(data[i], 'read');
             } 
     }
 
     applyPath() {
 
-        this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this));
+        this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this), 10);
 
         let data = {
             user_id: user.id,
@@ -123,7 +162,10 @@ class ViewTarget extends BottomView {
         Ajax({
             action: "AddOrder",
             data: JSON.stringify(data)
-        }).then();
+        }).then(((response)=>{
+            if (response.id)
+                this.options.id = response.id;
+        }).bind(this));
     }
 
     closePath() {
@@ -133,15 +175,34 @@ class ViewTarget extends BottomView {
         }
     }
 
-    Close() {
+    prepareToClose(afterPrepare) {
+        if (this.options.id) {
+            app.showQuestion('Do you want to cancel your order?', (()=>{
+                Ajax({
+                    action: 'CancelOrder',
+                    data: {id: this.options.id }
+                }).then((response)=>{
+                    if (response.result == 'ok') {
+                        ListOffers = null;
+                        this.options.id = null;
+                        afterPrepare();
+                    }
+                })
+            }).bind(this));
+        } else afterPrepare();
+    }
+
+    destroy() {
         if (this.listenerId > 0) 
             transport.RemoveListener('notificationList', this.listenerId);
         this.closePath();
-        return super.Close();
+        super.destroy();
     }
 }
 
 var currentOrder = null;
+var ListOffers = null;
+
 function Mechanics() {
 
     var routeDialog;
@@ -182,6 +243,9 @@ function Mechanics() {
     }
 
     v_map.map.addListener("click", (e) => {
+        if (routeDialog && routeDialog.options.id)
+            return;
+
         if (e.placeId) {
             getPlaceDetails(e.placeId).then((place)=>{
                 place = $.extend(place, e);

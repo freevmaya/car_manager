@@ -65,30 +65,50 @@ class Ajax extends Page {
 	}
 
 	protected function offerToPerform($data) {
-		if ($order = (new OrderModel())->getItem($data['id']))
-			(new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], Lang('OfferToPerform'));
-		return $order;
+		$result = false;
+		$error = 'unknown error';
+		if ($order = (new OrderModel())->getItem($data['id'])) {
+
+			if ($driver = (new DriverModel())->getItem($this->getUser()['id']))
+				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], Lang('OfferToPerform'), $driver['id']);
+			else $error = 'Driver not activated';
+		}
+		return ['result'=> $result ? 'ok' : $error];
+	}
+
+	protected function getOffers($data) {
+		$result = (new NotificationModel())->getOffers(@$data['user_id'], @$data['notify_id']);
+		return $result;
 	}
 
 	protected function AddOrder($data) {
 
-		$order_id = (new OrderModel())->AddOrder($data);
-		$this->Notify($order_id, 'orderReceive', $this->user['id'], Lang("OrderToProcess"));
-		$this->NotifyOrderToDrivers($order_id);
+		if ($order_id = (new OrderModel())->AddOrder($data)) {
+			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $this->user['id'], Lang("OrderToProcess"));
+			$this->NotifyOrderToDrivers($order_id);
+		}
 
 		return ["id"=>$order_id];
 	}
 
-	protected function NotifyOrderToDrivers($order_id) {
+	protected function CancelOrder($data) {
+
+		if ($result = (new OrderModel())->CancelOrder($data['id']))
+			$this->NotifyOrderToDrivers($data['id'], 'orderCancelled', 'Order cancelled');
+
+		return ['result'=> $result ? 'ok' : 'error'];
+	}
+
+	protected function NotifyOrderToDrivers($order_id, $content_type='orderCreated', $text="OrderCreated") {
 		GLOBAL $dbp;
 		$drivers = $dbp->asArray("SELECT * FROM driverOnTheLine WHERE `active` = 1 AND activationTime > DATE_SUB(NOW(),INTERVAL 1 DAY)");
 		foreach ($drivers as $driver)
-			$this->Notify($order_id, 'orderCreated', $driver['user_id'], Lang("OrderCreated"));
+			(new NotificationModel())->AddNotify($order_id, $content_type, $driver['user_id'], Lang($text));
 	}
 
 	protected function getOrder($order_id) {
 		GLOBAL $dbp;
-		return $dbp->line("SELECT *, u.first_name, u.last_name, u.username ".
+		return $dbp->line("SELECT o.*, u.first_name, u.last_name, u.username ".
 			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.id={$order_id}");
 	}
 
@@ -96,13 +116,6 @@ class Ajax extends Page {
 		GLOBAL $dbp;
 		return $dbp->asArray("SELECT *, u.first_name, u.last_name, u.username ".
 			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE `state`='wait'");
-	}
-
-	public function Notify($content_id, $content_type, $user_id, $text='') {
-		GLOBAL $dbp;
-
-		$model = new NotificationModel();
-		$model->AddNotify($content_id, $content_type, $user_id, $text);
 	}
 
 	public function checkUnique($data) {

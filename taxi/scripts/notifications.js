@@ -14,9 +14,9 @@ class Notifications {
         });}, 500);
     }
 
-    onNotificationList(list) {
-        for (let i in list)
-            this.receiveNotification(list[i]);
+    onNotificationList(e) {
+        for (let i in e.value)
+            this.receiveNotification(e.value[i]);
     }
 
     destroy() {

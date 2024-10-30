@@ -24,7 +24,8 @@ class ToolbarUser {
 		return this.#notifyList && (this.#notifyList.length > 0);
 	}
 
-	setReceiveNotifyList(data) {
+	setReceiveNotifyList(e) {
+		let data = e.value;
 		this.#notifyList = data;
 		if (this.isNotify())
 			for (let i in data) {

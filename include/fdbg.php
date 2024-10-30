@@ -42,7 +42,7 @@ class fdbg {
     
     public static function callStackItem($depth=1) {
         $stack = fdbg::GetStack();
-        return $stack[$depth + 1];
+        return $stack[min($depth + 1, count($stack) - 1)];
     }
     
     public static function GetStack() {

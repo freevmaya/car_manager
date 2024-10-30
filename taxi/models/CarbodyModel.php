@@ -1,7 +1,7 @@
 <?
 class CarbodyModel extends BaseModel {
 	protected function getTable() {
-		return 'car_bodys';
+		return 'car_bodies';
 	}
 
 	public function getItems($options) {

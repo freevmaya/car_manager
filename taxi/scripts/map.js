@@ -94,16 +94,33 @@ class MarkerManager {
 			cars: [],
 			users: []
 		};
-
-		//transport.AddListener('notificationList', this.onNotificationList.bind(this));
 	}
 
-    onNotificationList(list) {
+    onNotificationList(e) {
+    	let list = e.value;
         for (let i in list) {
         	let item = list[i];
         	if (item.content_type == "orderCreated") 
         		this.AddOrder(item.order);
+        	else if (item.content_type == "orderCancelled")
+        		this.RemoveOrder(item.content_id);
         }
+    }
+
+    IndexOfByOrder(order_id) {
+    	for (let i in this.markers.users)
+    		if (order_id == this.markers.users[i].order_id)
+    			return i;
+
+    	return -1;
+    }
+
+    RemoveOrder(order_id) {
+    	let idx = this.IndexOfByOrder(order_id);
+    	if (idx > -1) {
+    		this.markers.users[idx].setMap(null);
+    		delete this.markers.users[idx];
+    	}
     }
 
     AddOrder(order) {
@@ -119,6 +136,13 @@ class MarkerManager {
 		for (let i in orders)
         	this.AddOrder(orders[i]);
     }
+
+	#createFromOrder(latLng, order) {
+		let m = this.CreateUser(latLng, 'user-' + order.user_id, (()=>{
+			this.#showInfoOrder(m, order);
+		}).bind(this));
+		m.order_id = order.id;
+	}
 
 	CreateMarker(position, title, className, onClick = null) {
 		let priceTag = document.createElement("div");
@@ -185,7 +209,11 @@ class MarkerManager {
 						Ajax({
 							action: 'offerToPerform',
 							data: JSON.stringify({id: data.id})
-						}).then(this.selectPathView.Close.bind(this.selectPathView))
+						}).then(((response)=>{
+							if (response.result == 'ok')
+								this.selectPathView.Close();
+							else console.log(response);
+						}).bind(this));
 					}).bind(this)
 				}
 			}, View, this.#closePathView.bind(this));
@@ -200,12 +228,6 @@ class MarkerManager {
 		if (this.selectPath) this.selectPath.setMap(null);
 		this.selectPath = null;
 		this.selectPathView = null;
-	}
-
-	#createFromOrder(latLng, order) {
-		let m = this.CreateUser(latLng, 'user-' + order.user_id, (()=>{
-			this.#showInfoOrder(m, order);
-		}).bind(this));
 	}
 
 	ShowOrders() {

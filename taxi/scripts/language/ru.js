@@ -3,6 +3,7 @@ lang = {
 	'Order': 'Заявка',
 	'User': 'Заказчик',
 	'Dialog': 'Диалог',
+	'Warning!': 'Внимание!',
 	'Car brand': 'Марка авто',
 	'Car number': 'Номер авто',
 	'Car color': 'Цвет авто',
@@ -33,5 +34,6 @@ lang = {
 	'Select auto': 'Выберите авто',
 	'Notifications': 'Сообщения',
 	'Offer to perform': 'Предложить выполнить',
+	'Order sent. Wait for offers or close the order.': 'Заказ отправлен. Ожидайте предложений или закройте заказ.',
 	'This value is already taken. Try entering another value.': 'Это значение уже занято. Попробуйте ввести другое значение.'
 };

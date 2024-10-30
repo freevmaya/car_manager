@@ -67,7 +67,15 @@ class View extends BaseParentView {
         this.windows = $('#' + windowsLayerId);
         this.windows.append(this.view);
 
-        this.closeBtn.click(this.Close.bind(this));
+        this.closeBtn.click(this.beforeClose.bind(this));
+    }
+
+    beforeClose() {
+        this.prepareToClose(this.Close.bind(this));
+    }
+
+    prepareToClose(afterPrepare) {
+        afterPrepare();
     }
 
     initView() {
@@ -106,6 +114,11 @@ class View extends BaseParentView {
         setTimeout(this.checkOverflow.bind(this), 500);
     }
 
+    afterResize() {
+        let space = (this.view.outerHeight() - this.view.height()) / 2;
+        v_map.View.css('bottom', this.view.outerHeight() - space);
+    }
+
     toAlign() {
         let size = { x: $(window).width(), y: $(window).height() };
         if (!this.options.topAlign) {
@@ -113,6 +126,8 @@ class View extends BaseParentView {
                 this.view.removeClass('radius')
                     .addClass('bottom')
                     .addClass('radiusTop');
+
+                this.afterResize();
             }
             //else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);
         }
@@ -141,6 +156,7 @@ class View extends BaseParentView {
 
         if (this.options.curtain) this.blockBackground(false);
         this.view.addClass("hide");
+        v_map.View.css('bottom', 0);
 
         return new Promise(((resolveOuter) => {
             setTimeout((()=>{
@@ -161,11 +177,6 @@ class BottomView extends View {
     setOptions(options) {
         options = $.extend({bottomAlign: true}, options);
         super.setOptions(options);
-    }
-
-    afterResize() {
-        let space = (this.view.outerHeight() - this.view.height()) / 2;
-        v_map.View.css('bottom', this.view.outerHeight() - space);
     }
 
     Close() {

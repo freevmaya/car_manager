@@ -4,6 +4,30 @@
 		"selected_items":
 		[
 			[
+				"con",
+				"content_id"
+			],
+			[
+				"add",
+				"AddOffers"
+			],
+			[
+				"cont",
+				"content_type"
+			],
+			[
+				"margin",
+				"margin-top"
+			],
+			[
+				"back",
+				"background-image"
+			],
+			[
+				"Add",
+				"AddOrder"
+			],
+			[
 				"use",
 				"user_id"
 			],
@@ -20,20 +44,12 @@
 				"json_encode()"
 			],
 			[
-				"add",
-				"AddJsCode"
-			],
-			[
 				"re",
 				"receive"
 			],
 			[
 				"des",
 				"destroy"
-			],
-			[
-				"Add",
-				"AddScriptFile"
 			],
 			[
 				"bac",
@@ -58,10 +74,6 @@
 			[
 				"backgr",
 				"background"
-			],
-			[
-				"back",
-				"background-clip"
 			],
 			[
 				"cur",
@@ -284,10 +296,6 @@
 				"latLng"
 			],
 			[
-				"con",
-				"content"
-			],
-			[
 				"anim",
 				"animation-play-state"
 			],
@@ -506,674 +514,394 @@
 			[
 				"mo",
 				"morder"
-			],
-			[
-				"_SE",
-				"$_SESSION\tSESSION['…']"
-			],
-			[
-				"HTT",
-				"HTTP_HOST"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "taxi/scripts/select-target.js",
+			"file": "taxi/scripts/driver-on-line.js",
 			"settings":
 			{
-				"buffer_size": 5081,
-				"encoding": "UTF-8",
+				"buffer_size": 213,
 				"line_ending": "Windows"
-			},
-			"undo_stack":
-			[
-				[
-					16,
-					1,
-					"",
-					null,
-					"BQAAALQQAAAAAAAAvxAAAAAAAAALAAAAc3RhcnREaWFsb2eBEAAAAAAAAIwQAAAAAAAACwAAAHN0YXJ0RGlhbG9n+Q8AAAAAAAAEEAAAAAAAAAsAAABzdGFydERpYWxvZ6cPAAAAAAAAsg8AAAAAAAALAAAAc3RhcnREaWFsb2c7DwAAAAAAAEYPAAAAAAAACwAAAHN0YXJ0RGlhbG9n",
-					"AQAAAAAAAAABAAAAOw8AAAAAAABGDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					35,
-					1,
-					"insert",
-					{
-						"characters": "var"
-					},
-					"BAAAABkPAAAAAAAAGg8AAAAAAAAAAAAAGg8AAAAAAAAaDwAAAAAAAAEAAAAKGg8AAAAAAAAbDwAAAAAAAAAAAAAbDwAAAAAAABwPAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAGQ8AAAAAAAAaDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					36,
-					1,
-					"insert",
-					{
-						"characters": " "
-					},
-					"AQAAABwPAAAAAAAAHQ8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAHA8AAAAAAAAcDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					37,
-					1,
-					"paste",
-					null,
-					"AQAAAB0PAAAAAAAAKQ8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAHQ8AAAAAAAAdDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					38,
-					1,
-					"insert",
-					{
-						"characters": ";"
-					},
-					"AQAAACkPAAAAAAAAKg8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAKQ8AAAAAAAApDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					57,
-					1,
-					"insert",
-					{
-						"characters": "\n\nif"
-					},
-					"BwAAAFcPAAAAAAAAWA8AAAAAAAAAAAAAWA8AAAAAAABcDwAAAAAAAAAAAABcDwAAAAAAAF0PAAAAAAAAAAAAAF0PAAAAAAAAYQ8AAAAAAAAAAAAAWA8AAAAAAABYDwAAAAAAAAQAAAAgICAgXQ8AAAAAAABeDwAAAAAAAAAAAABeDwAAAAAAAF8PAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAVw8AAAAAAABXDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					58,
-					1,
-					"insert",
-					{
-						"characters": " "
-					},
-					"AQAAAF8PAAAAAAAAYA8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAXw8AAAAAAABfDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					59,
-					1,
-					"insert_snippet",
-					{
-						"contents": "($0)"
-					},
-					"AQAAAGAPAAAAAAAAYg8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAYA8AAAAAAABgDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					62,
-					1,
-					"paste",
-					null,
-					"AQAAAGEPAAAAAAAAbQ8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAYQ8AAAAAAABhDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					64,
-					1,
-					"insert",
-					{
-						"characters": " "
-					},
-					"AQAAAG4PAAAAAAAAbw8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAbg8AAAAAAABuDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					65,
-					1,
-					"insert_snippet",
-					{
-						"contents": "{$0}"
-					},
-					"AQAAAG8PAAAAAAAAcQ8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAbw8AAAAAAABvDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					66,
-					1,
-					"run_macro_file",
-					{
-						"file": "res://Packages/Default/Add Line in Braces.sublime-macro"
-					},
-					"BgAAAHAPAAAAAAAAcQ8AAAAAAAAAAAAAcQ8AAAAAAAB1DwAAAAAAAAAAAAB1DwAAAAAAAHYPAAAAAAAAAAAAAHYPAAAAAAAAeg8AAAAAAAAAAAAAcQ8AAAAAAABxDwAAAAAAAAQAAAAgICAgcQ8AAAAAAAB5DwAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAcA8AAAAAAABwDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					72,
-					1,
-					"paste",
-					null,
-					"AQAAAHkPAAAAAAAAJBAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAeQ8AAAAAAAB5DwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					75,
-					1,
-					"unindent",
-					null,
-					"BQAAAJgPAAAAAAAAmA8AAAAAAAAEAAAAICAgILQPAAAAAAAAtA8AAAAAAAAEAAAAICAgINIPAAAAAAAA0g8AAAAAAAAEAAAAICAgIOUPAAAAAAAA5Q8AAAAAAAAEAAAAICAgIAUQAAAAAAAABRAAAAAAAAAEAAAAICAgIA",
-					"AQAAAAAAAAABAAAApw8AAAAAAAAkEAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					86,
-					1,
-					"paste",
-					null,
-					"AgAAAMwPAAAAAAAA2A8AAAAAAAAAAAAA2A8AAAAAAADYDwAAAAAAAAUAAABwbGFjZQ",
-					"AQAAAAAAAAABAAAAzA8AAAAAAADRDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					95,
-					1,
-					"insert",
-					{
-						"characters": "order"
-					},
-					"BgAAAMAPAAAAAAAAwQ8AAAAAAAAAAAAAwQ8AAAAAAADBDwAAAAAAAAoAAABzdGFydFBsYWNlwQ8AAAAAAADCDwAAAAAAAAAAAADCDwAAAAAAAMMPAAAAAAAAAAAAAMMPAAAAAAAAxA8AAAAAAAAAAAAAxA8AAAAAAADFDwAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAwA8AAAAAAADKDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					109,
-					1,
-					"insert",
-					{
-						"characters": " ="
-					},
-					"AgAAACkPAAAAAAAAKg8AAAAAAAAAAAAAKg8AAAAAAAArDwAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAKQ8AAAAAAAApDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					110,
-					1,
-					"insert",
-					{
-						"characters": " nu"
-					},
-					"AwAAACsPAAAAAAAALA8AAAAAAAAAAAAALA8AAAAAAAAtDwAAAAAAAAAAAAAtDwAAAAAAAC4PAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAKw8AAAAAAAArDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					111,
-					1,
-					"insert_completion",
-					{
-						"completion": "null",
-						"format": "text",
-						"keep_prefix": false,
-						"must_insert": false,
-						"trigger": "null"
-					},
-					"AgAAACwPAAAAAAAALA8AAAAAAAACAAAAbnUsDwAAAAAAADAPAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAALg8AAAAAAAAuDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					172,
-					1,
-					"insert",
-					{
-						"characters": "\n\n"
-					},
-					"BgAAAHcPAAAAAAAAeA8AAAAAAAAAAAAAeA8AAAAAAAB8DwAAAAAAAAAAAAB8DwAAAAAAAIAPAAAAAAAAAAAAAIAPAAAAAAAAgQ8AAAAAAAAAAAAAgQ8AAAAAAACJDwAAAAAAAAAAAAB4DwAAAAAAAHgPAAAAAAAACAAAACAgICAgICAg",
-					"AQAAAAAAAAABAAAAdw8AAAAAAAB3DwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					178,
-					1,
-					"reindent",
-					null,
-					"AQAAAHgPAAAAAAAAgA8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAeA8AAAAAAAB4DwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					193,
-					1,
-					"paste",
-					null,
-					"AQAAAIkPAAAAAAAAlQ8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAiQ8AAAAAAACJDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					194,
-					1,
-					"insert",
-					{
-						"characters": "."
-					},
-					"AgAAAJUPAAAAAAAAlg8AAAAAAAAAAAAAeA8AAAAAAAB4DwAAAAAAAAgAAAAgICAgICAgIA",
-					"AQAAAAAAAAABAAAAlQ8AAAAAAACVDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					195,
-					1,
-					"left_delete",
-					null,
-					"AQAAAI0PAAAAAAAAjQ8AAAAAAAABAAAALg",
-					"AQAAAAAAAAABAAAAjg8AAAAAAACODwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					196,
-					1,
-					"insert",
-					{
-						"characters": ".tit"
-					},
-					"BAAAAI0PAAAAAAAAjg8AAAAAAAAAAAAAjg8AAAAAAACPDwAAAAAAAAAAAACPDwAAAAAAAJAPAAAAAAAAAAAAAJAPAAAAAAAAkQ8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAjQ8AAAAAAACNDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					197,
-					1,
-					"insert_completion",
-					{
-						"completion": "title",
-						"format": "text",
-						"keep_prefix": false,
-						"must_insert": false,
-						"trigger": "title"
-					},
-					"AgAAAI4PAAAAAAAAjg8AAAAAAAADAAAAdGl0jg8AAAAAAACTDwAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAkQ8AAAAAAACRDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					198,
-					1,
-					"insert",
-					{
-						"characters": " ="
-					},
-					"AgAAAJMPAAAAAAAAlA8AAAAAAAAAAAAAlA8AAAAAAACVDwAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAkw8AAAAAAACTDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					199,
-					1,
-					"insert",
-					{
-						"characters": " "
-					},
-					"AQAAAJUPAAAAAAAAlg8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAlQ8AAAAAAACVDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					205,
-					1,
-					"paste",
-					null,
-					"AQAAAJYPAAAAAAAAnQ8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAlg8AAAAAAACWDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					206,
-					1,
-					"insert",
-					{
-						"characters": ";"
-					},
-					"AQAAAJ0PAAAAAAAAng8AAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAnQ8AAAAAAACdDwAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					217,
-					1,
-					"paste",
-					null,
-					"AgAAAMQPAAAAAAAA0A8AAAAAAAAAAAAA0A8AAAAAAADQDwAAAAAAAEcAAAB7CiAgICAgICAgICAgIHRpdGxlOiAnUm91dGUnLAogICAgICAgICAgICBvcmRlcjogY3VycmVudE9yZGVyCiAgICAgICAgfQ",
-					"AQAAAAAAAAABAAAAxA8AAAAAAAALEAAAAAAAAAAAAAAAAPC/"
-				]
-			]
+			}
 		},
 		{
 			"file": "taxi/templates/map.php",
 			"settings":
 			{
-				"buffer_size": 304,
+				"buffer_size": 897,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			},
 			"undo_stack":
 			[
 				[
-					6,
+					26,
 					1,
-					"insert",
-					{
-						"characters": "\nif"
-					},
-					"BAAAAMgAAAAAAAAAyQAAAAAAAAAAAAAAyQAAAAAAAADKAAAAAAAAAAAAAADKAAAAAAAAAMsAAAAAAAAAAAAAAMsAAAAAAAAAzAAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAyAAAAAAAAADIAAAAAAAAAAAAAAAAAPC/"
+					"paste",
+					null,
+					"AgAAABYBAAAAAAAAJgEAAAAAAAAAAAAAJgEAAAAAAAAmAQAAAAAAAAkAAABnZXRPZmZlcnM",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAAWAQAAAAAAAB8BAAAAAAAAAAAAAAAA8L8"
 				],
 				[
-					7,
+					40,
+					1,
+					"left_delete",
+					null,
+					"AQAAAD8BAAAAAAAAPwEAAAAAAAATAAAACgoJdHJhY2UoJG9mZmVyZWQpOw",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAA/AQAAAAAAAFIBAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					43,
+					1,
+					"cut",
+					null,
+					"AQAAAO4AAAAAAAAA7gAAAAAAAABRAAAACgkkb2ZmZXJlZCA9IChuZXcgTm90aWZpY2F0aW9uTW9kZWwoKSktPmdldE9mZmVyc0J5T3JkZXIoJHRoaXMtPmdldFVzZXIoKVsnaWQnXSk7",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAADuAAAAAAAAAD8BAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					46,
 					1,
 					"insert",
 					{
 						"characters": " "
 					},
-					"AQAAAMwAAAAAAAAAzQAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAzAAAAAAAAADMAAAAAAAAAAAAAAAAAPC/"
+					"AQAAAA0BAAAAAAAADgEAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAANAQAAAAAAAA0BAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					47,
+					1,
+					"wrap_block",
+					{
+						"begin": "{",
+						"end": "}"
+					},
+					"AgAAAA4BAAAAAAAADwEAAAAAAAAAAAAAYwEAAAAAAABmAQAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAAOAQAAAAAAAA4BAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					50,
+					1,
+					"paste",
+					null,
+					"AQAAAGIBAAAAAAAAswEAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABiAQAAAAAAAGIBAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					53,
+					1,
+					"insert",
+					{
+						"characters": "\t"
+					},
+					"AQAAAGQBAAAAAAAAZQEAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABkAQAAAAAAAGQBAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					56,
+					1,
+					"",
+					null,
+					"AgAAALQBAAAAAAAADAIAAAAAAAAAAAAADwIAAAAAAAAPAgAAAAAAAFgAAAAKCWlmIChjb3VudCgkb2ZmZXJlZCkgPiAwKQoJCWh0bWw6OkFkZEpzQ29kZSgiTGlzdE9mZmVycyA9ICIuanNvbl9lbmNvZGUoJG9mZmVyZWQpLiI7Iik7",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAC3AQAAAAAAAA8CAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					60,
+					1,
+					"indent",
+					null,
+					"AgAAALUBAAAAAAAAtgEAAAAAAAAAAAAA0AEAAAAAAADRAQAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAC2AQAAAAAAAAwCAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					65,
+					1,
+					"insert",
+					{
+						"characters": "\n"
+					},
+					"AgAAALQBAAAAAAAAtQEAAAAAAAAAAAAAtQEAAAAAAAC3AQAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAC0AQAAAAAAALQBAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					68,
+					1,
+					"insert",
+					{
+						"characters": "\n"
+					},
+					"BAAAAA8BAAAAAAAAEAEAAAAAAAAAAAAAEAEAAAAAAAARAQAAAAAAAAAAAAARAQAAAAAAABIBAAAAAAAAAAAAALgBAAAAAAAAuAEAAAAAAAACAAAACQk",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAAPAQAAAAAAAA8BAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					79,
+					1,
+					"paste",
+					null,
+					"AgAAAJ8BAAAAAAAArgEAAAAAAAAAAAAArgEAAAAAAACuAQAAAAAAABAAAAAkdGhpcy0+Z2V0VXNlcigp",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAACfAQAAAAAAAK8BAAAAAAAAAAAAAAAA8L8"
+				]
+			]
+		},
+		{
+			"file": "taxi/scripts/select-target.js",
+			"settings":
+			{
+				"buffer_size": 8070,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "taxi/scripts/main.js",
+			"settings":
+			{
+				"buffer_size": 8722,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			},
+			"undo_stack":
+			[
+				[
+					17,
+					1,
+					"paste",
+					null,
+					"AQAAALkZAAAAAAAA7RkAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAC5GQAAAAAAALkZAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					20,
+					1,
+					"cut",
+					null,
+					"AQAAAO0ZAAAAAAAA7RkAAAAAAAAMAAAAcGxhY2UubGF0TG5n",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAADtGQAAAAAAAPkZAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					25,
+					1,
+					"paste",
+					null,
+					"AgAAAL8ZAAAAAAAAyxkAAAAAAAAAAAAAyxkAAAAAAADLGQAAAAAAAAUAAABwbGFjZQ",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAC/GQAAAAAAAMQZAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					30,
+					1,
+					"paste",
+					null,
+					"AgAAAOUZAAAAAAAA8RkAAAAAAAAAAAAA8RkAAAAAAADxGQAAAAAAAAUAAABwbGFjZQ",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAADlGQAAAAAAAOoZAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					35,
+					2,
+					"left_delete",
+					null,
+					"AgAAANAZAAAAAAAA0BkAAAAAAAABAAAAKc8ZAAAAAAAAzxkAAAAAAAABAAAAKA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAADRGQAAAAAAANEZAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					38,
+					2,
+					"left_delete",
+					null,
+					"AgAAAPQZAAAAAAAA9BkAAAAAAAABAAAAKfMZAAAAAAAA8xkAAAAAAAABAAAAKA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAD1GQAAAAAAAPUZAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					51,
+					1,
+					"insert",
+					{
+						"characters": "("
+					},
+					"AQAAAM8ZAAAAAAAA0BkAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAADPGQAAAAAAAM8ZAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					5,
+					1,
+					"insert",
+					{
+						"characters": ")"
+					},
+					"AQAAANAZAAAAAAAA0RkAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAA0BkAAAAAAADQGQAAAAAAAAAAAAAAAPC/"
 				],
 				[
 					8,
 					1,
-					"insert_snippet",
-					{
-						"contents": "($0)"
-					},
-					"AQAAAM0AAAAAAAAAzwAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAzQAAAAAAAADNAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					11,
-					1,
 					"insert",
 					{
-						"characters": "count"
+						"characters": "()"
 					},
-					"BQAAAM4AAAAAAAAAzwAAAAAAAAAAAAAAzwAAAAAAAADQAAAAAAAAAAAAAADQAAAAAAAAANEAAAAAAAAAAAAAANEAAAAAAAAA0gAAAAAAAAAAAAAA0gAAAAAAAADTAAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAzgAAAAAAAADOAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					12,
-					1,
-					"insert_snippet",
-					{
-						"contents": "($0)"
-					},
-					"AQAAANMAAAAAAAAA1QAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA0wAAAAAAAADTAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					15,
-					1,
-					"paste",
-					null,
-					"AQAAANQAAAAAAAAA4AAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA1AAAAAAAAADUAAAAAAAAAAAAAAAAAPC/"
-				],
+					"AgAAAPUZAAAAAAAA9hkAAAAAAAAAAAAA9hkAAAAAAAD3GQAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAA9RkAAAAAAAD1GQAAAAAAAAAAAAAAAPC/"
+				]
+			]
+		},
+		{
+			"file": "taxi/models/NotificationModel.php",
+			"settings":
+			{
+				"buffer_size": 2453,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			},
+			"undo_stack":
+			[
 				[
 					17,
 					1,
-					"insert",
-					{
-						"characters": " <"
-					},
-					"AgAAAOEAAAAAAAAA4gAAAAAAAAAAAAAA4gAAAAAAAADjAAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA4QAAAAAAAADhAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					18,
-					1,
-					"left_delete",
+					"paste",
 					null,
-					"AQAAAOIAAAAAAAAA4gAAAAAAAAABAAAAPA",
-					"AQAAAAAAAAABAAAA4wAAAAAAAADjAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					19,
-					1,
-					"insert",
-					{
-						"characters": ">"
-					},
-					"AQAAAOIAAAAAAAAA4wAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA4gAAAAAAAADiAAAAAAAAAAAAAAAAAPC/"
+					"AQAAAKAEAAAAAAAAZQcAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAACgBAAAAAAAAKAEAAAAAAAAAAAAAAAA8L8"
 				],
 				[
 					20,
 					1,
 					"insert",
 					{
-						"characters": " 0"
+						"characters": "By"
 					},
-					"AgAAAOMAAAAAAAAA5AAAAAAAAAAAAAAA5AAAAAAAAADlAAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA4wAAAAAAAADjAAAAAAAAAAAAAAAAAPC/"
+					"AgAAALwEAAAAAAAAvQQAAAAAAAAAAAAAvQQAAAAAAAC+BAAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAC8BAAAAAAAALwEAAAAAAAAAAAAAAAA8L8"
 				],
 				[
-					22,
-					1,
-					"insert",
-					{
-						"characters": "\n"
-					},
-					"BAAAAOYAAAAAAAAA5wAAAAAAAAAAAAAA5wAAAAAAAADoAAAAAAAAAAAAAADnAAAAAAAAAOcAAAAAAAAAAQAAAAnnAAAAAAAAAOkAAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA5gAAAAAAAADmAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					23,
-					1,
-					"insert",
-					{
-						"characters": "html::"
-					},
-					"BgAAAOkAAAAAAAAA6gAAAAAAAAAAAAAA6gAAAAAAAADrAAAAAAAAAAAAAADrAAAAAAAAAOwAAAAAAAAAAAAAAOwAAAAAAAAA7QAAAAAAAAAAAAAA7QAAAAAAAADuAAAAAAAAAAAAAADuAAAAAAAAAO8AAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA6QAAAAAAAADpAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					24,
-					1,
-					"insert_completion",
-					{
-						"completion": "AddJsCode",
-						"format": "text",
-						"keep_prefix": false,
-						"must_insert": true,
-						"trigger": "AddJsCode"
-					},
-					"AQAAAO8AAAAAAAAA+AAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA7wAAAAAAAADvAAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					25,
-					1,
-					"insert_snippet",
-					{
-						"contents": "($0)"
-					},
-					"AQAAAPgAAAAAAAAA+gAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA+AAAAAAAAAD4AAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					27,
-					1,
-					"insert",
-					{
-						"characters": ";"
-					},
-					"AQAAAPoAAAAAAAAA+wAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA+gAAAAAAAAD6AAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					29,
-					1,
-					"insert_snippet",
-					{
-						"contents": "'$0'"
-					},
-					"AQAAAPkAAAAAAAAA+wAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA+QAAAAAAAAD5AAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					32,
-					1,
-					"insert",
-					{
-						"characters": "var"
-					},
-					"AwAAAPoAAAAAAAAA+wAAAAAAAAAAAAAA+wAAAAAAAAD8AAAAAAAAAAAAAAD8AAAAAAAAAP0AAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA+gAAAAAAAAD6AAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					33,
-					1,
-					"insert",
-					{
-						"characters": " "
-					},
-					"AQAAAP0AAAAAAAAA/gAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA/QAAAAAAAAD9AAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					34,
-					4,
-					"left_delete",
-					null,
-					"BAAAAP0AAAAAAAAA/QAAAAAAAAABAAAAIPwAAAAAAAAA/AAAAAAAAAABAAAAcvsAAAAAAAAA+wAAAAAAAAABAAAAYfoAAAAAAAAA+gAAAAAAAAABAAAAdg",
-					"AQAAAAAAAAABAAAA/gAAAAAAAAD+AAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					35,
-					1,
-					"insert",
-					{
-						"characters": "current"
-					},
-					"BwAAAPoAAAAAAAAA+wAAAAAAAAAAAAAA+wAAAAAAAAD8AAAAAAAAAAAAAAD8AAAAAAAAAP0AAAAAAAAAAAAAAP0AAAAAAAAA/gAAAAAAAAAAAAAA/gAAAAAAAAD/AAAAAAAAAAAAAAD/AAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAQEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAA+gAAAAAAAAD6AAAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					36,
+					21,
 					1,
 					"insert",
 					{
 						"characters": "Order"
 					},
-					"BQAAAAEBAAAAAAAAAgEAAAAAAAAAAAAAAgEAAAAAAAADAQAAAAAAAAAAAAADAQAAAAAAAAQBAAAAAAAAAAAAAAQBAAAAAAAABQEAAAAAAAAAAAAABQEAAAAAAAAGAQAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAAQEAAAAAAAABAQAAAAAAAAAAAAAAAPC/"
+					"BQAAAL4EAAAAAAAAvwQAAAAAAAAAAAAAvwQAAAAAAADABAAAAAAAAAAAAADABAAAAAAAAMEEAAAAAAAAAAAAAMEEAAAAAAAAwgQAAAAAAAAAAAAAwgQAAAAAAADDBAAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAC+BAAAAAAAAL4EAAAAAAAAAAAAAAAA8L8"
 				],
 				[
-					37,
+					28,
 					1,
 					"insert",
 					{
-						"characters": " ="
+						"characters": "order_id"
 					},
-					"AgAAAAYBAAAAAAAABwEAAAAAAAAAAAAABwEAAAAAAAAIAQAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAABgEAAAAAAAAGAQAAAAAAAAAAAAAAAPC/"
+					"CQAAAMUEAAAAAAAAxgQAAAAAAAAAAAAAxgQAAAAAAADGBAAAAAAAAAcAAAB1c2VyX2lkxgQAAAAAAADHBAAAAAAAAAAAAADHBAAAAAAAAMgEAAAAAAAAAAAAAMgEAAAAAAAAyQQAAAAAAAAAAAAAyQQAAAAAAADKBAAAAAAAAAAAAADKBAAAAAAAAMsEAAAAAAAAAAAAAMsEAAAAAAAAzAQAAAAAAAAAAAAAzAQAAAAAAADNBAAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAADFBAAAAAAAAMwEAAAAAAAAAAAAAAAA8L8"
 				],
 				[
-					38,
+					33,
+					1,
+					"left_delete",
+					null,
+					"AQAAAM0EAAAAAAAAzQQAAAAAAAASAAAALCAkbm90aWZ5X2lkPWZhbHNl",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAADNBAAAAAAAAN8EAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					48,
+					1,
+					"insert",
+					{
+						"characters": "\n"
+					},
+					"AwAAAFMFAAAAAAAAVAUAAAAAAAAAAAAAVAUAAAAAAABWBQAAAAAAAAAAAABWBQAAAAAAAFYFAAAAAAAAcQAAADsKCQlpZiAoJG5vdGlmeV9pZCkKCQkJJHdoZXJlU3RyIC49ICcgQU5EIG4uaWQgPSAnLiRub3RpZnlfaWQ7CgkJZWxzZSAkd2hlcmVTdHIgLj0gIiBBTkQgbi5gdXNlcl9pZGA9eyR1c2VyX2lkfSI7",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABTBQAAAAAAAMQFAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					51,
+					1,
+					"insert",
+					{
+						"characters": " AND"
+					},
+					"BQAAAFIFAAAAAAAAUwUAAAAAAAAAAAAAVQUAAAAAAABVBQAAAAAAAAIAAAAJCVMFAAAAAAAAVAUAAAAAAAAAAAAAVAUAAAAAAABVBQAAAAAAAAAAAABVBQAAAAAAAFYFAAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABSBQAAAAAAAFIFAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					52,
 					1,
 					"insert",
 					{
 						"characters": " "
 					},
-					"AQAAAAgBAAAAAAAACQEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAACAEAAAAAAAAIAQAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					40,
-					1,
-					"insert",
-					{
-						"characters": ".h"
-					},
-					"AgAAAAoBAAAAAAAACwEAAAAAAAAAAAAACwEAAAAAAAAMAQAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAACgEAAAAAAAAKAQAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					41,
-					1,
-					"left_delete",
-					null,
-					"AQAAAAsBAAAAAAAACwEAAAAAAAABAAAAaA",
-					"AQAAAAAAAAABAAAADAEAAAAAAAAMAQAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					42,
-					1,
-					"insert",
-					{
-						"characters": "js"
-					},
-					"AgAAAAsBAAAAAAAADAEAAAAAAAAAAAAADAEAAAAAAAANAQAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAACwEAAAAAAAALAQAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					43,
-					1,
-					"insert_completion",
-					{
-						"completion": "json_encode",
-						"format": "text",
-						"keep_prefix": false,
-						"must_insert": false,
-						"trigger": "json_encode"
-					},
-					"AgAAAAsBAAAAAAAACwEAAAAAAAACAAAAanMLAQAAAAAAABYBAAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAADQEAAAAAAAANAQAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					44,
-					1,
-					"insert_snippet",
-					{
-						"contents": "($0)"
-					},
-					"AQAAABYBAAAAAAAAGAEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAFgEAAAAAAAAWAQAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					52,
-					1,
-					"paste",
-					null,
-					"AQAAABcBAAAAAAAAIwEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAFwEAAAAAAAAXAQAAAAAAAAAAAAAAAPC/"
+					"AQAAAFYFAAAAAAAAVwUAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABWBQAAAAAAAFYFAAAAAAAAAAAAAAAA8L8"
 				],
 				[
 					53,
 					1,
-					"insert_snippet",
-					{
-						"contents": "[$0]"
-					},
-					"AQAAACMBAAAAAAAAJQEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAIwEAAAAAAAAjAQAAAAAAAAAAAAAAAPC/"
-				],
-				[
-					54,
-					1,
 					"insert",
 					{
-						"characters": "0"
+						"characters": "n.con"
 					},
-					"AQAAACQBAAAAAAAAJQEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAJAEAAAAAAAAkAQAAAAAAAAAAAAAAAPC/"
+					"BQAAAFcFAAAAAAAAWAUAAAAAAAAAAAAAWAUAAAAAAABZBQAAAAAAAAAAAABZBQAAAAAAAFoFAAAAAAAAAAAAAFoFAAAAAAAAWwUAAAAAAAAAAAAAWwUAAAAAAABcBQAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABXBQAAAAAAAFcFAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					55,
+					1,
+					"insert_completion",
+					{
+						"completion": "content_id",
+						"format": "text",
+						"keep_prefix": false,
+						"must_insert": false,
+						"trigger": "content_id"
+					},
+					"AgAAAFkFAAAAAAAAWQUAAAAAAAADAAAAY29uWQUAAAAAAABjBQAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABcBQAAAAAAAFwFAAAAAAAAAAAAAAAA8L8"
 				],
 				[
 					56,
 					1,
 					"insert",
 					{
-						"characters": "."
+						"characters": " ="
 					},
-					"AQAAACcBAAAAAAAAKAEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAJwEAAAAAAAAnAQAAAAAAAAAAAAAAAPC/"
+					"AgAAAGMFAAAAAAAAZAUAAAAAAAAAAAAAZAUAAAAAAABlBQAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABjBQAAAAAAAGMFAAAAAAAAAAAAAAAA8L8"
 				],
 				[
 					57,
 					1,
-					"insert_snippet",
+					"insert",
 					{
-						"contents": "'$0'"
+						"characters": " "
 					},
-					"AQAAACgBAAAAAAAAKgEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAKAEAAAAAAAAoAQAAAAAAAAAAAAAAAPC/"
+					"AQAAAGUFAAAAAAAAZgUAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABlBQAAAAAAAGUFAAAAAAAAAAAAAAAA8L8"
 				],
 				[
-					60,
+					58,
+					1,
+					"insert",
+					{
+						"characters": "{}"
+					},
+					"AgAAAGYFAAAAAAAAZwUAAAAAAAAAAAAAZwUAAAAAAABoBQAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABmBQAAAAAAAGYFAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					66,
+					1,
+					"paste",
+					null,
+					"AQAAAGcFAAAAAAAAcAUAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAABnBQAAAAAAAGcFAAAAAAAAAAAAAAAA8L8"
+				],
+				[
+					69,
 					1,
 					"insert",
 					{
 						"characters": ";"
 					},
-					"AQAAACkBAAAAAAAAKgEAAAAAAAAAAAAA",
-					"AQAAAAAAAAABAAAAKQEAAAAAAAApAQAAAAAAAAAAAAAAAPC/"
+					"AQAAAHIFAAAAAAAAcwUAAAAAAAAAAAAA",
+					"AgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPC/AAAAAAEAAAByBQAAAAAAAHIFAAAAAAAAAAAAAAAA8L8"
 				]
 			]
 		}
@@ -1211,6 +939,8 @@
 	"expanded_folders":
 	[
 		"/C/OpenServer/domains/parashop.com",
+		"/C/OpenServer/domains/parashop.com/include",
+		"/C/OpenServer/domains/parashop.com/include/db",
 		"/C/OpenServer/domains/parashop.com/languages",
 		"/C/OpenServer/domains/parashop.com/logs",
 		"/C/OpenServer/domains/parashop.com/taxi",
@@ -1220,31 +950,38 @@
 	],
 	"file_history":
 	[
-		"/C/OpenServer/domains/parashop.com/taxi/classes/ajax.php",
-		"/C/OpenServer/domains/parashop.com/languages/ru.php",
-		"/C/OpenServer/domains/parashop.com/taxi/models/NotificationModel.php",
-		"/C/OpenServer/domains/parashop.com/taxi/models/OrderModel.php",
-		"/C/OpenServer/domains/parashop.com/taxi/templates/map/driver.php",
-		"/C/OpenServer/domains/parashop.com/taxi/templates/map.php",
-		"/C/OpenServer/domains/parashop.com/taxi/scripts/map.js",
+		"/C/OpenServer/domains/parashop.com/taxi/scripts/select-target.js",
+		"/C/OpenServer/domains/parashop.com/taxi/scripts/main.js",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/language/ru.js",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/views.js",
+		"/C/OpenServer/domains/parashop.com/taxi/classes/ajax.php",
+		"/C/OpenServer/domains/parashop.com/taxi/scripts/map.js",
+		"/C/OpenServer/domains/parashop.com/include/db/mySQLProvider.php",
+		"/C/OpenServer/domains/parashop.com/logs/errors.log",
+		"/C/OpenServer/domains/parashop.com/include/fdbg.php",
+		"/C/OpenServer/domains/parashop.com/taxi/models/NotificationModel.php",
+		"/C/OpenServer/domains/parashop.com/taxi/models/OrderModel.php",
+		"/C/OpenServer/domains/parashop.com/taxi/models/CarbodyModel.php",
+		"/C/OpenServer/domains/parashop.com/taxi/templates/map.php",
+		"/C/OpenServer/domains/parashop.com/taxi/css/styles.css",
+		"/C/OpenServer/domains/parashop.com/taxi/templates/test.php",
+		"/C/OpenServer/domains/parashop.com/languages/ru.php",
+		"/C/OpenServer/domains/parashop.com/taxi/models/BaseModel.php",
+		"/C/OpenServer/domains/parashop.com/taxi/models/DriverModel.php",
+		"/C/OpenServer/domains/parashop.com/logs/fdbg.log",
+		"/C/OpenServer/domains/parashop.com/taxi/scripts/toolbar.js",
+		"/C/OpenServer/domains/parashop.com/include/_edbu2.php",
+		"/C/OpenServer/domains/parashop.com/taxi/templates/map/driver.php",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/driver-on-line.js",
-		"/C/OpenServer/domains/parashop.com/taxi/scripts/main.js",
 		"/C/OpenServer/domains/parashop.com/config/config.php",
 		"/C/OpenServer/domains/parashop.com/taxi/classes/page.php",
-		"/C/OpenServer/domains/parashop.com/logs/fdbg.log",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/language/en.js",
 		"/C/OpenServer/domains/parashop.com/taxi/templates/index.php",
-		"/C/OpenServer/domains/parashop.com/taxi/models/BaseModel.php",
 		"/C/OpenServer/domains/parashop.com/taxi/templates/map/map-index.php",
 		"/C/OpenServer/domains/parashop.com/taxi/templates/toolbar.php",
 		"/C/OpenServer/domains/parashop.com/taxi/classes/html.php",
 		"/C/OpenServer/domains/parashop.com/taxi/classes/map.php",
-		"/C/OpenServer/domains/parashop.com/taxi/scripts/toolbar.js",
-		"/C/OpenServer/domains/parashop.com/taxi/scripts/select-target.js",
 		"/C/OpenServer/domains/parashop.com/languages/en.php",
-		"/C/OpenServer/domains/parashop.com/taxi/css/styles.css",
 		"/C/OpenServer/domains/parashop.com/taxi/models/CarModel.php",
 		"/C/OpenServer/domains/parashop.com/taxi/templates/fields/carbody.php",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/select-view.js",
@@ -1252,10 +989,7 @@
 		"/C/OpenServer/domains/parashop.com/taxi/css/colors-01.css",
 		"/C/OpenServer/domains/parashop.com/taxi/templates/fields/bool.php",
 		"/C/OpenServer/domains/parashop.com/taxi/classes/driver.php",
-		"/C/OpenServer/domains/parashop.com/taxi/models/DriverModel.php",
-		"/C/OpenServer/domains/parashop.com/taxi/templates/test.php",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/notifications.js",
-		"/C/OpenServer/domains/parashop.com/include/_edbu2.php",
 		"/C/OpenServer/domains/parashop.com/taxi/utils/colors.html",
 		"/C/OpenServer/domains/parashop.com/taxi/templates/crop-image.php",
 		"/C/OpenServer/domains/parashop.com/taxi/templates/fields/color.php",
@@ -1263,7 +997,6 @@
 		"/C/OpenServer/domains/parashop.com/taxi/templates/fields/car.php",
 		"/C/OpenServer/domains/parashop.com/taxi/models/PrepareTripModel.php",
 		"/C/OpenServer/domains/parashop.com/taxi/models/UserModel.php",
-		"/C/OpenServer/domains/parashop.com/taxi/models/CarbodyModel.php",
 		"/C/OpenServer/domains/parashop.com/taxi/models/ColorModel.php",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/validator.js",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/mechanics.js",
@@ -1289,11 +1022,9 @@
 		"/C/OpenServer/domains/parashop.com/taxi/templates/driver.php",
 		"/C/OpenServer/domains/parashop.com/taxi/classes/settings.php",
 		"/C/OpenServer/domains/parashop.com/taxi/scripts/validators.js",
-		"/C/OpenServer/domains/parashop.com/include/db/mySQLProvider.php",
 		"/C/OpenServer/domains/parashop.com/include/db/dataBaseProvider.php",
 		"/C/OpenServer/domains/parashop.com/bot/__vendor__/longman/telegram-bot/src/Conversation.php",
 		"/C/OpenServer/domains/parashop.com/include/_dbu.php",
-		"/C/OpenServer/domains/parashop.com/include/fdbg.php",
 		"/C/OpenServer/domains/parashop.com/taxi/index.php",
 		"/C/OpenServer/domains/parashop.com/classes/Utils.php",
 		"/C/OpenServer/domains/parashop.com/index.php",
@@ -1346,8 +1077,7 @@
 		"/C/UnityProjects/SCS-S 2.0/external.json",
 		"/C/Users/fwadi/AppData/LocalLow/DoKiSan Systems/SCS-SIM-BASICS/data/projects/cables 01.json",
 		"/C/OpenServer/domains/parashop.com/bot/index.php",
-		"/C/OpenServer/domains/parashop.com/bot/composer.json",
-		"/C/OpenServer/domains/parashop.com/bot/config/create_webhook"
+		"/C/OpenServer/domains/parashop.com/bot/composer.json"
 	],
 	"find":
 	{
@@ -1358,6 +1088,7 @@
 		"height": 107.0,
 		"where_history":
 		[
+			"C:\\OpenServer\\domains\\parashop.com\\taxi\\scripts,<project filters>",
 			"C:\\OpenServer\\domains\\parashop.com\\taxi,<project filters>",
 			"C:\\OpenServer\\domains\\parashop.com\\taxi\\scripts,<project filters>",
 			"C:\\OpenServer\\domains\\parashop.com\\taxi,<project filters>",
@@ -1484,8 +1215,7 @@
 			"C:\\WebServers\\home\\dev.rabota7.local\\www\\protected\\views",
 			"C:\\WebServers\\home\\dev.rabota7.local\\www\\protected",
 			"C:\\WebServers\\home\\dev.rabota7.local\\www\\protected\\controllers",
-			"C:\\WebServers\\home\\dev.rabota7.local\\www\\protected\\views",
-			"C:\\WebServers\\home\\dev.rabota7.local\\www\\protected"
+			"C:\\WebServers\\home\\dev.rabota7.local\\www\\protected\\views"
 		]
 	},
 	"find_state":
@@ -1493,6 +1223,61 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"AddOrder",
+			"startOrders",
+			"options.id",
+			"checkState",
+			"markers",
+			"createFromOrder",
+			"Notify",
+			"AddOrder",
+			"ListOffers",
+			"offerToPerform",
+			"onNotification",
+			"offerToPerform",
+			"viewClose",
+			"AddOrder",
+			"addOrder",
+			"afterDestroy",
+			"afterResize",
+			"prepareToClose",
+			"Cancel",
+			"Warning",
+			"afterDestroy",
+			"Close()",
+			"viewClose",
+			"Close",
+			"show",
+			"PlaceLatLng",
+			"showPath",
+			"Close",
+			".car-image-box",
+			"SelectPlace",
+			"afterResize",
+			"Resi",
+			"toAlign",
+			"Allg",
+			".view .footer",
+			".footer.sliderView, .footer .sliderView",
+			"footer btn-block sliderView",
+			"offerToPerform",
+			"offerTo",
+			"notify",
+			"templates",
+			".footer .slider .notify",
+			".view .footer",
+			"car-image-box",
+			"notify",
+			"notify car",
+			".view",
+			"order",
+			"showOrder",
+			"offerToPerform",
+			"routes",
+			"cnvDbOrder",
+			"AddOrder",
+			"PlaceName",
+			"startPlace",
 			"startDialog",
 			"OrderModel",
 			"InfoPath",
@@ -1565,62 +1350,7 @@
 			"item-image",
 			"color-demo",
 			"item",
-			"items",
-			":before",
-			".field .button::before",
-			"cubic-bezie",
-			"anim",
-			"block",
-			"идщсл",
-			"car",
-			".car",
-			"field .car",
-			"car",
-			"car-image-box",
-			".field .car",
-			"option",
-			"showView",
-			".view .content",
-			"content",
-			".view",
-			"option",
-			"image",
-			".view .content",
-			".view",
-			"setContent",
-			"sliderView",
-			".popup",
-			"view",
-			"setContent",
-			"fieldById",
-			"this.#children",
-			"content",
-			"filter",
-			"blur",
-			"animation-name",
-			".car button, .car .button",
-			"showView",
-			"animation",
-			".field .button::before",
-			"selectView",
-			".car div",
-			"selectView",
-			".selectView",
-			"selectView",
-			"block",
-			".hide",
-			"showView",
-			"curtain",
-			"btn",
-			"group",
-			"title::after",
-			"divider",
-			"title::after",
-			".view > .title::after",
-			".view .content .group",
-			"setContent",
-			"Classes",
-			"BaseParentView"
+			"items"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -1762,7 +1492,7 @@
 		"show_context": false,
 		"use_buffer2": true,
 		"use_gitignore": false,
-		"whole_word": true,
+		"whole_word": false,
 		"wrap": true
 	},
 	"groups":
@@ -1772,20 +1502,19 @@
 			[
 				{
 					"buffer": 0,
-					"file": "taxi/scripts/select-target.js",
-					"selected": true,
+					"file": "taxi/scripts/driver-on-line.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5081,
+						"buffer_size": 213,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4048,
-								4048
+								198,
+								209
 							]
 						],
 						"settings":
@@ -1795,10 +1524,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1947.2,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 4,
 					"stack_multiselect": false,
 					"type": "text"
 				},
@@ -1808,15 +1537,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 304,
+						"buffer_size": 897,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								297,
-								297
+								453,
+								460
 							]
 						],
 						"settings":
@@ -1829,7 +1558,101 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+					"stack_index": 2,
+					"stack_multiselect": false,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "taxi/scripts/select-target.js",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 8070,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5343,
+								5343
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2436.0,
+						"zoom_level": 1.0
+					},
 					"stack_index": 1,
+					"stack_multiselect": false,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "taxi/scripts/main.js",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8722,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6647,
+								6647
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4094.4,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "taxi/models/NotificationModel.php",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2453,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1203,
+								1219
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/PHP/PHP.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 332.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
 					"stack_multiselect": false,
 					"type": "text"
 				}
@@ -1883,7 +1706,7 @@
 	"project": "project.sublime-project",
 	"replace":
 	{
-		"height": 72.0
+		"height": 51.2
 	},
 	"save_all_on_build": true,
 	"select_file":

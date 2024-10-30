@@ -43,10 +43,10 @@
     <div class="notify car">
         <div class="car-image-box chess light">
             <img class="car-image" src="css/images/{symbol}.png"></img>
+            <span>{symbol}</span>
         </div>
         <button>{Go}</button>
         <div class="block">
-            <div>{symbol}</div>
             <div>Driver: {driver}</div>
             <div>Number: {number}</div>
         </div>
@@ -59,7 +59,6 @@
       <h3>Маршрут</h3>
       <button class="close button"></button>
     </div>
-
 
     <div class="footer btn-block sliderView">
       <div class="slider">

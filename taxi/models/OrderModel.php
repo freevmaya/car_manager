@@ -20,7 +20,7 @@ class OrderModel extends BaseModel {
 		$whereStr = implode(" AND ", $where);
 
 		$query = "SELECT o.*, u.id AS user_id, u.username, u.first_name, u.last_name FROM {$this->getTable()} o LEFT JOIN `users` u ON u.id = o.user_id WHERE $whereStr";
-		trace($query);
+		//trace($query);
 		return $dbp->asArray($query);
 	}
 
@@ -38,6 +38,13 @@ class OrderModel extends BaseModel {
 		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `startPlace`, `finishPlace`, `startName`, `finishName`, `startAddress`, `finishAddress`, `meters`) VALUES (?,NOW(),?,?,?,?,?,?,?,?)", 
 			'isssssssi', [$data['user_id'], $pickUpTime, $start, $finish, $data['startName'], $data['finishName'], $startAddress, $finishAddress, $data['meters']]);
 		return $dbp->lastID();
+	}
+
+	public function CancelOrder($id) {
+		GLOBAL $dbp;
+
+		$query = "UPDATE `orders` SET state = 'cancel' WHERE `id` = ?";
+		return $dbp->bquery($query, 'i', [$id]);
 	}
 }
 ?>
