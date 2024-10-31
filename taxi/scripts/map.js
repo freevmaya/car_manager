@@ -101,10 +101,26 @@ class MarkerManager {
         for (let i in list) {
         	let item = list[i];
         	if (item.content_type == "orderCreated") 
-        		this.AddOrder(item.order);
-        	else if (item.content_type == "orderCancelled")
+        		this.AddOrder(item.order, true);
+        	else if (item.content_type == "orderCancelled") {
         		this.RemoveOrder(item.content_id);
+        	}
         }
+    }
+
+    ShowMarkerOfOrder(order_id) {
+    	let idx = this.IndexOfByOrder(order_id);
+    	if (idx > -1) {
+    		let market = this.markers.users[idx];
+    		v_map.map.setCenter(market.position);
+    		let e = $(market.content);
+    		if (e.hasClass('animShake')) {
+    			e.removeClass('animShake');
+    			setTimeout(()=>{
+    				e.addClass('animShake');
+    			}, 200);
+    		} else e.addClass('animShake');
+    	}
     }
 
     IndexOfByOrder(order_id) {
@@ -120,16 +136,19 @@ class MarkerManager {
     	if (idx > -1) {
     		this.markers.users[idx].setMap(null);
     		delete this.markers.users[idx];
+    		
+    		if (this.selectPathView && (this.selectPathView.order.id == order_id))
+    			this.selectPathView.Close();
     	}
     }
 
-    AddOrder(order) {
+    AddOrder(order, anim) {
 
 		order.startPlace = JSON.parse(order.startPlace);
 		order.finishPlace = JSON.parse(order.finishPlace);
 		let latLng = { lat: order.startPlace.lat, lng: order.startPlace.lng };
 
-    	this.#createFromOrder(latLng, order);
+    	this.#createFromOrder(latLng, order, anim);
     }
 
     AddOrders(orders) {
@@ -137,23 +156,24 @@ class MarkerManager {
         	this.AddOrder(orders[i]);
     }
 
-	#createFromOrder(latLng, order) {
-		let m = this.CreateUser(latLng, 'user-' + order.user_id, (()=>{
+	#createFromOrder(latLng, order, anim) {
+		let m = this.CreateUserMarker(latLng, 'user-' + order.user_id, (()=>{
 			this.#showInfoOrder(m, order);
-		}).bind(this));
+		}).bind(this), anim ? 'user-marker anim' : 'user-marker');
 		m.order_id = order.id;
 	}
 
-	CreateMarker(position, title, className, onClick = null) {
+	CreateMarker(position, title, className, onClick = null, addClass=null) {
 		let priceTag = document.createElement("div");
 		priceTag.className = className;
+		if (addClass) priceTag.addClass(addClass);
 
 		let marker = new v_map.Classes['AdvancedMarkerElement']({
 		    map: this.map,
 		    position: position,
 		    title: title,
 		    content: priceTag,
-				gmpClickable: onClick != null
+			gmpClickable: onClick != null
 		});
 
 		if (onClick != null)
@@ -162,14 +182,14 @@ class MarkerManager {
 		return marker;
 	}
 
-	CreateDriver(position, title, onClick = null) {
-		let result = this.CreateMarker(position, title, 'marker auto', onClick);
+	CreateDriver(position, title, onClick = null, markerClass='marker auto') {
+		let result = this.CreateMarker(position, title, markerClass, onClick);
 		this.markers.cars.push(result);
 		return result;
 	}
 
-	CreateUser(position, title, onClick = null) {
-		let result = this.CreateMarker(position, title, 'user-marker', onClick);
+	CreateUserMarker(position, title, onClick = null, markerClass='user-marker') {
+		let result = this.CreateMarker(position, title, markerClass, onClick);
 		this.markers.users.push(result);
 		return result;
 	}
@@ -217,6 +237,7 @@ class MarkerManager {
 					}).bind(this)
 				}
 			}, View, this.#closePathView.bind(this));
+			this.selectPathView.order = data;
 		}
 
 		if (this.selectPathView)

@@ -41,7 +41,7 @@ class ViewTarget extends BottomView {
 
             this.showPath(options.startPlace, options.finishPlace);
 
-            if (ListOffers.length == 0)
+            if (ListOffers && (ListOffers.length == 0))
                 this.addTextInSlider(toLang('Order sent. Wait for offers or close the order.'));
             else this.AddOffers(ListOffers);
         } else {
@@ -59,8 +59,8 @@ class ViewTarget extends BottomView {
 
     AddOffers(list) {
         for (let i in list) {
+            
             let item = list[i];
-            console.log(item);
             let elem = templateClone($('.templates .car'), item);
             if (elem.length > 0) {
                 const rgb = hexToRgb(item.rgb);
@@ -100,6 +100,8 @@ class ViewTarget extends BottomView {
             let field = this.fieldById("finishPlace");
             field.view.text(PlaceName(this.options.finishPlace));
             field.infoView.text(PlaceAddress(this.options.finishPlace));
+            field.infoView.addClass('showInfo');
+            
             this.afterResize();
             this.footerElement.find('button').prop('disabled', false);
 
@@ -120,6 +122,7 @@ class ViewTarget extends BottomView {
                 transport.SendStatusNotify(data[i], 'read');
                 e.StopPropagation();
             } else if (data[i].content_type == 'offerToPerform') {
+                transport.SendStatusNotify(data[i], 'read');
 
                 let offerView;
 
@@ -130,9 +133,6 @@ class ViewTarget extends BottomView {
                     this.AddOffers(response);
                 }).bind(this));
                 e.StopPropagation();
-
-                //this.footerSlider.append(offerView = $('<div class="notify car">'));
-                //transport.SendStatusNotify(data[i], 'read');
             } 
     }
 
@@ -208,8 +208,6 @@ function Mechanics() {
     var routeDialog;
 
     if (currentOrder) {
-
-        currentOrder.title = 'Route';
         routeDialog = new ViewTarget(currentOrder, () => {
             routeDialog = null;
         });
@@ -223,7 +221,6 @@ function Mechanics() {
             v_map.mainMarker.position = place.latLng;
 
             routeDialog = new ViewTarget({
-                title: 'Route',
                 startPlace: place
             }, () => {
                 routeDialog = null;

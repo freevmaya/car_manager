@@ -35,5 +35,8 @@ lang = {
 	'Notifications': 'Сообщения',
 	'Offer to perform': 'Предложить выполнить',
 	'Order sent. Wait for offers or close the order.': 'Заказ отправлен. Ожидайте предложений или закройте заказ.',
-	'This value is already taken. Try entering another value.': 'Это значение уже занято. Попробуйте ввести другое значение.'
+	'This value is already taken. Try entering another value.': 'Это значение уже занято. Попробуйте ввести другое значение.',
+	'Order cancelled': 'Заказ отменен',
+	'OrderToProcess': 'Заказ принят',
+	'Order сreated': 'Заказ создан'
 };

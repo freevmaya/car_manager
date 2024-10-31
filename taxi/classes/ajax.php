@@ -49,7 +49,8 @@ class Ajax extends Page {
 		$notificationList = $dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$this->user['id']}");
 
 		for ($i=0;$i<count($notificationList);$i++) {
-			if ($notificationList[$i]['content_type'] == 'orderCreated')
+			$ct = $notificationList[$i]['content_type'];
+			if (($ct == 'orderCreated') || ($ct == 'orderCancelled'))
 				$notificationList[$i]['order'] = $this->getOrder($notificationList[$i]['content_id']);
 		}
 		if (count($notificationList))
@@ -70,7 +71,7 @@ class Ajax extends Page {
 		if ($order = (new OrderModel())->getItem($data['id'])) {
 
 			if ($driver = (new DriverModel())->getItem($this->getUser()['id']))
-				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], Lang('OfferToPerform'), $driver['id']);
+				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], 'Offer to perform the order', $driver['id']);
 			else $error = 'Driver not activated';
 		}
 		return ['result'=> $result ? 'ok' : $error];
@@ -99,9 +100,9 @@ class Ajax extends Page {
 		return ['result'=> $result ? 'ok' : 'error'];
 	}
 
-	protected function NotifyOrderToDrivers($order_id, $content_type='orderCreated', $text="OrderCreated") {
-		GLOBAL $dbp;
-		$drivers = $dbp->asArray("SELECT * FROM driverOnTheLine WHERE `active` = 1 AND activationTime > DATE_SUB(NOW(),INTERVAL 1 DAY)");
+	protected function NotifyOrderToDrivers($order_id, $content_type='orderCreated', $text="Order сreated") {
+		
+		$drivers = (new DriverModel())->getActiveDrivers();
 		foreach ($drivers as $driver)
 			(new NotificationModel())->AddNotify($order_id, $content_type, $driver['user_id'], Lang($text));
 	}

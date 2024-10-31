@@ -20,7 +20,7 @@ class ViewManager {
     }
 }
 
-ViewManager.setContent = (parent, content)=> {
+ViewManager.setContent = (parent, content, clone = false)=> {
 
     if (parent.children)
         for (let idx in parent.children)
@@ -34,8 +34,10 @@ ViewManager.setContent = (parent, content)=> {
             if (content[i].id) idx = content[i].id;
             parent.children[idx] = new content[i].class(parent, content[i]);
         }
-    } else
-        parent.contentElement.append(parent.children[0] = $(content).clone());
+    } else {
+        parent.children[0] = clone ? $(content).clone() : $(content);
+        parent.contentElement.append(parent.children[0]);
+    }
 }
 
 class BaseParentView {
@@ -60,9 +62,8 @@ class View extends BaseParentView {
 
     initMainView() {
         this.view = $('<div class="view shadow radius dialog">');
-        this.view.append(this.headerElement = $('<div class="title">'));
+        this.view.append(this.headerElement = $('<div class="header">'));
         this.headerElement.append(this.closeBtn = $('<button class="close button">'));
-        this.view.append($('<div class="hr">'));
         
         this.windows = $('#' + windowsLayerId);
         this.windows.append(this.view);
@@ -96,6 +97,8 @@ class View extends BaseParentView {
             if (!this.titleElement)
                 this.headerElement.prepend(this.titleElement = $('<h3></h3>'));
             this.titleElement.text(toLang(this.options.title));
+            this.headerElement.addClass('title');
+            $('<div class="hr">').insertAfter(this.headerElement);
         }
 
         let actions = this.options.actions;
@@ -106,7 +109,7 @@ class View extends BaseParentView {
             this.footerElement.append(btn);
         }
 
-        ViewManager.setContent(this, this.options.content);
+        ViewManager.setContent(this, this.options.content, this.options.clone);
         
         if (this.options.curtain) this.blockBackground(true);
         
@@ -222,8 +225,11 @@ class TextInfoField extends TextField {
 
     initView() {
         super.initView();
-        this.parentElement.append((this.infoView = $('<span class="infoView hidden">')).text(this.options.info));
+        this.parentElement.append((this.infoView = $('<span class="infoView">')).text(this.options.info));
         this.view.click(this.onViewClick.bind(this));
+
+        if (this.options.info)
+            this.infoView.addClass('showInfo');
     }
 
     onViewClick() {
@@ -268,7 +274,7 @@ class GroupFields extends BaseField {
         for (let i in this.options.classes)
             this.view.addClass(this.options.classes[i]);
 
-        ViewManager.setContent(this, this.options.content);
+        ViewManager.setContent(this, this.options.content, this.options.clone);
     }
 }
 

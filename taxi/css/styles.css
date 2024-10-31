@@ -123,6 +123,41 @@ h1, h2 {
     margin-top: -4em;
 }
 
+#map .anim {
+    animation-name: markerAnim;
+    animation-duration: 5s;
+    transition-timing-function: cubic-bezier(.68, -.6, .32, 1.6);
+}
+
+#map .animShake {
+    animation-name: markerShake;
+    animation-duration: 0.3s;
+}
+
+@keyframes markerAnim {
+  0% {
+    margin-top: -7em;
+    opacity: 0;
+    filter: hue-rotate(180deg);
+  }
+  20% {
+    margin-top: -4em;
+    opacity: 1;
+  }
+  100% {
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes markerShake {
+  0% { margin-left: -2.3em; }
+  20% { margin-left: -1.7em; }
+  40% {  margin-left: -2.3em; }
+  60% { margin-left: -1.7em; }
+  80% { margin-left: -2.3em; }
+  100% { margin-left: -2em; }
+}
+
 #windows {
     position: absolute;
     top: 0px;
@@ -151,12 +186,8 @@ h1, h2 {
 }
 
 .notifications {
-    position: absolute;
-    left: 0px;
-    right: 0px;
-    z-index: 2;
-    display: flex;
-    flex-flow: column;
+    border-radius: 0.5em;
+    margin-top: 0.5em;
 }
 
 .notifications .item {
@@ -174,6 +205,11 @@ h1, h2 {
 
 .notifications .item .header {
     padding: 0 1em;
+}
+
+.option .header span {
+    font-size: 0.8em;
+    margin-right: 1em;
 }
 
 .view {
@@ -295,7 +331,6 @@ h1, h2 {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    overflow-y: hidden;
 }
 
 .view .content .group {
@@ -515,13 +550,30 @@ form .field {
     opacity: 1;
     display: block;
     font-size: 0.6em;
-    transition: 0.8s opacity, margin 0.6s ease;
-    transition-timing-function: cubic-bezier(.68,-.6,.32,1.6);
+    opacity: 0;
+
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+    animation-delay: 0.5s;
 }
 
-.hidden {
+.showInfo {
+    animation-name: showInfo;
+}
+
+@keyframes showInfo {
+  0% {
     margin-left: -50%;
     opacity: 0;
+  }
+  90% {
+    margin-left: 5%;
+    opacity: 1;
+  }
+  100% {
+    margin-left: 0%;
+    opacity: 1;
+  }
 }
 
 #map {
@@ -686,9 +738,13 @@ form .warning::before {
     cursor: pointer;
 }
 
-
 .items .option .header {
     margin: 0.5em;
+}
+
+.notifications .option .order {
+    padding: 0.5em;
+    font-size: 0.8em;
 }
 
 .option .img {
