@@ -10,6 +10,11 @@ class OrderModel extends BaseModel {
 		return $id ? $dbp->line("SELECT * FROM {$this->getTable()} WHERE id={$id}") : null;
 	}
 
+	public function haveActiveOrder($user_id) {
+		GLOBAL $dbp;
+		return $dbp->line("SELECT id FROM {$this->getTable()} WHERE user_id={$user_id} AND `state` IN ('wait', 'accepted')");
+	}
+
 	public function getItems($options) {
 		GLOBAL $dbp;
 

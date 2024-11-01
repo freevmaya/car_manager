@@ -1,7 +1,9 @@
 .iPhoneCheckContainer {
   -webkit-transform:translate3d(0,0,0);
+  border-radius: 1em;
   position: relative;
   height: 27px;
+  border: 1px solid gray;
   cursor: pointer;
   overflow: hidden; }
   .iPhoneCheckContainer input {
@@ -35,12 +37,14 @@
 
 label.iPhoneCheckLabelOn {
   color: white;
-  background: url('images/iphone-style-checkboxes/on.png?1284697268') no-repeat;
+  background-color: #538746;
   text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.6);
+  border-radius: 1em 0 0 1em;
+  box-shadow: inset 0px 0px 5px 0px #000000bd;
   left: 0;
   padding-top: 5px; }
   label.iPhoneCheckLabelOn span {
-    padding-left: 8px; }
+    padding-left: 14px; }
 label.iPhoneCheckLabelOff {
   color: #8b8b8b;
   background: url('images/iphone-style-checkboxes/off.png?1284697268') no-repeat right 0;

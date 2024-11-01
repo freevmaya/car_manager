@@ -132,6 +132,7 @@ h1, h2 {
 #map .animShake {
     animation-name: markerShake;
     animation-duration: 0.3s;
+    animation-delay: 1s;
 }
 
 @keyframes markerAnim {
@@ -186,8 +187,6 @@ h1, h2 {
 }
 
 .notifications {
-    border-radius: 0.5em;
-    margin-top: 0.5em;
 }
 
 .notifications .item {
@@ -277,9 +276,15 @@ h1, h2 {
   }
 }
 
-.view > .title {
+.view > .header {
     height: 2em;
     display: flex;
+}
+
+.view > .empty {
+    height: 0px;
+    display: block;
+    z-index: 10;
 }
 
 /*
@@ -319,7 +324,7 @@ h1, h2 {
   }
 }
 
-.view > .title h3 {
+.view > .header h3 {
     flex-grow: 1;
     align-content: center;
     text-transform: uppercase;
@@ -331,6 +336,9 @@ h1, h2 {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    border-radius: 0.5em;
+    overflow: hidden;
+    margin-top: 0.5em;
 }
 
 .view .content .group {
@@ -345,11 +353,30 @@ h1, h2 {
     margin: 0.1em;
     display: flex;
     flex-flow: column;
+    overflow: hidden;
 }
 
 .field p {
     padding: 0.2em;
 }
+
+.field .InfoField {
+    /*animation-name: showInfoTitle;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;*/
+}
+
+/*
+@keyframes showInfoTitle {
+  0% {
+    margin-top: -2em;
+    opacity: 0;
+  }
+  100% {
+    margin-top: 0em;
+    opacity: 1;
+  }
+}*/
 
 .field label {
     margin-bottom: 0.5em;
@@ -581,10 +608,34 @@ form .field {
     filter: none;
     pointer-events: all;
     position: absolute !important;
-    top: 0px;
+    top: 2.3em;
     left: 0px;
     right: 0px;
     bottom: 0px;
+}
+
+#map > div > div + div {
+    animation-name: showOpacity;
+    animation-duration: 1s;
+}
+
+.map-layer {
+    height: 100%;
+    background-color: white;
+    animation-name: showOpacity;
+    animation-duration: 1s;
+    animation-delay: 1s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+@keyframes showOpacity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .curtain {
@@ -696,7 +747,7 @@ form .warning::before {
     display: none;
 }
 
-.selectView {
+.dialog .selectView {
     margin-top: 0.5em;
 }
 
@@ -734,8 +785,11 @@ form .warning::before {
     padding: 0.5em;
     width: 100%;
     display: flex;
-    flex-direction: column;
     cursor: pointer;
+}
+
+.notifications .items .option {
+    flex-direction: column;
 }
 
 .items .option .header {
@@ -775,6 +829,27 @@ form .warning::before {
   }
 }
 
+/*----------LISTVIEW---------------*/
+
+.listView {
+    border-radius: 0.5em;
+    padding: 0.5em;
+}
+
+.listView .option {
+    justify-content: space-between;
+}
+
+.listView .option .label {
+    display: flex;
+    align-items: center;
+}
+
+.listView .option .button {
+    width: 2em;
+    height: 2em;
+}
+
 /*--------------------BUTTONS-------------------------*/
 
 
@@ -792,6 +867,7 @@ form .warning::before {
     display: flex;
     align-items: center;
     justify-content: center;
+
 }
 
 .button:hover {
@@ -800,7 +876,6 @@ form .warning::before {
 
 .button, .datetime-field {
     min-width: 1em;
-    max-width: 20em;
     margin: 0.3em;
     height: 3em;
     transition: 0.5s background-color;
@@ -814,8 +889,15 @@ form .warning::before {
 }
 
 .footer .button, .datetime-field {
+    max-width: 20em;
     font-size: 1em;
     padding: 0 1em;
+}
+
+.container button {
+    padding: 0 1.5em;
+    margin: 1em 0;
+    float: right;
 }
 
 .field .button.open::before {

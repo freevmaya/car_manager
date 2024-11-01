@@ -1,4 +1,6 @@
 <?
+define('EARTHRADIUS', 6378.137);
+
 function Lang($strIndex) {
 	GLOBAL $lang;
 	if (isset($lang[$strIndex]))
@@ -24,5 +26,23 @@ function getGUID() {
             .chr(125);// "}"
         return $uuid;
     }
+}
+
+
+
+function Distance($lat1, $lng1, $lat2, $lng2) {  // generally used geo measurement function
+
+    $pi = pi();
+    $dLat = $lat2 * $pi / 180 - $lat1 * $pi / 180;
+    $dLon = $lng2 * $pi / 180 - $lng1 * $pi / 180;
+
+    $a = sin($dLat/2) * sin($dLat/2) +
+            cos($lat1 * $pi / 180) * cos($lat2 * $pi / 180) *
+            sin($dLon/2) * sin($dLon/2);
+
+    $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+    $d = EARTHRADIUS * $c;
+
+    return $d * 1000; // meters
 }
 ?>

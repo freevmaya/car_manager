@@ -97,9 +97,8 @@ class View extends BaseParentView {
             if (!this.titleElement)
                 this.headerElement.prepend(this.titleElement = $('<h3></h3>'));
             this.titleElement.text(toLang(this.options.title));
-            this.headerElement.addClass('title');
             $('<div class="hr">').insertAfter(this.headerElement);
-        }
+        } else this.headerElement.addClass('empty');
 
         let actions = this.options.actions;
         for (let action in actions) {
@@ -159,7 +158,9 @@ class View extends BaseParentView {
 
         if (this.options.curtain) this.blockBackground(false);
         this.view.addClass("hide");
-        v_map.View.css('bottom', 0);
+
+        if (typeof v_map !== 'undefined')
+            v_map.View.css('bottom', 0);
 
         return new Promise(((resolveOuter) => {
             setTimeout((()=>{
@@ -225,15 +226,11 @@ class TextInfoField extends TextField {
 
     initView() {
         super.initView();
-        this.parentElement.append((this.infoView = $('<span class="infoView">')).text(this.options.info));
-        this.view.click(this.onViewClick.bind(this));
+        this.view.addClass('InfoField');
+        this.view.parent().append((this.infoView = $('<span class="infoView">')).text(this.options.info));
 
         if (this.options.info)
             this.infoView.addClass('showInfo');
-    }
-
-    onViewClick() {
-        this.infoView.toggleClass("hidden");
     }
 }
 

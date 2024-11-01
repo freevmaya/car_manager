@@ -7,6 +7,7 @@ function InitSelectView(fieldId, indexField, onSelect, title='', actions=[]) {
 		view = viewManager.Create({curtain: $('.wrapper'),
 						title: title ? title : toLang('Select item'),
 						content: $('#' + fieldId + ' .items'),
+						clone: true,
 						actions: actions});
 		view.contentElement.find('.option').each((i, item)=>{
 			$(item).click(onClickItem);

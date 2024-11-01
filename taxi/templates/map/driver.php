@@ -7,4 +7,5 @@
 	html::AddJsCode("
 		startOrders = ".json_encode((new OrderModel())->getItems($options)).";
 	");
+	html::AddScriptFile("driver-on-line.js");
 ?>

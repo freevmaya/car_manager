@@ -161,7 +161,20 @@ class AjaxTransport extends EventProvider {
     }
 
     update() {
-        Ajax({"action": "checkState"}).then(this.onRecive.bind(this));
+        let params = {action: "checkState", data: null};
+
+        if (user.sendCoordinates || user.requireDrivers) {
+        
+            let data = {};
+            if (user.requireDrivers)
+                data.requireDrivers = true;
+
+            navigator.geolocation.getCurrentPosition(((pos) => {
+                params.data = JSON.stringify($.extend(data, { lat: pos.coords.latitude, lng: pos.coords.longitude }));
+                Ajax(params).then(this.onRecive.bind(this));
+            }).bind(this));
+
+        } else Ajax($.extend(params)).then(this.onRecive.bind(this));
     }
 
     #toArray(event) {

@@ -33,6 +33,8 @@ foreach (html::$styles as $style) {?>
     <?if ($this->user) {?>
 
         var user = <?=json_encode($this->user)?>;
+        <?=$this->asDriver() ? "user.asDriver = true;\n" : ''?>
+        <?=$this->sendCoordinates() ? "user.sendCoordinates = true;\n" : ''?>
         $.getScript('<?=SCRIPTURL?>/language/' + user.language_code + '.js');
 
     <?} else {?>

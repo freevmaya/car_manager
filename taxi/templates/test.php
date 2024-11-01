@@ -1,18 +1,18 @@
 <?
-    html::$scripts[] = "jquery-dateformat.min.js";
-    html::$scripts[] = "main.js";
-    html::$scripts[] = "map.js";
-    html::$scripts[] = "color.js";
-    html::$scripts[] = "views.js";
-    //html::$scripts[] = "driver.js";
-    //html::$scripts[] = "driver-manager.js";
-    html::$scripts[] = "select-target.js";
-    //html::$scripts[] = "notifications.js";
+    html::AddScriptFile("jquery-dateformat.min.js");
+    html::AddScriptFile("main.js");
+    html::AddScriptFile("map.js");
+    html::AddScriptFile("views.js");
+    //html::AddScriptFile("driver.js");
+    //html::AddScriptFile("driver-manager.js");
+    html::AddScriptFile("select-target.js");
+    //html::AddScriptFile("notifications.js");
     
-    html::$scripts[] = "https://code.jquery.com/ui/1.14.0/jquery-ui.js";
+    html::AddScriptFile("https://code.jquery.com/ui/1.14.0/jquery-ui.js");
 
-    html::$styles[] = "https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css";
-    html::$styles[] = 'css/cars.css';
+    html::AddStyleFile("https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css");
+    html::AddStyleFile('css/colors-01.css');
+    html::AddStyleFile('css/cars.css');
 
     $carbodies = $dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodys`");
 ?>

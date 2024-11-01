@@ -38,5 +38,6 @@ lang = {
 	'This value is already taken. Try entering another value.': 'Это значение уже занято. Попробуйте ввести другое значение.',
 	'Order cancelled': 'Заказ отменен',
 	'OrderToProcess': 'Заказ принят',
-	'Order сreated': 'Заказ создан'
+	'Order сreated': 'Заказ создан',
+	'Active': 'Активен'
 };

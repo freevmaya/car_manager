@@ -65,5 +65,11 @@ class CarModel extends BaseModel {
 	public function getTitle() {
 		return lang(Page::$current->getId() ? 'Edit car' : 'Add car');
 	}
+
+    public static function getCarIndent($item) {
+    	if ($item)
+        	return "{$item['number']}/{$item['comfort']}/{$item['seating']} seats";
+        return '';
+    }
 }
 ?>

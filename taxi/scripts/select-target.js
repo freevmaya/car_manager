@@ -250,4 +250,6 @@ function Mechanics() {
             });
         } else SelectPlace(e);
     });
+
+    
 }

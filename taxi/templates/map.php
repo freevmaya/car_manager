@@ -1,5 +1,4 @@
 <?
-    html::AddScriptFile("color.js");
 
 	include_once(TEMPLATES_PATH.'/toolbar.php');
 	include_once(TEMPLATES_PATH.'/map/map-index.php');
@@ -13,6 +12,13 @@
 		if (count($offered) > 0)
 			html::AddJsCode("ListOffers = ".json_encode($offered).";");
 	}
+
+	if (get_class($this) == 'Map')
+		html::AddJsCode("user.requireDrivers = true;");
+
+	html::AddScriptFile("select-target.js");
+	html::AddScriptFile('driver-manager.js');
+	html::AddJsCode("driverManager = new DriverManager();");
 ?>
 <div class="templates">
 	<div class="notify car">

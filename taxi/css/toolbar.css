@@ -32,9 +32,16 @@
 .toolbar .user {
     width: 2em;
     height: 2em;
-    background-image: url(images/user-white.png);
     float: right;
     cursor: pointer;
+}
+
+.user.passenger {
+    background-image: url(images/user-white.png);
+}
+
+.user.driver {
+    background-image: url(images/driver-white.png);
 }
 
 .user .warning {

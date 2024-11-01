@@ -2,6 +2,8 @@
 class DriverModel extends BaseModel {
 
 	protected $expiredInterval = 'INTERVAL 1 DAY';
+	protected $offlineInterval = 'INTERVAL 15 SECOND';
+	protected $lostConnectInterval = 'INTERVAL 10 MINUTE';
 	
 	protected function getTable() {
 		return 'driverOnTheLine';
@@ -10,24 +12,24 @@ class DriverModel extends BaseModel {
 	public function Update($values) {
 		GLOBAL $dbp;
 
-		if (isset($values['car_id']) && $values['car_id']) {
+		$active = isset($values['active']) ? 1 : 0;
+		$car_id = isset($values['car_id']) ? $values['car_id'] : null;
 
-			$active = isset($values['active']) ? 1 : 0;
+		if ($dbp->line("SELECT `id` FROM {$this->getTable()} WHERE `user_id` = {$values['user_id']}")) {
+			$timeBlock = '';
+			if ($active)
+				$timeBlock = ',`activationTime` = NOW(), `expiredTime` = NOW() + '.$this->expiredInterval;
 
-			if ($dbp->line("SELECT `id` FROM {$this->getTable()} WHERE `user_id` = {$values['user_id']}")) {
-				$timeBlock = '';
-				if ($active)
-					$timeBlock = ',`activationTime` = NOW(), `expiredTime` = NOW() + '.$this->expiredInterval;
-
-				$dbp->bquery("UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock} WHERE `user_id`= ?", 
-					'iii', 
-					[$values['car_id'], $active, $values['user_id']]);
-			} else {
-				$dbp->bquery("INSERT {$this->getTable()} (`user_id`, `car_id`, `active`, `activationTime`, `expiredTime`) VALUES (?, ?, ?, NOW(), NOW() + {$this->expiredInterval})", 
-					'iii', 
-					[$values['user_id'], $values['car_id'], $active]);
-			}
+			$dbp->bquery("UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock} WHERE `user_id`= ?", 
+				'iii', 
+				[$car_id, $active, $values['user_id']]);
+		} else {
+			$dbp->bquery("INSERT {$this->getTable()} (`user_id`, `car_id`, `active`, `activationTime`, `expiredTime`) VALUES (?, ?, ?, NOW(), NOW() + {$this->expiredInterval})", 
+				'iii', 
+				[$values['user_id'], $car_id, $active]);
 		}
+
+		//(new NotificationModel()).AddNo
 	}
 
 	public function getItem($user_id) {
@@ -44,9 +46,28 @@ class DriverModel extends BaseModel {
 		return null;
 	}
 
-	public function getActiveDrivers() {
+	public function SuitableDrivers($lat = null, $lng = null) {
 		GLOBAL $dbp;
-		return $dbp->asArray("SELECT * FROM {$this->getTable()} WHERE `active` = 1 AND `expiredTime` >= NOW()");
+		if (!$lat) {
+			$user = Page::getSession('user');
+			$lat = $user['lat'];
+			$lng = $user['lng'];
+		}
+
+		$drivers = [];
+		if ($lat) {
+			$list = $dbp->asArray("SELECT d.*, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.order_id IS NULL");
+
+			foreach ($list as $driver)
+				if ($this->PointInArea($driver, $lat, $lng))
+					$drivers[] = $driver;
+		}
+
+		return $drivers;
+	}
+
+	public static function PointInArea($driver, $lat, $lng) {
+		return Distance($driver['lat'], $driver['lng'], $lat, $lng) < 10000; // В радиусе километра для DEV
 	}
 
 	public function getFields() {
@@ -65,6 +86,12 @@ class DriverModel extends BaseModel {
 				'user_id'=> Page::$current->getUser()['id'],
 				'model' => 'CarModel',
 				'required' => true
+			],
+			'route_types' => [
+				'label' => 'Route types',
+				'type' => 'route_types',
+				'model' => 'RouteTypesModel',
+				'user_id'=> Page::$current->getUser()['id']
 			],
 			'active' => [
 				'label' => 'Active',

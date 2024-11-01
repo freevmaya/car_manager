@@ -5,6 +5,10 @@ class Page {
 	protected $user;
 	protected $model;
 	protected $dataId;
+
+	private $asDriver = -1;
+	private $haveActiveOrder = -1;
+
 	public static $current;
 	public static $page;
 	public static $request;
@@ -87,7 +91,33 @@ class Page {
 	}
 
 	protected function initModel() {
+	}
 
+	public function asDriver() {
+		
+		if ($this->asDriver == -1) {
+			$driverOnTheLine = (new DriverModel())->getItem($this->user['id']);
+			if ($driverOnTheLine && ($driverOnTheLine['active'] > 0))
+				$this->asDriver = 1;
+			else $this->asDriver = 0;
+		}
+
+		return $this->asDriver > 0;
+	}
+
+	public function haveActiveOrder() {
+
+		if ($this->haveActiveOrder == -1) {
+			if ((new OrderModel())->haveActiveOrder($this->user['id']))
+				$this->haveActiveOrder = 1;
+			else $this->haveActiveOrder = 0;
+		}
+
+		return $this->haveActiveOrder > 0;
+	}
+
+	public function sendCoordinates() {
+		return $this->asDriver() || $this->haveActiveOrder();
 	}
 
 	public static function link($params) {
@@ -152,17 +182,13 @@ class Page {
 			
 			if ($item) {
 				$dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$this->user['id']}");
-				$this->user['asDriver'] = $dbp->line("SELECT * FROM driverOnTheLine WHERE user_id={$this->user['id']} AND active=1");
 			} else {
 				$query = "INSERT INTO users (`id`, `first_name`, `last_name`, `username`, `language_code`, `create_date`, `last_time`) VALUES ({$this->user['id']}, '{$this->user['first_name']}', '{$this->user['last_name']}', '{$this->user['username']}', '{$this->user['language_code']}', NOW(), NOW())";
-				trace($query);
 				$dbp->query($query);
-
-				$this->user['asDriver'] = false;
 			}
 		}
 
-		return ["result"=>$set ? "ok" : "fail", 'asDriver' => @$this->user['asDriver']];
+		return ["result"=>$set ? "ok" : "fail", 'asDriver' => $this->asDriver()];
 	}
 
 	protected function getPage() {

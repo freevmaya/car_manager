@@ -56,6 +56,19 @@ class Ajax extends Page {
 		if (count($notificationList))
 			$result['notificationList'] = $notificationList;
 
+		if (isset($data['lat'])) {
+			$dbp->bquery("UPDATE users SET last_time = NOW(), lat = ?, lng = ? WHERE id = ?", 'ddi', 
+							[$data['lat'], $data['lng'], $this->user['id']]);
+
+			$this->user['lat'] = $data['lat'];
+			$this->user['lng'] = $data['lng'];
+			Page::setSession('user', $this->user);			
+
+			if (isset($data['requireDrivers']))
+				$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng']);
+
+		}
+		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$this->user['id']}");
 		return $result;
 	}
 
@@ -102,7 +115,7 @@ class Ajax extends Page {
 
 	protected function NotifyOrderToDrivers($order_id, $content_type='orderCreated', $text="Order сreated") {
 		
-		$drivers = (new DriverModel())->getActiveDrivers();
+		$drivers = (new DriverModel())->SuitableDrivers();
 		foreach ($drivers as $driver)
 			(new NotificationModel())->AddNotify($order_id, $content_type, $driver['user_id'], Lang($text));
 	}

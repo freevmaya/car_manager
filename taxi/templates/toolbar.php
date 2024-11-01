@@ -1,5 +1,5 @@
 <?
-	html::AddScriptFile('views.js');
+	html::AddScriptFiles(['views.js', "jquery-dateformat.min.js"]);
 	$notifyModel = new NotificationModel();
 	$driverModel = new DriverModel();
 
@@ -13,14 +13,11 @@
 		});
 	");
 
-	$driverOnTheLine = $driverModel->getItem(Page::$current->user['id']);
-
 	$menu = [
 		lang('Services')=> [
-			[ Page::link('map'), lang('Go') ],
-			(@$driverOnTheLine['active'] == 1) ?
+			($this->asDriver()) ?
 				[ Page::link(['map','driver']), lang('Give a ride') ] :
-			[ Page::link('driver'), lang('Driver') ]
+			[ Page::link('map'), lang('Go') ]
 		],
 		lang('Settings')=> [
 			[ Page::link(['settings', 'user']), lang('User') ],
@@ -35,7 +32,7 @@
 		<div>
 			<a class="menu" onclick="$('#toolbarMenu').toggleClass('open')"><img src="<?=BASEURL?>/css/images/menu.png"></a>
 		</div>
-		<a class="user">
+		<a class="user<?=$this->asDriver() ? ' driver' : ' passenger'?>">
 			<div class="warning"></div>
 		</a>
 	</div>
