@@ -173,7 +173,9 @@ class AjaxTransport extends EventProvider {
                 data.requireDrivers = true;
 
             if (user.requireDrivers) {
-                data = $.extend(data, toLatLng(v_map.getMainPosition()));
+                let mpos = v_map.getMainPosition();
+                if (mpos)
+                    data = $.extend(data, toLatLng(mpos));
             } else if (this.#getPosition) {
                 data = $.extend(data, toLatLng(this.#getPosition));
             }
@@ -311,6 +313,10 @@ function round(x, p) {
     return Math.round(x * k) / k;
 }
 
+function pow(v) {
+    return v * v;
+}
+
 
 function toLang(v) {
     return !lang[v] ? v : lang[v];
@@ -396,6 +402,14 @@ function PrepareInput() {
     $('input.phone').each((i, item) => {
         $(item).inputmask($(item).data('mask'));
     });
+}
+
+
+function toLatLngF(obj) {
+    if ($.type(obj.lat) == 'function')
+        return obj;
+    
+    return {lat: ()=>{return obj.lat;}, lng: ()=>{return obj.lng;}};
 }
 
 

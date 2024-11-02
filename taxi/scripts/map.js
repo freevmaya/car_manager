@@ -374,14 +374,27 @@ class VMap {
 	}
 
 	setMainPosition(latLng) {
-		this.#mainMarker.position = latLng;
+		if (latLng)
+			this.#mainMarker.position = latLng;
 	}
 
 	getMainPosition() {
-		return this.#mainMarker.position;
+		return this.#mainMarker ? this.#mainMarker.position : null;
 	}
 
 	CreateMarker(position, title, className, onClick = null) {
 		return this.MarkerManager.CreateMarker(position, 'my-position', 'marker position');
+	}
+
+	getRoutes(startPlace, finishPlace, travelMode, callback) {
+		let request = {
+            origin: PlaceLatLng(startPlace),
+            destination: PlaceLatLng(finishPlace),
+            travelMode: travelMode
+        }
+        this.DirectionsService.route(request, function(result, status) {
+            if (status == 'OK')
+            	callback(result);
+        });
 	}
 }
