@@ -1,21 +1,13 @@
 class ViewTarget extends BottomView {
 
+    listenerId;
     routes;
-    setOptions(options) {
+    offers = {};
+    travelMode = 'WALKING';
 
-        let finishPart = {
-            id: 'finishPlace',
-            text: "Select your destination",
-            class: TextInfoField
-        };
-        if (options.finishPlace) {
-             finishPart = {
-                id: 'finishPlace',
-                text: PlaceName(options.finishPlace),
-                info: PlaceAddress(options.finishPlace),
-                class: TextInfoField
-            }
-        }
+    #routeId;
+
+    setOptions(options) {
         options = $.extend({
             classes: ['target-view'],
             content: [
@@ -27,51 +19,96 @@ class ViewTarget extends BottomView {
                 },
                 {
                     class: DividerField
-                }, finishPart
+                }, 
+                {
+                    id: 'finishPlace',
+                    text: "Select your destination",
+                    class: TextInfoField
+                }
             ]
         }, options);
 
         super.setOptions(options);
 
-        this.footerElement.addClass('sliderView')
-            .append(this.footerSlider = $('<div class="slider">'));
+        this.footerElement.append(this.footerSliderView = $('<div class="sliderView">'));
+        this.footerSliderView.append(this.footerSlider = $('<div class="slider">'));
+        this.footerElement.append((this.goButton = $('<div class="button">'))
+                                    .text(toLang('Go'))
+                                    .click(this.Go.bind(this)));
 
-        if (options.id) {
-            this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this), 10);
-
-            this.showPath(options.startPlace, options.finishPlace);
-
-            if (ListOffers && (ListOffers.length == 0))
-                this.addTextInSlider(toLang('Order sent. Wait for offers or close the order.'));
-            else this.AddOffers(ListOffers);
-        } else {
-            this.footerSlider.append(this.sendButton = $('<button class="button" disabled>').text(toLang('Send')))
-                .append(this.datetimeElement = $('<div class="datetime-field shadow">'));
-
-            this.sendButton.click(this.applyPath.bind(this));
-            this.datetime = new DateTime(this.datetimeElement, Date.now());
-        }
-/*
-        setTimeout((()=>{
-            this.addTextInSlider("Нейросеть онлайн для текста — это один из самых удобных способов создания контента.");
-        }).bind(this), 2000);*/
+        this.listenerId = transport.AddListener('SuitableDrivers', this.onSuitableDrivers.bind(this));
     }
 
-    AddOffers(list) {
-        for (let i in list) {
-            
-            let item = list[i];
-            let elem = templateClone($('.templates .car'), item);
-            if (elem.length > 0) {
-                const rgb = hexToRgb(item.rgb);
-                const color = new Color(rgb[0], rgb[1], rgb[2]);
-                const solver = new Solver(color);
-                const result = solver.solve();
-                elem.find('img').attr('src', BASEURL + '/css/images/' + item.symbol + '.png')
-                    .attr('style', result.filter + ' drop-shadow(0px 0px 2px black)');
-                this.footerSlider.append(elem);
-            }
+    Go() {
+
+        if (this.routes) {
+
+            let start = getRoutePoint(this.routes, 0);
+            let finish = getRoutePoint(this.routes, -1);
+
+            let path = {
+                start: { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() },
+                finish: { placeId: this.options.finishPlace.placeId, lat: finish.lat(), lng: finish.lng() },
+                startName: PlaceName(this.options.startPlace),
+                finishName: PlaceName(this.options.finishPlace),
+                startAddress: PlaceAddress(this.options.startPlace),
+                finishAddress: PlaceAddress(this.options.finishPlace),
+                meters: Math.round(CalcPathLength(this.routes))
+            };
+
+            Ajax({
+                //action: "AddOrder",
+                action: "Go",
+                data: JSON.stringify({
+                    user_id: user.id,
+                    path: path
+                })
+            }).then(((response)=>{
+                if (response.id > 0) {
+                    this.#routeId = response.id;
+                    this.Close();
+                }
+            }).bind(this));
         }
+    }
+
+    RefreshOffers(list) {
+        let keys = Object.keys(this.offers);
+        for (let i in list) {
+
+            if (!this.offers[i]) {
+                if (list[i] > 0) {
+                    let elem = templateClone($('.templates .car'), {name: i});
+                    if (elem.length > 0) {
+                        this.footerSlider.append(elem);
+                        this.offers[i] = elem;
+                        keys.splice(keys.indexOf(i));
+                    }
+                }
+            } else keys.splice(keys.indexOf(i));
+        }
+
+        for (let i=0; i<keys.length; i++) {
+            this.offers[keys[i]].remove();
+            delete this.offers[keys[i]];
+        }
+    }
+
+    onSuitableDrivers(e) {
+        this.RefreshOffers(this.CollectToOffers(e.value));
+    }
+
+    CollectToOffers(drivers) {
+        let offers = {useTogether: 0};
+        for (let i=0; i<drivers.length; i++) {
+            let d = drivers[i];
+            if (d.useTogether) offers.useTogether++;
+
+            if (!offers[d.comfort])
+                offers[d.comfort] = 1;
+            else offers[d.comfort]++;
+        }
+        return offers;
     }
 
     addTextInSlider(text) {
@@ -83,7 +120,7 @@ class ViewTarget extends BottomView {
         let request = {
             origin: PlaceLatLng(this.options.startPlace),
             destination: PlaceLatLng(finishPlace),
-            travelMode: 'DRIVING'
+            travelMode: this.travelMode
         }
         v_map.DirectionsService.route(request, (function(result, status) {
             if (status == 'OK') {
@@ -108,66 +145,6 @@ class ViewTarget extends BottomView {
         }).bind(this));
     }
 
-    onNotification(e) {
-        let data = e.value;
-        for (let i in data)
-            if (data[i].content_type == 'orderReceive') {
-
-                this.footerSlider.empty();
-                this.addTextInSlider(data[i].text);
-                transport.SendStatusNotify(data[i], 'read');
-                e.StopPropagation();
-            } else if (data[i].content_type == 'orderCreated') {
-
-                transport.SendStatusNotify(data[i], 'read');
-                e.StopPropagation();
-            } else if (data[i].content_type == 'offerToPerform') {
-                transport.SendStatusNotify(data[i], 'read');
-
-                let offerView;
-
-                Ajax({
-                    action: 'getOffers',
-                    data: {notify_id: data[i].id}
-                }).then(((response)=>{
-                    this.AddOffers(response);
-                }).bind(this));
-                e.StopPropagation();
-            } 
-    }
-
-    applyPath() {
-
-        this.listenerId = transport.AddListener('notificationList', this.onNotification.bind(this), 10);
-
-        let data = {
-            user_id: user.id,
-            pickUpTime: this.datetime.getValue()
-        }
-
-        let start = getRoutePoint(this.routes, 0);
-        let finish = getRoutePoint(this.routes, -1);
-
-        data.start = { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() };
-        data.finish = { placeId: this.options.finishPlace.placeId, lat: finish.lat(), lng: finish.lng() };
-
-        data.startName = PlaceName(this.options.startPlace);
-        data.finishName = PlaceName(this.options.finishPlace);
-
-        data.startAddress = PlaceAddress(this.options.startPlace);
-        data.finishAddress = PlaceAddress(this.options.finishPlace);
-
-        data.meters = Math.round(CalcPathLength(this.routes));
-
-        Ajax({
-            action: "AddOrder",
-            data: JSON.stringify(data)
-        }).then(((response)=>{
-            if (response.id)
-                this.options.id = response.id;
-        }).bind(this));
-    }
-
     closePath() {
         if (this.rpath) {
             this.rpath.setMap(null);
@@ -175,6 +152,11 @@ class ViewTarget extends BottomView {
         }
     }
 
+    getRouteId() {
+        return this.#routeId;
+    }
+
+/*
     prepareToClose(afterPrepare) {
         if (this.options.id) {
             app.showQuestion('Do you want to cancel your order?', (()=>{
@@ -191,26 +173,66 @@ class ViewTarget extends BottomView {
             }).bind(this));
         } else afterPrepare();
     }
+*/
 
     destroy() {
         if (this.listenerId > 0) 
             transport.RemoveListener('notificationList', this.listenerId);
-        this.closePath();
+        if (!this.#routeId)
+            this.closePath();
         super.destroy();
     }
 }
 
-var currentOrder = null;
-var ListOffers = null;
+
+class TracerView extends BottomView {
+
+    routes;
+    #getPosition;
+    #geoId;
+
+    setOptions(options) {
+        super.setOptions(options);
+        this.enableGeo(true);
+    }
+
+    receiveGeo(position) {
+        this.#getPosition = position.coords;
+        v_map.setMainPosition(this.#getPosition);
+    }
+
+    enableGeo(enable) {
+        if (enable && !this.#geoId) {
+            this.#geoId = navigator.geolocation.watchPosition(this.receiveGeo.bind(this));
+        } else if (!enable && this.#geoId > 0) {
+            navigator.geolocation.clearWatch(this.#geoId);
+            this.#geoId = false;
+        }
+    }
+
+    destroy() {
+        this.enableGeo(false);
+        super.destroy();
+    }
+}
 
 function Mechanics() {
 
     var routeDialog;
+    var tracerDialog;
 
-    if (currentOrder) {
-        routeDialog = new ViewTarget(currentOrder, () => {
-            routeDialog = null;
+    function BeginTracer(routeId, routes) {
+        tracerDialog = viewManager.Create({
+            title: toLang('Route'),
+            content: {
+                text: routeId,
+                class: TextInfoField
+            }
+        }, TracerView, ()=>{
+            tracerDialog = null;
         });
+
+        tracerDialog.routes = routes;
     }
 
     function SelectPlace(place) {
@@ -218,11 +240,14 @@ function Mechanics() {
         app.SendEvent('SelectPlace', place);
 
         if (!routeDialog) {
-            v_map.mainMarker.position = place.latLng;
+            v_map.setMainPosition(place.latLng);
 
             routeDialog = new ViewTarget({
                 startPlace: place
             }, () => {
+                if (routeDialog.getRouteId()) {
+                    BeginTracer(routeDialog.getRouteId(), routeDialog.routes);
+                }
                 routeDialog = null;
             });
         } else routeDialog.SelectPlace(place);
@@ -243,6 +268,9 @@ function Mechanics() {
         if (routeDialog && routeDialog.options.id)
             return;
 
+        if (tracerDialog)
+            return;
+
         if (e.placeId) {
             getPlaceDetails(e.placeId).then((place)=>{
                 place = $.extend(place, e);
@@ -251,5 +279,8 @@ function Mechanics() {
         } else SelectPlace(e);
     });
 
-    
+    if (typeof currentRoute == 'object') {
+        console.log(currentRoute.path);
+        //BeginTracer(currentRoute.id);
+    }
 }

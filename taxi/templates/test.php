@@ -14,7 +14,7 @@
     html::AddStyleFile('css/colors-01.css');
     html::AddStyleFile('css/cars.css');
 
-    $carbodies = $dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodys`");
+    $carbodies = $dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodies`");
 ?>
 <style type="text/css">
     .content > div {

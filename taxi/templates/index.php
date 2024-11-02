@@ -29,6 +29,17 @@ foreach (html::$styles as $style) {?>
         var transport = new AjaxTransport(1000);
         var app = new App();
         var lang = {};
+
+        function getLocation(action) {
+            <?if (DEV) {
+                ?>
+                action(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
+            <?} else {?>
+                navigator.geolocation.getCurrentPosition((result)=>{
+                    action(result.coords);
+                });
+            <?}?>
+        }
         
     <?if ($this->user) {?>
 
@@ -48,7 +59,7 @@ foreach (html::$styles as $style) {?>
         echo "$(window).ready(() => {\n";
         foreach (html::$jscode as $key=>$code) {
             echo "//----JS-{$key}---\n";
-            echo $code;
+            echo $code."\n";
         }
         echo "});\n";
     }

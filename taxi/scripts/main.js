@@ -1,7 +1,7 @@
-var dateTinyFormat = "dd.MM HH:mm";
+var dateTinyFormat  = "dd.MM HH:mm";
 var dateShortFormat = "dd.MM.yy HH:mm";
-var dateLongFormat = "dd.MM.yyyy HH:mm";
-var dateOnlyFormat = "dd.MM.yyyy";
+var dateLongFormat  = "dd.MM.yyyy HH:mm";
+var dateOnlyFormat  = "dd.MM.yyyy";
 
 
 class EventProvider {
@@ -155,6 +155,8 @@ async function Ajax(params) {
 
 class AjaxTransport extends EventProvider {
 
+    #geoId;
+    #getPosition;
     constructor(periodTime) {
         super();
         this.intervalID = setInterval(this.update.bind(this), periodTime);
@@ -164,17 +166,42 @@ class AjaxTransport extends EventProvider {
         let params = {action: "checkState", data: null};
 
         if (user.sendCoordinates || user.requireDrivers) {
+            this.enableGeo(true);
         
             let data = {};
             if (user.requireDrivers)
                 data.requireDrivers = true;
 
-            navigator.geolocation.getCurrentPosition(((pos) => {
-                params.data = JSON.stringify($.extend(data, { lat: pos.coords.latitude, lng: pos.coords.longitude }));
-                Ajax(params).then(this.onRecive.bind(this));
-            }).bind(this));
+            if (user.requireDrivers) {
+                data = $.extend(data, toLatLng(v_map.getMainPosition()));
+            } else if (this.#getPosition) {
+                data = $.extend(data, toLatLng(this.#getPosition));
+            }
 
-        } else Ajax($.extend(params)).then(this.onRecive.bind(this));
+            params.data = JSON.stringify(data);
+            Ajax(params).then(this.onRecive.bind(this));
+
+        } else {
+            this.enableGeo(false);
+            Ajax($.extend(params)).then(this.onRecive.bind(this));
+        }
+    }
+
+    getGeoPosition() {
+        return this.#getPosition;
+    }
+
+    receiveGeo(position) {
+        this.#getPosition = position.coords;
+    }
+
+    enableGeo(enable) {
+        if (enable && !this.#geoId) {
+            this.#geoId = navigator.geolocation.watchPosition(this.receiveGeo.bind(this));
+        } else if (!enable && this.#geoId > 0) {
+            navigator.geolocation.clearWatch(this.#geoId);
+            this.#geoId = false;
+        }
     }
 
     #toArray(event) {
@@ -369,6 +396,13 @@ function PrepareInput() {
     $('input.phone').each((i, item) => {
         $(item).inputmask($(item).data('mask'));
     });
+}
+
+
+function toLatLng(obj) {
+    if (obj.latitude)
+        return {lat:obj.latitude, lng: obj.longitude};
+    return {lat:obj.lat, lng: obj.lng};
 }
 
 $(window).ready(()=>{

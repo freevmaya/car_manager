@@ -119,6 +119,10 @@ select.time {
     background-image: url(images/car01.png);
 }
 
+.auto.offline {
+    opacity: 0.5;
+}
+
 .position {
     background-image: url('images/position.png');
 }

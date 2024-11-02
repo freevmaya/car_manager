@@ -5,9 +5,9 @@ class DriverManager {
 		this.#listenerId = transport.AddListener('SuitableDrivers', this.onReceive.bind(this));
 	}
 
-	onReceive(value) {
+	onReceive(e) {
 
-		drivers = value;
+		let drivers = e.value.slice();
 		function indexOfById(id) {
 			for (let i=0; i<drivers.length; i++)
 				if (drivers[i].id == id)
@@ -16,23 +16,37 @@ class DriverManager {
 		}
 
 		function toLatLng(driver) {
-			return { lat: driver.lat, lng: driver.lng };
+			return new google.maps.LatLng(driver.lat, driver.lng);
+		}
+
+		function updateOnLine(marker, online) {
+			let cnt = $(marker.content);
+
+			if (online) {
+				if (cnt.hasClass('offline'))
+					cnt.removeClass('offline');
+			} else {
+				if (!cnt.hasClass('offline'))
+					cnt.addClass('offline');
+			}
 		}
 
 		let markers = v_map.MarkerManager.markers.cars;
 
 		for (let i=0; i<markers.length; i++) {
+			let m = markers[i];
 			let carIdx = indexOfById(markers[i].id);
 			if (carIdx > -1) {
-				markers[i].position = toLatLng(drivers[carIdx]);
+				m.position = toLatLng(drivers[carIdx]);
+				updateOnLine(m, parseInt(drivers[carIdx].online) == 1);
 				drivers.splice(carIdx, 1);
-			}
+			} else
+				v_map.MarkerManager.RemoveDriver(markers[i].id);
 		}
 
 		for (let i=0; i<drivers.length; i++) {
-			v_map.MarkerManager.CreateDriver(
-				toLatLng(drivers[i])
-			);
+			let driver = drivers[i];
+			let m = v_map.MarkerManager.CreateDriver( driver.id, toLatLng(driver), driver.username );
 		}
 	}
 }

@@ -131,11 +131,30 @@ class MarkerManager {
     	return -1;
     }
 
+    IndexOfByDriver(id) {
+    	for (let i in this.markers.cars)
+    		if (id == this.markers.cars[i].id)
+    			return i;
+
+    	return -1;
+    }
+
     RemoveOrder(order_id) {
     	let idx = this.IndexOfByOrder(order_id);
     	if (idx > -1) {
     		this.markers.users[idx].setMap(null);
-    		delete this.markers.users[idx];
+    		this.markers.users.splice(idx, 1);
+    		
+    		if (this.selectPathView && (this.selectPathView.order.id == order_id))
+    			this.selectPathView.Close();
+    	}
+    }
+
+    RemoveDriver(id) {
+    	let idx = this.IndexOfByDriver(id);
+    	if (idx > -1) {
+    		this.markers.cars[idx].setMap(null);
+    		this.markers.cars.splice(idx, 1);
     		
     		if (this.selectPathView && (this.selectPathView.order.id == order_id))
     			this.selectPathView.Close();
@@ -182,8 +201,9 @@ class MarkerManager {
 		return marker;
 	}
 
-	CreateDriver(position, title, onClick = null, markerClass='marker auto') {
+	CreateDriver(id, position, title, onClick = null, markerClass='marker auto') {
 		let result = this.CreateMarker(position, title, markerClass, onClick);
+		result.id = id;
 		this.markers.cars.push(result);
 		return result;
 	}
@@ -295,6 +315,7 @@ class VMap {
 	#view;
 	#driverManager;
 	#directionsService;
+	#mainMarker;
 
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
@@ -349,7 +370,15 @@ class VMap {
 		};
 		
 		this.infoWindow = new InfoWindow();
-		this.mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
+		this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
+	}
+
+	setMainPosition(latLng) {
+		this.#mainMarker.position = latLng;
+	}
+
+	getMainPosition() {
+		return this.#mainMarker.position;
 	}
 
 	CreateMarker(position, title, className, onClick = null) {

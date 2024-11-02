@@ -56,18 +56,26 @@ class DriverModel extends BaseModel {
 
 		$drivers = [];
 		if ($lat) {
-			$list = $dbp->asArray("SELECT d.*, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.order_id IS NULL");
+			$query = "SELECT d.id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, c.comfort, c.seating ".
 
+			"FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id INNER JOIN car c ON d.car_id = c.id ".
+
+			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.order_id IS NULL";
+
+			//trace($query);
+			$drivers = $dbp->asArray($query);
+
+			/*
 			foreach ($list as $driver)
 				if ($this->PointInArea($driver, $lat, $lng))
-					$drivers[] = $driver;
+					$drivers[] = $driver;*/
 		}
 
 		return $drivers;
 	}
 
 	public static function PointInArea($driver, $lat, $lng) {
-		return Distance($driver['lat'], $driver['lng'], $lat, $lng) < 10000; // В радиусе километра для DEV
+		return Distance($driver['lat'], $driver['lng'], $lat, $lng) < 100000; // В радиусе километра для DEV
 	}
 
 	public function getFields() {

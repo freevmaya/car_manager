@@ -7,11 +7,7 @@
 
 	html::addStyleFile(BASEURL.'/css/toolbar.css');
 	html::AddScriptFile("toolbar.js");
-	html::AddJsCode("
-		$(window).ready(()=>{
-			new ToolbarUser($('.toolbar .user'), ".json_encode($notifyModel->getItems($options)).");
-		});
-	");
+	html::AddJsCode("new ToolbarUser($('.toolbar .user'), ".json_encode($notifyModel->getItems($options)).");\n");
 
 	$menu = [
 		lang('Services')=> [

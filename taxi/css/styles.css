@@ -419,7 +419,7 @@ form .field {
     scroll-behavior: smooth;
 }
 
-.footer.sliderView, .footer .sliderView {
+.footer .sliderView {
     overflow-x: scroll;
     height: 5em;
 }

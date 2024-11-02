@@ -18,5 +18,16 @@ abstract class BaseModel {
 		if ($optionCondition) $whereList[] = $optionCondition;
 		return $whereList;
 	}
+
+	public static function getValues($values, $fields, $defaults) {
+		$result = [];
+		foreach ($fields as $i=>$field) {
+			$v = isset($values[$field]) ? $values[$field] : $defaults[$i];
+			if (is_object($v) || is_array($v))
+				$v = json_encode($v);
+			$result[] = $v;
+		}
+		return $result;
+	}
 }
 ?>

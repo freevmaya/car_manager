@@ -105,6 +105,11 @@ class Ajax extends Page {
 		return ["id"=>$order_id];
 	}
 
+	protected function Go($data) {
+		$route_id = (new RouteModel())->Update($data);
+		return ["id"=>$route_id];
+	}
+
 	protected function CancelOrder($data) {
 
 		if ($result = (new OrderModel())->CancelOrder($data['id']))

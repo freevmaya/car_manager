@@ -25,21 +25,17 @@ html::AddStyleFile('https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css'
 
 <script type="text/javascript">
 	var v_map = new VMap();
-
-<?if (DEV) {?>
-	//BIR {latitude: 32.044704, longitude: 76.726152}
-	v_map.initMap({latitude: 55.19068764669877, longitude: 61.28231993933741}).then(Mechanics);
-<?} else {?>
+	
 	function startGeo() {
-		navigator.geolocation.getCurrentPosition((pos) => {
-			v_map.initMap(pos.coords).then(Mechanics);
+		getLocation((pos) => {
+			v_map.initMap(pos).then(Mechanics);
 		});
 	}
 
 	setTimeout(()=>{
 		if (!v_map.map) startGeo();
 	}, 20000);
-	startGeo();
-<?}?>
+
+	$(window).ready(startGeo);
 
 </script>
