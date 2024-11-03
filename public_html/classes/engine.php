@@ -24,7 +24,7 @@ function checkAndLoad($pathFile) {
     	return true;
 	}
 
-    trace('File not found: '.MODEL_PATH.'/'.$class_name.'.php');
+    trace("File not found: {$pathFile}");
 
 	//echo $pathFile."\n";
 	return false;
