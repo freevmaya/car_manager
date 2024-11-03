@@ -89,7 +89,7 @@ class DriverModel extends BaseModel {
 				'readonly' => true
 			],
 			'car_id' => [
-				'type' => 'Car',
+				'type' => 'car',
 				'label' => 'Car',
 				'user_id'=> Page::$current->getUser()['id'],
 				'model' => 'CarModel',
