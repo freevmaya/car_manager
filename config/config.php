@@ -10,15 +10,18 @@
 	define('BASEURL', '//'.MAINDOMAIN);//'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/car_manager/taxi'));
 	define('SCRIPTURL', BASEURL.'/scripts');
 
+	if (!isset($_GET['id'])) {
+
+		if (strpos($_SERVER['HTTP_USER_AGENT'], 'YaBrowser') > -1)
+			define('DEVUSER', '{"id":1573351000,"is_bot":false,"first_name":"Fedor","last_name":"Petrov","username":"Fedor","language_code":"en"}');
+		else define('DEVUSER', '{"id":1573356581,"is_bot":false,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","language_code":"ru"}');
+	}
+
 	if (DEV) {
 		define('_dbhost', 'localhost');
 		define('_dbname_default', 'taxi');
 		define('_dbuser', 'root');
 		define('_dbpassword', '');
-
-		if (strpos($_SERVER['HTTP_USER_AGENT'], 'YaBrowser') > -1)
-			define('DEVUSER', '{"id":1573351000,"is_bot":false,"first_name":"Fedor","last_name":"Petrov","username":"Fedor","language_code":"en"}');
-		else define('DEVUSER', '{"id":1573356581,"is_bot":false,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","language_code":"ru"}');
 	} else {
 		define('_dbhost', 'localhost');
 		define('_dbname_default', 'fwadimuz_taxi');

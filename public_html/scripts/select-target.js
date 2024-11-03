@@ -1,14 +1,22 @@
 class ViewPath extends BottomView {
-    routes;
-    routeId;
+    #routes;
+    #routeId = 0;
     travelMode = 'WALKING';
     rpath;
+
+    setRoutes(routes) {
+        this.#routes = routes;
+    }
+
+    getRoutes() {
+        return this.#routes;
+    }
 
     showPath(startPlace, finishPlace, afterRequest = null) {
         this.closePath();
         v_map.getRoutes(startPlace, finishPlace, this.travelMode, ((result)=>{
 
-            this.routes = result;
+            this.setRoutes(result);
             this.rpath = DrawPath(v_map.map, result);
             if (afterRequest)
                 afterRequest();
@@ -16,8 +24,12 @@ class ViewPath extends BottomView {
         }).bind(this));
     }
 
+    setRouteId(routeId) {
+        this.#routeId = routeId;
+    }
+
     getRouteId() {
-        return this.routeId;
+        return this.#routeId;
     }
 
     closePath() {
@@ -67,10 +79,12 @@ class ViewTarget extends ViewPath {
 
     Go() {
 
-        if (this.routes) {
+        let routes = this.getRoutes();
 
-            let start = getRoutePoint(this.routes, 0);
-            let finish = getRoutePoint(this.routes, -1);
+        if (routes) {
+
+            let start = getRoutePoint(routes, 0);
+            let finish = getRoutePoint(routes, -1);
 
             let path = {
                 start: { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() },
@@ -79,7 +93,7 @@ class ViewTarget extends ViewPath {
                 finishName: PlaceName(this.options.finishPlace),
                 startAddress: PlaceAddress(this.options.startPlace),
                 finishAddress: PlaceAddress(this.options.finishPlace),
-                meters: Math.round(CalcPathLength(this.routes)),
+                meters: Math.round(CalcPathLength(routes)),
                 travelMode: this.travelMode
             };
 
@@ -92,7 +106,7 @@ class ViewTarget extends ViewPath {
                 })
             }).then(((response)=>{
                 if (response.id > 0) {
-                    this.routeId = response.id;
+                    this.setRouteId(response.id);
                     this.Close();
                 }
             }).bind(this));
@@ -177,7 +191,7 @@ class ViewTarget extends ViewPath {
     destroy() {
         if (this.listenerId > 0) 
             transport.RemoveListener('notificationList', this.listenerId);
-        if (!this.routeId)
+        if (!this.getRouteId())
             this.closePath();
         super.destroy();
     }
@@ -189,20 +203,30 @@ class Tracer {
     magnetDistance = 50;  // 50 метров от пути
     #avgSpeed = false;
     #routes;
+    #time;
 
-    constructor(routes, callback) {
+    constructor(routes) {
         this.#routes = routes;
+        this.#time = Date.now();
     }
 
     Calc(newPos) {
-
         newPos = toLatLngF(newPos);
+
+        /*
+        let currentTime = Date.now();
+
         if (this.#geoPosition) {
-            let d = Distance(this.#geoPosition, newPos);
+            let deltaST = (currentTime - this.#time) / 1000;
+            let speed = Distance(this.#geoPosition, newPos) / deltaST;
+
             if (this.#avgSpeed === false)
-                this.#avgSpeed = d;
-            else this.#avgSpeed = (this.#avgSpeed + d) / 2;
+                this.#avgSpeed = speed;
+            else this.#avgSpeed = (this.#avgSpeed + speed) / 2;
         }
+
+        this.#time = currentTime;
+        */
 
         let p = this.magnetToPath(this.#geoPosition = newPos);
         return p;
@@ -274,16 +298,21 @@ class TracerView extends ViewPath {
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
         this.enableGeo(true);
-        this.#tracer = new Tracer(this.routes);
+    }
+
+    setRoutes(routes) {
+        super.setRoutes(routes);
+        this.#tracer = new Tracer(routes.routes);
     }
 
     receiveGeo(position) {
-        this.SetMainPoint(this.#tracer.Calc(position));
+        this.SetMainPoint(position.coords);
     }
 
     SetMainPoint(latLng) {
-        if (!isNull(latLng)) 
-            v_map.setMainPosition(latLng);
+        let p = toLatLng(latLng);
+        if (!isNull(p) && this.#tracer) 
+            v_map.setMainPosition(this.#tracer.Calc(p));
     }
 
     enableGeo(enable) {
@@ -295,8 +324,18 @@ class TracerView extends ViewPath {
         }
     }
 
+    Close() {
+        super.Close();
+        if (this.getRouteId())
+            Ajax({
+                action: 'Stop',
+                data: JSON.stringify({id: this.getRouteId()})
+            });
+    }
+
     destroy() {
         this.enableGeo(false);
+        this.closePath();
         super.destroy();
     }
 }
@@ -317,7 +356,7 @@ function Mechanics() {
             tracerDialog = null;
         });
 
-        tracerDialog.routeId = routeId;
+        tracerDialog.setRouteId(routeId);
         tracerDialog.travelMode = path.travelMode;
         tracerDialog.showPath(path.start, path.finish);
     }
@@ -333,7 +372,7 @@ function Mechanics() {
                 startPlace: place
             }, () => {
                 if (routeDialog.getRouteId()) {
-                    BeginTracer(routeDialog.getRouteId(), routeDialog.routes);
+                    BeginTracer(routeDialog.getRouteId(), routeDialog.getRoutes());
                 }
                 routeDialog = null;
             });

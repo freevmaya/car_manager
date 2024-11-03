@@ -429,7 +429,7 @@ function toLatLng(obj) {
 }
 
 function isNull(latLng) {
-    if (!latLng)
+    if (latLng)
         return typeof(latLng.lat) == 'undefined';
     return true;
 }

@@ -110,6 +110,10 @@ class Ajax extends Page {
 		return ["id"=>$route_id];
 	}
 
+	protected function Stop($data) {
+		return ["result"=>(new RouteModel())->Stop($data['id'])];
+	}
+
 	protected function CancelOrder($data) {
 
 		if ($result = (new OrderModel())->CancelOrder($data['id']))
