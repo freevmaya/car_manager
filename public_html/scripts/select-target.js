@@ -323,7 +323,7 @@ class TracerView extends ViewPath {
     }
 
     SetMainPoint(latLng) {
-        trace(latLng);
+        console.log(latLng);
         let p = toLatLng(latLng);
         if (!isNull(p) && this.#tracer) 
             v_map.setMainPosition(this.#tracer.Calc(p));
