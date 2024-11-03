@@ -32,7 +32,6 @@ function checkAndLoad($pathFile) {
     	include_once($pathFile);
     	return true;
 	}
-    trace("File not found: {$pathFile}");
 	return false;
 }
 
