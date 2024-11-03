@@ -38,9 +38,9 @@ function checkAndLoad($pathFile) {
 
 spl_autoload_register(function ($class_name) {
 
-	if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php'))
+    if (!checkAndLoad(CLASSES_PATH.'/'.$class_name.'.php'))
 
-    	if (!checkAndLoad(CLASSES_PATH.'/'.$class_name.'.php')) 
+        if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php'))
 
     		if (!checkAndLoad(TEMPLATES_PATH.'/'.$class_name.'.php')) {
 
