@@ -312,6 +312,7 @@ class TracerView extends ViewPath {
     }
 
     receiveGeo(position) {
+        console.log(position.coords);
         this.SetMainPoint(position.coords);
     }
 
