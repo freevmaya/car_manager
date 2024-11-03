@@ -25,17 +25,16 @@ html::AddStyleFile('https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css'
 
 <script type="text/javascript">
 	var v_map = new VMap();
-	
-	function startGeo() {
+
+	setTimeout(()=>{
+		if (!v_map.map) 
+			v_map.initMap(pos).then(Mechanics);
+	}, 10000);
+
+	$(window).ready(() => {
 		getLocation((pos) => {
 			v_map.initMap(pos).then(Mechanics);
 		});
-	}
-
-	setTimeout(()=>{
-		if (!v_map.map) startGeo();
-	}, 20000);
-
-	$(window).ready(startGeo);
+	});
 
 </script>
