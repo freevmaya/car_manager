@@ -302,6 +302,7 @@ class TracerView extends ViewPath {
 
     #tracer;
     #geoId = false;
+    #timerId = false;
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
@@ -317,7 +318,12 @@ class TracerView extends ViewPath {
         this.SetMainPoint(position.coords);
     }
 
+    geoInterval() {
+        getLocation(this.SetMainPoint.bind(this));
+    }
+
     SetMainPoint(latLng) {
+        trace(latLng);
         let p = toLatLng(latLng);
         if (!isNull(p) && this.#tracer) 
             v_map.setMainPosition(this.#tracer.Calc(p));
@@ -326,8 +332,10 @@ class TracerView extends ViewPath {
     enableGeo(enable) {
         if (enable && !this.#geoId) {
             this.#geoId = navigator.geolocation.watchPosition(this.receiveGeo.bind(this));
+            this.#timerId = setInterval(this.geoInterval.bind(this), 5000);
         } else if (!enable && this.#geoId > 0) {
             navigator.geolocation.clearWatch(this.#geoId);
+            clearInterval(this.#timerId);
             this.#geoId = false;
         }
     }
