@@ -16,6 +16,8 @@ include(INCLUDE_PATH."/fdbg.php");
 include(INCLUDE_PATH.'/db/mySQLProvider.php');
 include(CLASSES_PATH.'/page.php');
 
+$dbp;
+
 function checkAndLoad($pathFile) {
 	if (file_exists($pathFile)) {
     	include_once($pathFile);
@@ -26,11 +28,9 @@ function checkAndLoad($pathFile) {
 	return false;
 }
 
-$dbp;
-
 spl_autoload_register(function ($class_name) {
 
-    echo MODEL_PATH.'/'.$class_name.'.php';
+    trace(MODEL_PATH.'/'.$class_name.'.php');
 
 	if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php'))
 
