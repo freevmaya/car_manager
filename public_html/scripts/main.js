@@ -419,13 +419,16 @@ function toLatLngF(obj) {
 
 
 function toLatLng(obj) {
-    if (obj.latitude)
-        return {lat:obj.latitude, lng: obj.longitude};
+    if (obj) {
+        if (obj.latitude)
+            return {lat:obj.latitude, lng: obj.longitude};
 
-    if (isFunc(obj.lat))
-        return {lat:obj.lat(), lng: obj.lng()};
-        
-    return {lat:obj.lat, lng: obj.lng};
+        if (isFunc(obj.lat))
+            return {lat:obj.lat(), lng: obj.lng()};
+            
+        return {lat:obj.lat, lng: obj.lng};
+    }
+    return null;
 }
 
 function isNull(latLng) {

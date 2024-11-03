@@ -254,7 +254,7 @@ class VMap {
 
 	async initMap(crd) {
 
-		const position = { lat: crd.latitude, lng: crd.longitude };
+		const position = toLatLng(crd);
 
 		const { Map, InfoWindow } = await google.maps.importLibrary("maps");
 		const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");

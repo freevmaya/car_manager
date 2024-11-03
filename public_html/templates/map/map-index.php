@@ -28,7 +28,7 @@ html::AddStyleFile('https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css'
 
 	setTimeout(()=>{
 		if (!v_map.map) 
-			v_map.initMap(pos).then(Mechanics);
+			v_map.initMap(null).then(Mechanics);
 	}, 10000);
 
 	$(window).ready(() => {
