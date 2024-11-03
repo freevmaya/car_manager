@@ -38,9 +38,9 @@ function checkAndLoad($pathFile) {
 
 spl_autoload_register(function ($class_name) {
 
-    if (!checkAndLoad(CLASSES_PATH.'/'.$class_name.'.php'))
+    if (!checkAndLoad(CLASSES_PATH.'/'.$class_name.'.php')) {
 
-        if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php'))
+        if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php')) {
 
     		if (!checkAndLoad(TEMPLATES_PATH.'/'.$class_name.'.php')) {
 
@@ -48,6 +48,8 @@ spl_autoload_register(function ($class_name) {
 
     			throw new Exception("Can't load class {$class_name}, request: ".print_r(Page::$request, true), 1);
             }
+        }
+    }
     			
 });
 
