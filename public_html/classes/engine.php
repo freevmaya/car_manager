@@ -30,6 +30,8 @@ $dbp;
 
 spl_autoload_register(function ($class_name) {
 
+    echo MODEL_PATH.'/'.$class_name.'.php';
+
 	if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php'))
 
     	if (!checkAndLoad(CLASSES_PATH.'/'.$class_name.'.php')) 
