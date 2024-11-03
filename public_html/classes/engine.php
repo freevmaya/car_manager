@@ -32,8 +32,6 @@ function checkAndLoad($pathFile) {
     	include_once($pathFile);
     	return true;
 	}
-
-    trace("File not found: {$pathFile}");
 	return false;
 }
 
@@ -43,9 +41,12 @@ spl_autoload_register(function ($class_name) {
 
     	if (!checkAndLoad(CLASSES_PATH.'/'.$class_name.'.php')) 
 
-    		if (!checkAndLoad(TEMPLATES_PATH.'/'.$class_name.'.php'))
+    		if (!checkAndLoad(TEMPLATES_PATH.'/'.$class_name.'.php')) {
+
+                trace("Class not found: {$class_name}");
 
     			throw new Exception("Can't load class {$class_name}, request: ".print_r(Page::$request, true), 1);
+            }
     			
 });
 
