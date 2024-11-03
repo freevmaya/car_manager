@@ -235,6 +235,8 @@ class Tracer {
         */
 
         let p = this.magnetToPath(this.#geoPosition = newPos);
+        console.log(newPos);
+        console.log('is magnet: ' + p);
         return p;
     }
 
@@ -312,7 +314,6 @@ class TracerView extends ViewPath {
     }
 
     receiveGeo(position) {
-        console.log(position.coords);
         this.SetMainPoint(position.coords);
     }
 
