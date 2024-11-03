@@ -24,13 +24,13 @@ function checkAndLoad($pathFile) {
     	return true;
 	}
 
+    trace('File not found: '.MODEL_PATH.'/'.$class_name.'.php');
+
 	//echo $pathFile."\n";
 	return false;
 }
 
 spl_autoload_register(function ($class_name) {
-
-    trace(MODEL_PATH.'/'.$class_name.'.php');
 
 	if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php'))
 
