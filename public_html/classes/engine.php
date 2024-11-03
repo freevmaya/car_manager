@@ -15,6 +15,8 @@ include(INCLUDE_PATH."/console.php");
 include(INCLUDE_PATH."/fdbg.php");
 include(INCLUDE_PATH.'/db/mySQLProvider.php');
 include(CLASSES_PATH.'/page.php');
+include(CLASSES_PATH.'/html.php');
+include(CLASSES_PATH.'/ajax.php');
 
 $dbp;
 
