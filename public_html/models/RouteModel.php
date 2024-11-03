@@ -25,12 +25,12 @@ class RouteModel extends BaseModel {
 
 	public function Stop($id) {
 		GLOBAL $dbp;
-		return $dbp->bquery("DELETE FROM {$this->getTable()} WHERE id=?", 'i', [$id]);
+		return $dbp->bquery("UPDATE {$this->getTable()} SET `state`='finished' WHERE id=?", 'i', [$id]);
 	}
 
 	public function getCurrentRoute() {
 		GLOBAL $dbp;
-		return $dbp->line("SELECT * FROM {$this->getTable()} WHERE user_id = ".Page::$current->getUser()['id']);
+		return $dbp->line("SELECT * FROM {$this->getTable()} WHERE `state` = 'active' AND user_id = ".Page::$current->getUser()['id']);
 	}
 }
 ?>
