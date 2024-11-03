@@ -16,12 +16,14 @@ include(INCLUDE_PATH."/fdbg.php");
 include(INCLUDE_PATH.'/db/mySQLProvider.php');
 include(CLASSES_PATH.'/page.php');
 
+/*
 include(CLASSES_PATH.'/html.php');
 include(CLASSES_PATH.'/ajax.php');
 include(CLASSES_PATH.'/settings.php');
 include(CLASSES_PATH.'/map.php');
 include(MODEL_PATH.'/BaseModel.php');
 include(MODEL_PATH.'/CarbodyModel.php');
+*/
 
 $dbp;
 
@@ -32,12 +34,9 @@ function checkAndLoad($pathFile) {
 	}
 
     trace("File not found: {$pathFile}");
-
-	//echo $pathFile."\n";
 	return false;
 }
 
-/*
 spl_autoload_register(function ($class_name) {
 
 	if (!checkAndLoad(MODEL_PATH.'/'.$class_name.'.php'))
@@ -49,7 +48,7 @@ spl_autoload_register(function ($class_name) {
     			throw new Exception("Can't load class {$class_name}, request: ".print_r(Page::$request, true), 1);
     			
 });
-*/
+
 
 if (!function_exists('array_is_list')) {
     function array_is_list(array $arr)
