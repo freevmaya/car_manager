@@ -77,7 +77,7 @@ class ViewTarget extends ViewPath {
         this.listenerId = transport.AddListener('SuitableDrivers', this.onSuitableDrivers.bind(this));
     }
 
-    Go() {
+    GetPath() {
 
         let routes = this.getRoutes();
 
@@ -85,18 +85,24 @@ class ViewTarget extends ViewPath {
 
             let start = getRoutePoint(routes, 0);
             let finish = getRoutePoint(routes, -1);
+            return {
+                    start: { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() },
+                    finish: { placeId: this.options.finishPlace.placeId, lat: finish.lat(), lng: finish.lng() },
+                    startName: PlaceName(this.options.startPlace),
+                    finishName: PlaceName(this.options.finishPlace),
+                    startAddress: PlaceAddress(this.options.startPlace),
+                    finishAddress: PlaceAddress(this.options.finishPlace),
+                    meters: Math.round(CalcPathLength(this.getRoutes())),
+                    travelMode: this.travelMode
+                };
+            } return null;
+    }
 
-            let path = {
-                start: { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() },
-                finish: { placeId: this.options.finishPlace.placeId, lat: finish.lat(), lng: finish.lng() },
-                startName: PlaceName(this.options.startPlace),
-                finishName: PlaceName(this.options.finishPlace),
-                startAddress: PlaceAddress(this.options.startPlace),
-                finishAddress: PlaceAddress(this.options.finishPlace),
-                meters: Math.round(CalcPathLength(routes)),
-                travelMode: this.travelMode
-            };
+    Go() {
+            
+        let path = this.GetPath();
 
+        if (path) {
             Ajax({
                 //action: "AddOrder",
                 action: "Go",
@@ -372,7 +378,7 @@ function Mechanics() {
                 startPlace: place
             }, () => {
                 if (routeDialog.getRouteId()) {
-                    BeginTracer(routeDialog.getRouteId(), routeDialog.getRoutes());
+                    BeginTracer(routeDialog.getRouteId(), routeDialog.GetPath());
                 }
                 routeDialog = null;
             });
