@@ -183,61 +183,107 @@ class ViewTarget extends ViewPath {
     }
 }
 
+class Tracer {
+
+    #geoPosition;
+    magnetDistance = 50;  // 50 метров от пути
+    #avgSpeed = false;
+    #routes;
+
+    constructor(routes, callback) {
+        this.#routes = routes;
+    }
+
+    Calc(newPos) {
+
+        newPos = toLatLngF(newPos);
+        if (this.#geoPosition) {
+            let d = Distance(this.#geoPosition, newPos);
+            if (this.#avgSpeed === false)
+                this.#avgSpeed = d;
+            else this.#avgSpeed = (this.#avgSpeed + d) / 2;
+        }
+
+        let p = this.magnetToPath(this.#geoPosition = newPos);
+        return p;
+    }
+
+    calcPointInPath(path, p) {
+
+        p = toLatLngF(p);
+        let min = this.magnetDistance;
+        let result = false;
+
+        for (let i=0; i<path.length - 1; i++) {
+
+            let p1 = path[i];
+            let p2 = path[i + 1];
+            let angle = Math.abs(CalcAngleRad(p1, p2) - CalcAngleRad(p1, p));
+            if (angle < Math.PI / 2) {
+                let c = Distance(p1, p);
+                let b = Distance(p1, p2);
+
+                let b2 = c * Math.cos(angle);
+
+                if (b2 < b) {
+                    let h = c * Math.sin(angle);
+                    if (h < min) {
+                        min = h;
+                        let lk = b2 / b;
+                        result = {
+                            lat: p1.lat() + (p2.lat() - p1.lat()) * lk,
+                            lng: p1.lng() + (p2.lng() - p1.lng()) * lk
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!result) {
+            let min = this.magnetDistance;
+            for (let i=0; i<path.length; i++) {
+                let h = Distance(path[i], p);
+                if (h < min) {
+                    min = h;
+                    result = toLatLng(path[i]);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    magnetToPath(latLng) {
+
+        if (this.#routes && (this.#routes.length > 0)) {
+            let path = this.#routes[0].overview_path;
+            return this.calcPointInPath(path, latLng);
+        }
+
+        return toLatLng(latLng);
+    }
+
+}
+
 
 class TracerView extends ViewPath {
 
-    #getPosition;
+    #tracer;
     #geoId = false;
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
         this.enableGeo(true);
+        this.#tracer = new Tracer(this.routes);
     }
 
     receiveGeo(position) {
-        this.SetMainPoint(this.#getPosition = toLatLng(position.coords));
-    }
-
-    lengthInLine(path, index, p) {
-
-        if (index < path.length - 1) {
-            let p1 = path[index];
-            let p2 = path[index + 1];
-
-            let c = Distance(p1, p);
-            let a = Distance(p, p2);
-            let b = Distance(p1, p2);
-            let pin = false;
-
-            let len2 = pow(a) + pow(b);
-            if (pow(c) < len2) {
-                let len = b - Math.sqrt(len2);
-                let h = Math.sqrt(pow(c) - pow(len));
-                if (h < 10) // 10 метров от пути
-                    return Math.sqrt(len2);
-            }
-        }
-
-        return false;
+        this.SetMainPoint(this.#tracer.Calc(position));
     }
 
     SetMainPoint(latLng) {
-        v_map.setMainPosition(this.magnetToPath(latLng));
-    }
-
-    magnetToPath(latLng) {
-        /*
-        let p = toLatLngF(latLng);
-        if (this.routes) {
-            let path = this.routes.routes[0].overview_path;
-            for (let i=0; i<path.length - 1; i++) {
-                if (this.lengthInLine(path, i, p)) {
-                    console.log(p + ' ' + i);
-                    break;
-                }
-            }
-        }*/
-        return latLng;
+        if (!isNull(latLng)) 
+            v_map.setMainPosition(latLng);
     }
 
     enableGeo(enable) {
@@ -310,7 +356,6 @@ function Mechanics() {
             return;
 
         if (tracerDialog) {
-            console.log(e);
             tracerDialog.SetMainPoint(e.latLng);
             return;
         }
