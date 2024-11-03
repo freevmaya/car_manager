@@ -15,7 +15,6 @@ class Page {
 	public static $subpage;
 
 	public static function Run($request) {
-		trace($request);
 		Page::$request = $request;
 
 		$className = 'Page';
