@@ -2,7 +2,7 @@
 	
 	define('BASEDIR', dirname(__FILE__, 2));
 	define("BOTTOKEN", "7915848901:AAH-dqgbcU3olF_52Lwc1Uml_sKu9xu3M7s");
-	define("DEV", (strpos($_SERVER['SERVER_NAME'], 'test') > -1) || isset($_GET['dev']));
+	define("DEV", true);
 	define("INCLUDE_PATH", BASEDIR."/include/");
 	define('LOGPATH', BASEDIR.'/logs/');
 	define("MAINDOMAIN", $_SERVER['SERVER_NAME']);
@@ -17,7 +17,7 @@
 		else define('DEVUSER', '{"id":1573356581,"is_bot":false,"first_name":"Vadim","last_name":"Frolov","username":"FreeVmaya","language_code":"ru"}');
 	}
 
-	if (DEV) {
+	if ((strpos($_SERVER['SERVER_NAME'], 'test') > -1) || isset($_GET['dev'])) {
 		define('_dbhost', 'localhost');
 		define('_dbname_default', 'taxi');
 		define('_dbuser', 'root');
