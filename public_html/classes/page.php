@@ -63,7 +63,7 @@ class Page {
 			$this->setUser($_GET);
 		else if (Page::getSession('user'))
 			$this->user = Page::getSession('user');
-		else if (DEV) 
+		else if (DEVUSER) 
 			$this->setUser(json_decode(DEVUSER, true));
 
 		if ($this->user) {
