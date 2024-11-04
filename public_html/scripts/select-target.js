@@ -213,15 +213,17 @@ class TracerView extends ViewPath {
 
     #setMainPoint(latLng, angle) {
         //v_map.setMainPosition(latLng);
-        this.#marker.position = latLng;
-        this.#marker.content.style = "rotate:" + angle + "deg";
+        if (this.#marker) {
+            this.#marker.position = latLng;
+            this.#marker.content.style = "rotate:" + angle + "deg";
+        }
     }
 
     setRoutes(routes) {
         super.setRoutes(routes);
-        this.#tracer = new Tracer(routes.routes, this.#setMainPoint.bind(this), 100);
         this.enableGeo(true);
         this.#marker = v_map.MarkerManager.CreateMarker(routes.routes[0].overview_path[0], 'driver', 'marker auto');
+        this.#tracer = new Tracer(routes.routes, this.#setMainPoint.bind(this), 100);
     }
 
     setTracerPoint(latLng) {
