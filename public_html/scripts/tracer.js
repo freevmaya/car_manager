@@ -1,6 +1,6 @@
 class Tracer {
 
-    magnetDistance = 50;  // 50 метров от пути
+    magnetDistance = 100;  // 100 метров от пути
 
     limitSpeed = {
         max: 30, min: -30
@@ -185,7 +185,7 @@ class Tracer {
                 //this.#routeDistance = distance;
 
                 this.#time = currentTime;
-            }
+            } else console.log('Distance less that ' + this.magnetDistance + 'm');
         }
     }
 
