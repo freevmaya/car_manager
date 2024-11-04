@@ -10,10 +10,13 @@
 	html::AddJsCode("new ToolbarUser($('.toolbar .user'), ".json_encode($notifyModel->getItems($options)).");");
 
 	$menu = [
+		[
+			[ Page::link(), lang('Home') ] 
+		],
 		lang('Services')=> [
 			($this->asDriver()) ?
 				[ Page::link(['map','driver']), lang('Give a ride') ] :
-			[ Page::link('map'), lang('Go') ]
+			[ Page::link('map'), lang('Trip on the map') ]
 		],
 		lang('Settings')=> [
 			[ Page::link(['settings', 'user']), lang('User') ],
@@ -34,13 +37,18 @@
 	</div>
 
 	<div class="submenu shadow">
-		<div class="header"></div>
+		<div>
+			<div class="header"></div>
 <?
 	foreach ($menu as $title=>$submenuList) {
-		echo "<div><i>{$title}:</i></div>\n";
+		if ($title)
+			echo "<div><i>{$title}:</i></div>\n";
 		foreach ($submenuList as $submenu)
 			echo "<div class=\"item\"><a href=\"{$submenu[0]}\">{$submenu[1]}</a></div>";
 	}
 ?>
+		</div>
+		<div class="handle" onmousedown="$('#toolbarMenu').toggleClass('open')">
+		</div>
 	</div>
 </div>

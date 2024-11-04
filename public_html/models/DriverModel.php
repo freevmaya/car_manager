@@ -84,6 +84,10 @@ class DriverModel extends BaseModel {
 				'type'=> 'hidden',
 				'default' => Page::$current->getUser()['id']
 			],
+			'active' => [
+				'label' => 'Active',
+				'type' => 'bool'
+			],
 			'driver' => [
 				'label'=> 'Driver',
 				'readonly' => true
@@ -100,10 +104,6 @@ class DriverModel extends BaseModel {
 				'type' => 'route_types',
 				'model' => 'RouteTypesModel',
 				'user_id'=> Page::$current->getUser()['id']
-			],
-			'active' => [
-				'label' => 'Active',
-				'type' => 'bool'
 			]
 		];
 	}

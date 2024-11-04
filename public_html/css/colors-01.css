@@ -147,7 +147,6 @@ select.time {
     background: #454545;
     border-color: #0000008c;
     color: #AAA;
-    padding: 0.5em 1em;
 }
 
 .close, .closed:after {
@@ -239,7 +238,7 @@ form .warning {
     border-radius: 0.5em;
 }
 
-.selectView .button::before {
+.selectView .popup-button::before {
     border-top-color: black;
     border-left-color: black;
 }

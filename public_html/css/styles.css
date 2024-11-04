@@ -382,7 +382,7 @@ h1, h2 {
     margin-bottom: 0.5em;
 }
 
-form .field {
+.form .field {
     margin: 1em;
     min-width: 20em;
 }
@@ -403,8 +403,8 @@ form .field {
     margin-left: 1em;
     border-style: solid;
     border-width: 1px;
-    padding: 0.5em;
-    border-radius: 1em;
+    padding: 0.8em 1em;
+    border-radius: 1.5em;
 }
 
 .field input[type="checkbox"] {
@@ -424,7 +424,7 @@ form .field {
     height: 5em;
 }
 
-/*
+
 .pageContent .sliderView {
     overflow-y: scroll;
     position: absolute;
@@ -434,7 +434,7 @@ form .field {
     bottom: 4.5em;
 }
 
-#windows .sliderView {
+/*#windows .sliderView {
     overflow-y: scroll;
     position: absolute;
     left: 1em;
@@ -768,9 +768,14 @@ form .warning::before {
     width: 2.5em;
     height: 2.5em;
     position: sticky;
+    color: #575757;
 }
 
-.selectView .button::before {
+.trips .selectView .button {
+    width: 5em;
+}
+
+.selectView .popup-button::before {
     content: ' ';
     width: 0.1em;
     height: 0.1em;

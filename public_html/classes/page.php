@@ -120,13 +120,15 @@ class Page {
 		return $this->asDriver() || $this->haveActiveOrder();
 	}
 
-	public static function link($params) {
+	public static function link($params = null) {
 		$result = BASEURL;
-		if (is_string($params))
-			return $result.'/'.$params;
+		if ($params) {
+			if (is_string($params))
+				return $result.'/'.$params;
 
-		for ($i=0; $i<count($params); $i++)
-			$result .= '/'.$params[$i];
+			for ($i=0; $i<count($params); $i++)
+				$result .= '/'.$params[$i];
+		}
 		return $result;
 	} 
 
