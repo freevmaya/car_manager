@@ -5,6 +5,7 @@ html::AddScriptFiles([
 	"color.js",
 	"map.js",
 	"views.js",
+	"tracer.js",
 	//"notifications.js",
 	"https://code.jquery.com/ui/1.14.0/jquery-ui.js",
 	"https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css"

@@ -3,7 +3,6 @@ var dateShortFormat = "dd.MM.yy HH:mm";
 var dateLongFormat  = "dd.MM.yyyy HH:mm";
 var dateOnlyFormat  = "dd.MM.yyyy";
 
-
 class EventProvider {
     #incIndex;  
     constructor(periodTime) {
@@ -479,7 +478,7 @@ function CalcCoordinate(center, angle, distanceMeters) {
 }
 
 function CalcPathLength(routeData, routeIndex = 0, outList=null) {
-    let route = routeData.routes[routeIndex].overview_path;
+    let route = routeData.routes ? routeData.routes[routeIndex].overview_path : routeData[routeIndex].overview_path;
     let totalLength = 0;
     for (let i=0; i < route.length - 1; i++) {
         let d = Distance(route[i], route[i + 1]);
@@ -527,6 +526,20 @@ function DrawPath(map, routeData) {
     directionsRenderer.setMap(map);
     directionsRenderer.setDirections(routeData);
     return directionsRenderer;
+}
+
+function StopPropagation(e) {
+    e.stop();
+    e.cancelBubble = true;
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    if (e.preventDefault) {
+        e.preventDefault(); 
+    } else {
+        e.returnValue = false;  
+    }
+    return false;
 }
 
 $(window).ready(()=>{
