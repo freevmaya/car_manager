@@ -9,7 +9,8 @@
     <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>    
     <script src="<?=SCRIPTURL?>/main.js"></script>
 <?
-GLOBAL $anti_cache, $devUser;
+GLOBAL $devUser;
+$anti_cache = '?_=14';
 
 html::$scripts = array_unique(html::$scripts);
 foreach (html::$scripts as $script) {
