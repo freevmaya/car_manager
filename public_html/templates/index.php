@@ -10,7 +10,7 @@
     <script src="<?=SCRIPTURL?>/main.js"></script>
 <?
 GLOBAL $devUser;
-$anti_cache = '?_=14';
+$anti_cache = '?_=15';
 
 html::$scripts = array_unique(html::$scripts);
 foreach (html::$scripts as $script) {
