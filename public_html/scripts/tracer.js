@@ -2,6 +2,9 @@ class Tracer {
 
     magnetDistance = 50;  // 50 метров от пути
 
+    limitSpeed = {
+        max: 30, min: -30
+    };
     #geoPos;
     #routePos;
     #routeDistance;
@@ -46,7 +49,7 @@ class Tracer {
 
     #updateRoutePos() {
         if (this.#avgSpeed) {
-            this.#routeDistance += this.#avgSpeed * this.#periodTime;
+            this.#routeDistance += this.#avgSpeed * this.#periodTime / 1000;
             this.#calcPoint();
         }
     }
@@ -169,8 +172,12 @@ class Tracer {
 
                 let deltaT = currentTime - this.#time;
                 let distance = this.#calcDistance(inPath);
-                let speed = (distance - this.#routeDistance) / deltaT;
+                let speed = (distance - this.#routeDistance) / deltaT * 1000;
 
+                if (speed > this.limitSpeed.max)
+                    speed = this.limitSpeed.max;
+                else if (speed < this.limitSpeed.min)
+                    speed = this.limitSpeed.min;
 
                 this.#avgSpeed = this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed;
 
@@ -178,13 +185,13 @@ class Tracer {
                 //this.#routeDistance = distance;
 
                 this.#time = currentTime;
-
-                console.log(distance);
             }
         }
     }
 
     ReceivePoint(latLng) {
+
+        console.log(latLng);
         this.#setGeoPos(latLng);
     }
 
