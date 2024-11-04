@@ -1,5 +1,7 @@
 <?
 
+$anti_cache = '?_=14';
+
 class html {
 	public static $scripts = [];
 	public static $styles = [];
