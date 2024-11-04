@@ -5,7 +5,7 @@ var dateOnlyFormat  = "dd.MM.yyyy";
 
 class EventProvider {
     #incIndex;  
-    constructor(periodTime) {
+    constructor() {
         this.listeners = {};
         this.#incIndex = 0;
     }
@@ -45,6 +45,10 @@ class EventProvider {
     RemoveListener(event, idx) {
         if (idx > -1) 
             delete this.listeners[event][idx];
+    }
+
+    destroy() {
+        delete this.listeners;
     }
 }
 
@@ -541,6 +545,10 @@ function StopPropagation(e) {
     }
     return false;
 }
+
+Number.prototype.clamp = function(min, max) {
+  return Math.min(Math.max(this, min), max);
+};
 
 $(window).ready(()=>{
     PrepareInput();

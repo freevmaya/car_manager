@@ -224,6 +224,8 @@ class TracerView extends ViewPath {
         this.enableGeo(true);
         this.#marker = v_map.MarkerManager.CreateMarker(routes.routes[0].overview_path[0], 'driver', 'marker auto');
         this.#tracer = new Tracer(routes.routes, this.#setMainPoint.bind(this), 100);
+
+        this.#tracer.AddListener('FINISHPATH', this.onFinish.bind(this));
     }
 
     setTracerPoint(latLng) {
@@ -257,6 +259,10 @@ class TracerView extends ViewPath {
                 action: 'Stop',
                 data: JSON.stringify({id: this.getRouteId()})
             });
+    }
+
+    onFinish() {
+        //this.Close();
     }
 
     destroy() {

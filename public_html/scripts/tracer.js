@@ -1,9 +1,14 @@
-class Tracer {
+class Tracer extends EventProvider {
 
-    magnetDistance = 200;  // 100 метров от пути
+//EVENTS: FINISHPATH, TEAREDTIME, TEAREDDIST, TOOFAR;
 
-    limitSpeed = {
-        max: 30, min: -30
+
+    #options = {
+        magnetDistance: 100, // 100 метров от пути
+        waitTooFar: 30,
+        speedMax: 30,
+        tearedTime: 2 * 60,
+        tearedDistance: 100
     };
     #geoPos;
     #routePos;
@@ -13,6 +18,10 @@ class Tracer {
     #avgSpeed = false;
     #routes;
     #routeIndex = 0;
+    #pathIndex;
+    #timeTooFar = 0;
+
+    #deltaT;
     #lengthList;
     #totalLength;
     #time;
@@ -20,7 +29,11 @@ class Tracer {
     #intervalId;
     #periodTime;
 
-    constructor(routes, callback, periodTime) {
+    constructor(routes, callback, periodTime, options) {
+
+        super();
+
+        this.#options = $.extend(this.#options, options);
         this.#routes = routes;
         this.#time = Date.now();
         this.#callback = callback;
@@ -35,6 +48,7 @@ class Tracer {
 
     destroy() {
         clearInterval(this.#intervalId);
+        super.destroy();
     }
 
     #update() {
@@ -42,7 +56,7 @@ class Tracer {
 
         if (this.#lastPos) {
             if (!this.#routePos.equals(this.#lastPos))
-                this.#callback(this.#routePos, this.#routeAngle);
+                this.#callback(this.#routePos, this.#avgSpeed > 0 ? this.#routeAngle : (this.#routeAngle + 180) % 360);
         } else this.#callback(this.#routePos);
         this.#lastPos = this.#routePos;
     }
@@ -56,7 +70,7 @@ class Tracer {
 
     #calcPointInPath(path, p, inPath) {
 
-        let min = this.magnetDistance;
+        let min = this.#options.magnetDistance;
         let result = false;
 
         for (let i=0; i<path.length - 1; i++) {
@@ -88,7 +102,7 @@ class Tracer {
         }
 
         if (!result) {
-            let min = this.magnetDistance;
+            let min = this.#options.magnetDistance;
             for (let i=0; i<path.length; i++) {
                 let h = Distance(path[i], p);
                 if (h < min) {
@@ -129,7 +143,7 @@ class Tracer {
                         let p1 = path[i];
                         let p2 = path[i + 1];
                         let lk = (distance - d) / l;
-                        idx = i;
+                        this.#pathIndex = i;
                         this.#routeAngle = CalcAngle(p1, p2);
                         this.#routePos = new google.maps.LatLng(
                             p1.lat() + (p2.lat() - p1.lat()) * lk,
@@ -145,37 +159,57 @@ class Tracer {
         } else {
             idx = path.length - 1;
             this.#routeAngle = CalcAngle(path[idx - 1], path[idx]);
+
+            this.SendEvent('FINISHPATH', this);
         }
 
-        this.#routePos = path[idx];        
+        this.#routePos = path[this.#pathIndex = idx];        
     }
 
     #setGeoPos(latLng) {
 
-        let currentTime = Date.now();
-
         if (this.#routes && (this.#routes.length > 0)) {
+
+            let currentTime = Date.now();
+            this.#deltaT = (currentTime - this.#time) / 1000;
+
             let path = this.#routes[this.#routeIndex].overview_path;
             let inPath = {};
             let p = this.#calcPointInPath(path, latLng, inPath);
+
             if (p) {
-
-                let deltaT = currentTime - this.#time;
                 let distance = this.#calcDistance(inPath);
-                let speed = (distance - this.#routeDistance) / deltaT * 1000;
+                let deltaDist = distance - this.#routeDistance;
 
-                if (speed > this.limitSpeed.max)
-                    speed = this.limitSpeed.max;
-                else if (speed < this.limitSpeed.min)
-                    speed = this.limitSpeed.min;
+                let speed = (deltaDist / this.#deltaT)
+                                .clamp(-this.#options.speedMax, this.#options.speedMax);
 
-                this.#avgSpeed = this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed;
+                let tearedTime = this.#deltaT > this.#options.tearedTime;
+                let tearedDist = Math.abs(deltaDist) > this.#options.tearedDistance;
 
-                //this.#routePos = p;
-                //this.#routeDistance = distance;
+                if (tearedTime || tearedDist) {
+                    this.#routeDistance = distance;
+                    this.#routePos = p;
 
-                this.#time = currentTime;
-            } else console.log('Distance more that ' + this.magnetDistance + 'm');
+                    if (tearedTime) {
+                        this.#avgSpeed = speed;
+                        this.SendEvent('TEAREDTIME', tearedDist);
+                    } else this.SendEvent('TEAREDDIST', tearedDist);
+
+                    console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
+                } else {
+                    this.#avgSpeed = this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed;
+                }
+                this.#timeTooFar = 0;
+            } else {
+                this.#timeTooFar += this.#deltaT;
+                if (this.#timeTooFar > this.#options.waitTooFar)
+                    this.SendEvent('TOOFAR', this.#options.magnetDistance);
+                
+                console.log('Distance more that ' + this.#options.magnetDistance + 'm');
+            }
+
+            this.#time = currentTime;
         }
     }
 
