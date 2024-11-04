@@ -231,7 +231,9 @@ class TracerView extends ViewPath {
     }
 
     #receiveGeo(position) {
-        if (this.#tracer) this.#tracer.ReceivePoint(new google.maps.LatLng(position.coords));
+        this.setTracerPoint(new google.maps.LatLng(position.coords));
+
+        v_map.MarkerManager.setMainPosition(position);
     }
 
     enableGeo(enable) {

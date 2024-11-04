@@ -104,16 +104,6 @@ class Tracer {
         return result;
     }
 
-    #magnetToPath(latLng) {
-
-        if (this.#routes && (this.#routes.length > 0)) {
-            let path = this.#routes[this.#routeIndex].overview_path;
-            return this.#calcPointInPath(path, latLng);
-        }
-
-        return toLatLng(latLng);
-    }
-
     #calcDistance(inPath) {
         let result = 0;
         for (let i=0; i<inPath.idx; i++)
@@ -190,8 +180,6 @@ class Tracer {
     }
 
     ReceivePoint(latLng) {
-
-        console.log(latLng);
         this.#setGeoPos(latLng);
     }
 
