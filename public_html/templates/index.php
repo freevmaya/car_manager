@@ -1,3 +1,7 @@
+<?
+GLOBAL $devUser;
+$anti_cache = '?_=15';
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,10 +11,8 @@
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/styles.css">
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/colors-<?=$this->colorSheme('01')?>.css">
     <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>    
-    <script src="<?=SCRIPTURL?>/main.js"></script>
+    <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>
 <?
-GLOBAL $devUser;
-$anti_cache = '?_=15';
 
 html::$scripts = array_unique(html::$scripts);
 foreach (html::$scripts as $script) {
