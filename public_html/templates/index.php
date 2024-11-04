@@ -1,6 +1,6 @@
 <?
 GLOBAL $devUser;
-$anti_cache = '?_=19';
+$anti_cache = '?_=20';
 ?>
 <!DOCTYPE html>
 <html lang="ru">
