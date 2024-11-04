@@ -1,10 +1,12 @@
 class Tracer {
 
+    magnetDistance = 50;  // 50 метров от пути
+
     #geoPos;
     #routePos;
     #routeDistance;
+    #routeAngle;
     #lastPos;
-    magnetDistance = 50;  // 50 метров от пути
     #avgSpeed = false;
     #routes;
     #routeIndex = 0;
@@ -13,13 +15,15 @@ class Tracer {
     #time;
     #callback;
     #intervalId;
+    #periodTime;
 
-    constructor(routes, callback, refreshPeriodTime) {
+    constructor(routes, callback, periodTime) {
         this.#routes = routes;
         this.#time = Date.now();
         this.#callback = callback;
-        this.#intervalId = setInterval(this.#update.bind(this), refreshPeriodTime);
+        this.#intervalId = setInterval(this.#update.bind(this), periodTime);
 
+        this.#periodTime = periodTime;
         this.#lengthList = [];
         this.#totalLength = CalcPathLength(this.#routes, this.#routeIndex, this.#lengthList);
         this.#routePos = this.#routes[this.#routeIndex].overview_path[0];
@@ -31,11 +35,20 @@ class Tracer {
     }
 
     #update() {
+        this.#updateRoutePos();
+
         if (this.#lastPos) {
             if (!this.#routePos.equals(this.#lastPos))
-                this.#callback(this.#routePos);
+                this.#callback(this.#routePos, this.#routeAngle);
         } else this.#callback(this.#routePos);
         this.#lastPos = this.#routePos;
+    }
+
+    #updateRoutePos() {
+        if (this.#avgSpeed) {
+            this.#routeDistance += this.#avgSpeed * this.#periodTime;
+            this.#calcPoint();
+        }
     }
 
     #calcPointInPath(path, p, inPath) {
@@ -105,28 +118,43 @@ class Tracer {
         return result + inPath.distance;
     }
 
-    #calcPoint(distance) {
+    #calcPoint() {
+
+        let distance = this.#routeDistance;
         let path = this.#routes[this.#routeIndex].overview_path;
+        let idx = 0;
 
         if (distance < this.#totalLength) {
-            let d = 0;
-            for (let i=0; i<this.#lengthList.length; i++) {
-                let l = this.#lengthList[i];
+            if (distance > 0) {
+                let d = 0;
+                for (let i=0; i<this.#lengthList.length; i++) {
+                    let l = this.#lengthList[i];
 
-                if (l + d > distance)
-                    d += l;
-                else {
-                    let p1 = path[i];
-                    let p2 = path[i + 1];
-                    let lk = (distance - d) / l;
-                    return new google.maps.LatLng(
-                        p1.lat() + (p2.lat() - p1.lat()) * lk,
-                        p1.lng() + (p2.lng() - p1.lng()) * lk
-                    );
+                    if (l + d < distance)
+                        d += l;
+                    else {
+                        let p1 = path[i];
+                        let p2 = path[i + 1];
+                        let lk = (distance - d) / l;
+                        idx = i;
+                        this.#routeAngle = CalcAngle(p1, p2);
+                        this.#routePos = new google.maps.LatLng(
+                            p1.lat() + (p2.lat() - p1.lat()) * lk,
+                            p1.lng() + (p2.lng() - p1.lng()) * lk
+                        );
+                        return;
+                    }
                 }
+            } else {
+                idx = 0;
+                this.#routeAngle = CalcAngle(path[0], path[1]);
             }
+        } else {
+            idx = path.length - 1;
+            this.#routeAngle = CalcAngle(path[idx - 1], path[idx]);
         }
-        return path[path.length - 1];
+
+        this.#routePos = path[idx];        
     }
 
     #setGeoPos(latLng) {
@@ -139,13 +167,19 @@ class Tracer {
             let p = this.#calcPointInPath(path, latLng, inPath);
             if (p) {
 
+                let deltaT = currentTime - this.#time;
                 let distance = this.#calcDistance(inPath);
+                let speed = (distance - this.#routeDistance) / deltaT;
 
-                this.#routePos = this.#calcPoint(distance);
 
-                console.log(distance);
+                this.#avgSpeed = this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed;
+
+                //this.#routePos = p;
+                //this.#routeDistance = distance;
 
                 this.#time = currentTime;
+
+                console.log(distance);
             }
         }
     }

@@ -198,8 +198,8 @@ class ViewTarget extends ViewPath {
     destroy() {
         if (this.listenerId > 0) 
             transport.RemoveListener('notificationList', this.listenerId);
-        if (!this.getRouteId())
-            this.closePath();
+        
+        this.closePath();
         super.destroy();
     }
 }
@@ -209,15 +209,19 @@ class TracerView extends ViewPath {
 
     #tracer;
     #geoId = false;
+    #marker;
 
-    #setMainPoint(latLng) {
-        v_map.setMainPosition(latLng);
+    #setMainPoint(latLng, angle) {
+        //v_map.setMainPosition(latLng);
+        this.#marker.position = latLng;
+        this.#marker.content.style = "rotate:" + angle + "deg";
     }
 
     setRoutes(routes) {
         super.setRoutes(routes);
-        this.#tracer = new Tracer(routes.routes, this.#setMainPoint.bind(this), 500);
+        this.#tracer = new Tracer(routes.routes, this.#setMainPoint.bind(this), 100);
         this.enableGeo(true);
+        this.#marker = v_map.MarkerManager.CreateMarker(routes.routes[0].overview_path[0], 'driver', 'marker auto');
     }
 
     setTracerPoint(latLng) {
@@ -247,6 +251,7 @@ class TracerView extends ViewPath {
     }
 
     destroy() {
+        this.#marker.setMap(null);
         this.#tracer.destroy();
         this.enableGeo(false);
         this.closePath();
