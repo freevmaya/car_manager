@@ -7,7 +7,19 @@ class RouteModel extends BaseModel {
 
 	public function getItem($id) {
 		GLOBAL $dbp;
-		return $dbp->line("SELECT * FROM {$this->getTable()} WHERE id = {$id}");
+		$item = $dbp->line("SELECT r.*, sp.id AS startPlaceId, fp.id AS finishPlaceId, sp.aliase as startPlaceAliase, fp.aliase as finishPlaceAliase FROM {$this->getTable()} r LEFT JOIN places sp ON r.startPlaceId = sp.id  LEFT JOIN places fp ON r.finishPlaceId = fp.id  WHERE r.id = {$id}");
+
+		if ($item) {
+			if (!$item['startPlaceAliase']) {
+				$path = json_decode($item['path'], true);
+				$item['startPlaceAliase'] = latLngToString($path['start']);
+			}
+			if (!$item['finishPlaceAliase']) {
+				$path = json_decode($item['path'], true);
+				$item['finishPlaceAliase'] = latLngToString($path['finish']);
+			}
+		}
+		return $item;
 	}
 
 	public function Update($value) {
@@ -26,21 +38,11 @@ class RouteModel extends BaseModel {
 		if (!$route_id) {
 			$value['meters'] = $value['path']['meters'];
 
-			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `path`, `startPlaceId`, `finishPlaceId`, `meters`, `state`) VALUES (?, ?, ?, ?, ?, ?)",
-			'isssds', 
-			BaseModel::getValues($value, ['user_id', 'path', 'startPlaceId', 'finishPlaceId', 'meters', 'state'], [0, '{}', null, null, 0, 'active']));
+			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `path`, `startPlaceId`, `finishPlaceId`, `meters`) VALUES (?, ?, ?, ?, ?)",
+			'isssd', 
+			BaseModel::getValues($value, ['user_id', 'path', 'startPlaceId', 'finishPlaceId', 'meters', 'state'], [0, '{}', null, null, 0]));
 			return $dbp->lastID();
 		}
-	}
-
-	public function Stop($id) {
-		GLOBAL $dbp;
-		return $dbp->bquery("UPDATE {$this->getTable()} SET `state`='finished' WHERE id=?", 'i', [$id]);
-	}
-
-	public function getCurrentRoute() {
-		GLOBAL $dbp;
-		return $dbp->line("SELECT * FROM {$this->getTable()} WHERE `state` = 'active' AND user_id = ".Page::$current->getUser()['id']);
 	}
 }
 ?>

@@ -39,5 +39,6 @@ lang = {
 	'Order cancelled': 'Заказ отменен',
 	'OrderToProcess': 'Заказ принят',
 	'Order сreated': 'Заказ создан',
-	'Active': 'Активен'
+	'Active': 'Активен',
+	'New order trip': 'Новый заказ поездки'
 };

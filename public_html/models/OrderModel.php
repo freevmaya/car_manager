@@ -24,8 +24,9 @@ class OrderModel extends BaseModel {
 		
 		$whereStr = implode(" AND ", $where);
 
-		$query = "SELECT o.*, u.id AS user_id, u.username, u.first_name, u.last_name FROM {$this->getTable()} o LEFT JOIN `users` u ON u.id = o.user_id WHERE $whereStr";
+		$query = "SELECT o.*, u.username, u.first_name, u.last_name, r.path AS route FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id WHERE $whereStr ORDER BY `id` DESC";
 		//trace($query);
+
 		return $dbp->asArray($query);
 	}
 
@@ -39,11 +40,9 @@ class OrderModel extends BaseModel {
 		return $dbp->lastID();
 	}
 
-	public function CancelOrder($id) {
+	public function SetState($id, $state) {
 		GLOBAL $dbp;
-
-		$query = "UPDATE `orders` SET state = 'cancel' WHERE `id` = ?";
-		return $dbp->bquery($query, 'i', [$id]);
+		return $dbp->bquery("UPDATE {$this->getTable()} SET `state`='{$state}' WHERE id=?", 'i', [$id]);
 	}
 }
 ?>

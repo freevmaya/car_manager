@@ -256,8 +256,8 @@ class TracerView extends ViewPath {
         super.Close();
         if (this.getRouteId())
             Ajax({
-                action: 'Stop',
-                data: JSON.stringify({id: this.getRouteId()})
+                action: 'SetState',
+                data: JSON.stringify({id: this.getRouteId(), state: 'finished'})
             });
     }
 
@@ -273,6 +273,8 @@ class TracerView extends ViewPath {
         super.destroy();
     }
 }
+
+var currentOrder;
 
 function Mechanics() {
 
@@ -343,6 +345,6 @@ function Mechanics() {
         return StopPropagation(e);
     });
 
-    if (typeof currentRoute == 'object')
-        BeginTracer(currentRoute.id, JSON.parse(currentRoute.path));
+    if (typeof currentOrder == 'object')
+        BeginTracer(currentOrder.id, JSON.parse(currentOrder.route));
 }

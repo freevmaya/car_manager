@@ -45,4 +45,11 @@ function Distance($lat1, $lng1, $lat2, $lng2) {  // generally used geo measureme
 
     return $d * 1000; // meters
 }
+
+function latLngToString($latLng) {
+    if (isset($latLng['lat']))
+        return $latLng['lat'].' '.$latLng['lng'];
+
+    return json_encode($latLng);
+}
 ?>

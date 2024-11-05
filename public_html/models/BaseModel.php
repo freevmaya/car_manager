@@ -8,7 +8,7 @@ abstract class BaseModel {
 	public function checkUnique($data) { return false; }
 	public function getTitle() { return Lang(get_class($this)); }
 
-	public static function AddWhere($whereList, $options, $paramName, $operand = '=') {
+	public static  function AddWhere($whereList, $options, $paramName, $operand = '=') {
 		$optionCondition = '';
 		if (isset($options[$paramName])) {
 			if (is_array($options[$paramName]))
@@ -28,6 +28,22 @@ abstract class BaseModel {
 			$result[] = $v;
 		}
 		return $result;
+	}
+
+	public static function FullItems($items, $models) {
+
+		foreach ($models as $key=>$model) {
+			$idpos = strpos($key, '_id');
+			if ($idpos > -1) {
+				$outfield = substr($key, 0, $idpos);
+
+				for ($i=0; $i<count($items); $i++) {
+					$items[$i][$outfield] = $model->getItem($items[$i][$key]);
+				}
+			}
+		}
+
+		return $items;
 	}
 }
 ?>

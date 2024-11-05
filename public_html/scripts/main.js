@@ -243,6 +243,8 @@ class DateTime {
 
         if ($.type(datetime) == 'string')
             datetime = Date.parse(datetime);
+        else if ($.type(datetime) == 'undefined')
+            datetime = Date.now();
 
         if ($.type(datetime) == 'number') {
             this.#datetime = this.Format(datetime);

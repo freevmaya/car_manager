@@ -112,16 +112,8 @@ class Ajax extends Page {
 		return ["id"=>$route_id];
 	}
 
-	protected function Stop($data) {
-		return ["result"=>(new RouteModel())->Stop($data['id'])];
-	}
-
-	protected function CancelOrder($data) {
-
-		if ($result = (new OrderModel())->CancelOrder($data['id']))
-			$this->NotifyOrderToDrivers($data['id'], 'orderCancelled', 'Order cancelled');
-
-		return ['result'=> $result ? 'ok' : 'error'];
+	protected function SetState($data) {
+		return ["result"=>(new OrderModel())->SetState($data['id'], $data['state'])];
 	}
 
 	protected function NotifyOrderToDrivers($order_id, $content_type='orderCreated', $text="Order сreated") {
