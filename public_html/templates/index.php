@@ -23,7 +23,7 @@ foreach (html::$scripts as $script) {
 }
 html::$styles = array_unique(html::$styles);
 foreach (html::$styles as $style) {?>
-    <link rel="stylesheet" type="text/css" href="<?=$style?>"></script>
+    <link rel="stylesheet" type="text/css" href="<?=$style.$anti_cache?>"></script>
 <?}?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>
     <script type="text/javascript">
