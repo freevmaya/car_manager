@@ -10,9 +10,11 @@
 	html::AddScriptFile('driver-manager.js');
 	html::AddJsCode("driverManager = new DriverManager();");
 
-	if ($currentRoute = (new RouteModel())->getCurrentRoute()) {?>
+	if (($orders = (new OrderModel())->getItems(['state'=>'wait'])) && (count($orders) > 0) {
+			$route = $orders[0]['route'];
+		?>
 <script type="text/javascript">
-	var currentRoute = <?=json_encode($currentRoute)?>;
+	var currentRoute = <?=json_encode($route)?>;
 </script>
 <?}?>
 <div class="templates">

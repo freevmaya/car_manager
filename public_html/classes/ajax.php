@@ -96,8 +96,10 @@ class Ajax extends Page {
 	}
 
 	protected function AddOrder($data) {
+		$order_id = false;
 
-		if ($order_id = (new OrderModel())->AddOrder($data)) {
+		if (($data['route_id'] = (new RouteModel())->Update($data)) && 
+			($order_id = (new OrderModel())->AddOrder($data))) {
 			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $this->user['id'], Lang("OrderToProcess"));
 			$this->NotifyOrderToDrivers($order_id);
 		}

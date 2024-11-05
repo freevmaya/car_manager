@@ -12,13 +12,23 @@ class RouteModel extends BaseModel {
 
 	public function Update($value) {
 		GLOBAL $dbp;
-		if (isset($value['id']) && $dbp->line("SELECT * FROM {$this->getTable()} WHERE id = {$id}")) {
 
-		} else {
+		$place = new PlaceModel();
+		$value['startPlaceId'] = $place->InsertFromRoute($value['path'], 'start');
+		$value['finishPlaceId'] = $place->InsertFromRoute($value['path'], 'finish');
 
-			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `driver_id`, `car_id`, `path`, `state`) VALUES (?, ?, ?, ?, ?)",
-			'iiiss', 
-			BaseModel::getValues($value, ['user_id', 'driver_id','car_id','path','state'], [0, 0, 0, '{}', 'active']));
+		$route_id = null;
+
+		if ($value['startPlaceId'] && $value['finishPlaceId']) {
+			$route_id = $dbp->one("SELECT id FROM {$this->getTable()} WHERE startPlaceId = '{$value['startPlaceId']}' AND finishPlaceId = '{$value['finishPlaceId']}'");
+		}
+
+		if (!$route_id) {
+			$value['meters'] = $value['path']['meters'];
+
+			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `path`, `startPlaceId`, `finishPlaceId`, `meters`, `state`) VALUES (?, ?, ?, ?, ?, ?)",
+			'isssds', 
+			BaseModel::getValues($value, ['user_id', 'path', 'startPlaceId', 'finishPlaceId', 'meters', 'state'], [0, '{}', null, null, 0, 'active']));
 			return $dbp->lastID();
 		}
 	}

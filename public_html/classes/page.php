@@ -197,12 +197,12 @@ class Page {
 
 	}
 
-	protected static function setSession($name, $value = null) {
+	public static function setSession($name, $value = null) {
 		GLOBAL $_SESSION;
 		$_SESSION[$name] = $value;
 	}
 
-	protected static function getSession($name) {
+	public static function getSession($name) {
 		GLOBAL $_SESSION;
 		return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
 	}

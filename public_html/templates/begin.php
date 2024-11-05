@@ -1,7 +1,8 @@
 <?	
 include_once(TEMPLATES_PATH.'/toolbar.php');
 
-$ordinaryTrips = ['Bir billing takeoff', 'Delhi airport terminal 3', 'Palampur'];
+$ordinaryTrips = (new OrdinaryTripsModel())->getItems();
+
 $ordTripCount = count($ordinaryTrips);
 
 $lastTrips = ['Bir billing takeoff (yesterday)', 'Gunihar (03/11)'];
@@ -20,8 +21,11 @@ $n = 0;
 			    	<div class="container">
 			        	<div class="selectView" data-callback-index="field-3">
 			            	<div class="block" style="animation-delay: <?=$n / $tcount?>s">
-			                	<a class="value"><?=$ordinaryTrips[$i]?></a>
-			                	<a class="button">Now</a>
+			                	<a class="value">
+			                		<?=$ordinaryTrips[$i]['startPlace']?>  <?=$ordinaryTrips[$i]['finishPlace']?>
+			                		>
+			                		<?=$ordinaryTrips[$i]['finishPlace']?>  <?=$ordinaryTrips[$i]['finishPlace']?>
+			                	</a>
 			            	</div>
 				        </div>
 				    </div>

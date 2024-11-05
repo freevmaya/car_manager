@@ -32,16 +32,10 @@ class OrderModel extends BaseModel {
 	public function AddOrder($data) {
 		GLOBAL $dbp;
 
-		$start = json_encode($data['start']);
-		$finish = json_encode($data['finish']);
+		$pickUpTime = date('Y-m-d H:i:s', strtotime(isset($data['pickUpTime'])?$data['pickUpTime']:'NOW'));
 
-		$startAddress = $data['startAddress'];
-		$finishAddress = $data['finishAddress'];
-
-		$pickUpTime = date('Y-m-d H:i:s', strtotime($data['pickUpTime']));
-
-		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `startPlace`, `finishPlace`, `startName`, `finishName`, `startAddress`, `finishAddress`, `meters`) VALUES (?,NOW(),?,?,?,?,?,?,?,?)", 
-			'isssssssi', [$data['user_id'], $pickUpTime, $start, $finish, $data['startName'], $data['finishName'], $startAddress, $finishAddress, $data['meters']]);
+		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `route_id`) VALUES (?,NOW(),?,?)", 
+			'iss', [$data['user_id'], $pickUpTime, $data['route_id']]);
 		return $dbp->lastID();
 	}
 

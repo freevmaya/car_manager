@@ -105,8 +105,8 @@ class ViewTarget extends ViewPath {
 
         if (path) {
             Ajax({
-                //action: "AddOrder",
-                action: "Go",
+                action: "AddOrder",
+                //action: "Go",
                 data: JSON.stringify({
                     user_id: user.id,
                     path: path
