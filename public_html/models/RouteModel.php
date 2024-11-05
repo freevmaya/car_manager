@@ -40,7 +40,7 @@ class RouteModel extends BaseModel {
 
 			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `path`, `startPlaceId`, `finishPlaceId`, `meters`) VALUES (?, ?, ?, ?, ?)",
 			'isssd', 
-			BaseModel::getValues($value, ['user_id', 'path', 'startPlaceId', 'finishPlaceId', 'meters', 'state'], [0, '{}', null, null, 0]));
+			BaseModel::getValues($value, ['user_id', 'path', 'startPlaceId', 'finishPlaceId', 'meters'], [0, '{}', null, null, 0]));
 			return $dbp->lastID();
 		}
 	}
