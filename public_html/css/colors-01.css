@@ -7,23 +7,6 @@ body {
     color: #cdcdcd;
 }
 
-.datetime .ui-datepicker-calendar a {
-    background-color: transparent !important;
-    color: gray !important;
-}
-
-.datetime .ui-datepicker-calendar a:hover {
-    color: white !important;
-}
-
-.datetime .ui-state-active {
-    color: blue !important;
-}
-
-.datetime .ui-widget-content {
-    background-color: #333 !important;
-}
-
 .mainmenu h1, .mainmenu .btn {
     color: white;
 }
@@ -75,10 +58,6 @@ body {
 #DriverMenu {
     background-color: #333;
     background-image: url(images/menu.png);
-}
-
-select.time {
-    background: #333 !important;
 }
 
 .date, .time {
@@ -143,13 +122,17 @@ select.time {
     color: #888;
 }
 
-.field input {
+.field input, .datetime {
     background: #454545;
     border-color: #0000008c;
     color: #AAA;
 }
 
-.field input:focus{
+select.time {
+    background: #454545 !important;
+}
+
+.field input:focus, .datetime:focus {
     background: #4d4c5f;
 }
 
@@ -260,7 +243,7 @@ form .warning {
 .selectView .block {
     border-color: gray;
     background-color: #a7a7a7;
-    box-shadow: inset 0 0 1em black;
+    box-shadow: inset 0 0 0.5em #0000009c;
 }
 
 

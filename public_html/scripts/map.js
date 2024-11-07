@@ -220,6 +220,8 @@ function getOrderInfo(order) {
 			toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
 }
 
+var v_map;
+
 class VMap {
 	#markerManager;
 	#map;
@@ -232,6 +234,20 @@ class VMap {
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
 	get View() { return this.#view; }
+
+	constructor(elem, callback = null) {
+		v_map = this;
+		this.#view = elem;
+
+		setTimeout((()=>{
+			if (!this.map) 
+				this.initMap(null).then(callback);
+		}).bind(this), 10000);
+
+		getLocation(((pos) => {
+			this.initMap(pos).then(callback);
+		}).bind(this));
+	}
 
 	get DriverManager() {
 		if (!this.#driverManager)
@@ -260,8 +276,6 @@ class VMap {
 		const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 		const { DirectionsService } = await google.maps.importLibrary("routes");
 		const { Place } = await google.maps.importLibrary("places");
-
-		this.#view = $('#map');
 
 		this.#map = new Map(this.#view[0], {
 			zoom: 15,
@@ -299,14 +313,39 @@ class VMap {
 	}
 
 	getRoutes(startPlace, finishPlace, travelMode, callback) {
+		function preparePlace(p) {
+			return p.location ? $.extend(p.location, { placeId: p.id }) : 
+						(p.placeId ? p : (p.latLng ? p.latLng : p));
+		}
 		let request = {
-            origin: PlaceLatLng(startPlace),
-            destination: PlaceLatLng(finishPlace),
+            origin: preparePlace(startPlace),
+            destination: preparePlace(finishPlace),
             travelMode: travelMode
         }
+
         this.DirectionsService.route(request, function(result, status) {
             if (status == 'OK')
             	callback(result);
+            else console.log(request);
         });
+	}
+
+	async getPlaceDetails(placeId) {
+
+	    const place = new this.Classes["Place"]({
+	        id: placeId,
+	        requestedLanguage: user.language_code, // optional
+	    });
+
+	    await place.fetchFields({ fields: ["location", "displayName", "formattedAddress"] });
+	    return place;
+	}
+
+	DrawPath(data, options) {
+		return DrawPath(this.map, data, options);
+	}
+
+	destroy() {
+		this.#view.empty();
 	}
 }

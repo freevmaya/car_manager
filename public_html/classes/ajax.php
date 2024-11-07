@@ -95,6 +95,11 @@ class Ajax extends Page {
 		return $result;
 	}
 
+	protected function GetRoute($data)
+	{
+		return (new RouteModel())->getItem($data);
+	}
+
 	protected function AddOrder($data) {
 		$order_id = false;
 

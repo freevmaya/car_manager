@@ -40,5 +40,9 @@ lang = {
 	'OrderToProcess': 'Заказ принят',
 	'Order сreated': 'Заказ создан',
 	'Active': 'Активен',
-	'New order trip': 'Новый заказ поездки'
+	'New order trip': 'Новый заказ поездки',
+	'Departure point': 'Пункт отправления',
+	'Point of arrival': 'Пункт прибытия',
+	'Departure time': 'Время отправления',
+	'On map': 'На карте'
 };

@@ -4,7 +4,7 @@ class html {
 	public static $scripts = [];
 	public static $styles = [];
 	public static $jscode = [];
-	public static $field_id = 0;
+	protected static $field_id = 0;
 	protected static $autoKey = 0;
 
 	public static function GetFields($data, $fieldsOrModel=null, $group=0) {
@@ -68,7 +68,7 @@ class html {
 						$groupBuffer = '';
 						$i=0;
 					}
-				} else $result .= html::RenderField($fieldOptions , $value, $nameModel);
+				} else $result .= html::RenderField($fieldOptions, $value, $nameModel);
 			}
 
 			if (($group > 0) && ($i > 0))
@@ -76,6 +76,11 @@ class html {
 		}
 
 		return $result;
+	}
+
+	public static function fieldIdx() {
+		html::$field_id++;
+		return html::$field_id;
 	}
 
 	public static function AddJsCode($code, $key=null) {
@@ -102,10 +107,6 @@ class html {
 			html::$styles[] = $fileName;
 	}
 
-	public static function FiledId() {
-		return 'field-'.html::$field_id;
-	}
-
 	protected static function addValidator($validator, $options, $nameModel) {
 		html::AddScriptFile('validator.js');
 
@@ -126,8 +127,6 @@ class html {
 
 			if (isset($options['validator']) && $nameModel)
 				html::addValidator($options['validator'], $options, $nameModel);
-
-			html::$field_id++;
 		} else $result = "File {$fileName} not found";
 		return $result;
 	}

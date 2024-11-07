@@ -2,7 +2,7 @@
 	$items = $value['items'];//(new RouteTypesModel())->getItems($options['user_id']);
 ?>
 
-<div class="field" id="<?=html::FiledId()?>">
+<div class="field" data-id="<?=html::fieldIdx()?>">
 	<label for="<?=$options['name']?>"><?=lang($options['label'])?></label>
 	<div class="container">
 		<div class="items listView">

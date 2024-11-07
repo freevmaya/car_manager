@@ -32,6 +32,7 @@ foreach (html::$styles as $style) {?>
         var transport = new AjaxTransport(1000);
         var app = new App();
         var lang = {};
+        var fieldIdx = <?=html::fieldIdx()?>;
 
         function getLocation(action) {
             <?if (DEV) {

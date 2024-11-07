@@ -2,17 +2,6 @@ function Mechanics() {
 
 	var startDialog;
 
-	async function getPlaceDetails(placeId) {
-
-		const place = new v_map.Classes["Place"]({
-			id: placeId,
-			requestedLanguage: user.language_code, // optional
-		});
-
-		await place.fetchFields({ fields: ["displayName", "formattedAddress"] });
-		return place;
-	}
-
 	v_map.map.addListener("click", (e) => {
 		
 		if (e.domEvent.ctrlKey) {

@@ -18,7 +18,6 @@ class ViewPath extends BottomView {
 
             this.setRoutes(result);
             this.rpath = DrawPath(v_map.map, result);
-            this.rpath.setOptions( {suppressMarkers: true} );
             if (afterRequest)
                 afterRequest();
 
@@ -69,7 +68,7 @@ class ViewTarget extends ViewPath {
 
         super.setOptions(options);
 
-        this.footerElement.append(this.footerSliderView = $('<div class="sliderView">'));
+        this.footerElement.append(this.footerSliderView = $('<div class="sliderView hide">'));
         this.footerSliderView.append(this.footerSlider = $('<div class="slider">'));
         this.footerElement.append((this.goButton = $('<div class="button">'))
                                     .text(toLang('Go'))
@@ -315,17 +314,6 @@ function Mechanics() {
         } else routeDialog.SelectPlace(place);
     }
 
-    async function getPlaceDetails(placeId) {
-
-        const place = new v_map.Classes["Place"]({
-            id: placeId,
-            requestedLanguage: user.language_code, // optional
-        });
-
-        await place.fetchFields({ fields: ["displayName", "formattedAddress"] });
-        return place;
-    }
-
     v_map.map.addListener("click", (e) => {
         if (routeDialog && routeDialog.options.id)
             return;
@@ -336,7 +324,7 @@ function Mechanics() {
         }
 
         if (e.placeId) {
-            getPlaceDetails(e.placeId).then((place)=>{
+            v_map.getPlaceDetails(e.placeId).then((place)=>{
                 place = $.extend(place, e);
                 SelectPlace(place);
             });

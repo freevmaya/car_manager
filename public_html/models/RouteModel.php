@@ -7,16 +7,16 @@ class RouteModel extends BaseModel {
 
 	public function getItem($id) {
 		GLOBAL $dbp;
-		$item = $dbp->line("SELECT r.*, sp.id AS startPlaceId, fp.id AS finishPlaceId, sp.aliase as startPlaceAliase, fp.aliase as finishPlaceAliase FROM {$this->getTable()} r LEFT JOIN places sp ON r.startPlaceId = sp.id  LEFT JOIN places fp ON r.finishPlaceId = fp.id  WHERE r.id = {$id}");
+		$item = $dbp->line("SELECT r.*, r.id AS route_id, sp.id AS startPlaceId, fp.id AS finishPlaceId, sp.aliase as startPlace, fp.aliase as finishPlace FROM {$this->getTable()} r LEFT JOIN places sp ON r.startPlaceId = sp.id  LEFT JOIN places fp ON r.finishPlaceId = fp.id  WHERE r.id = {$id}");
 
 		if ($item) {
-			if (!$item['startPlaceAliase']) {
+			if (!$item['startPlace']) {
 				$path = json_decode($item['path'], true);
-				$item['startPlaceAliase'] = latLngToString($path['start']);
+				$item['startPlace'] = latLngToString($path['start']);
 			}
-			if (!$item['finishPlaceAliase']) {
+			if (!$item['finishPlace']) {
 				$path = json_decode($item['path'], true);
-				$item['finishPlaceAliase'] = latLngToString($path['finish']);
+				$item['finishPlace'] = latLngToString($path['finish']);
 			}
 		}
 		return $item;

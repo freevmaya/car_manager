@@ -331,13 +331,19 @@ function PlaceLatLng(place) {
     return place.latLng ? place.latLng : place;
 }
 
+function latLngToString(latLng) {
+    if (latLng.lat)
+        return round(latLng.lat(), 6) + ", " + round(latLng.lng(), 6);
+    return latLng;
+}
+
 function PlaceName(place) {
     if (place.displayName)
         return place.displayName;
     if (place.latLng)
-        return round(place.latLng.lat(), 6) + ", " + round(place.latLng.lng(), 6);
-    if (place.lat)
-        return round(place.lat(), 6) + ", " + round(place.lng(), 6);
+        return latLngToString(place.latLng);
+    
+    return latLngToString(place);
 }
 
 JSON.parsePlace = function(placeStr) {
@@ -396,9 +402,7 @@ function closeView(view, duration='slow') {
 
 function templateClone(tmpl, data) {
     let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, group) => {
-        if (data[group])
-            return data[group];
-        return toLang(group);
+        return toLang(typeof(data[group]) !== 'undefined' ? data[group] : group);
     });
     return $(html);
 }
@@ -425,6 +429,11 @@ function toLatLngF(obj) {
 
 function toLatLng(obj) {
     if (obj) {
+        if (typeof obj == 'string') {
+            let v = obj.split(/[\s,]+/);
+            return ((v.length > 1) && $.isNumeric(v[0]) && $.isNumeric(v[1])) ? {lat: v[0], lng: v[1]} : null;
+        }
+
         if (obj.latitude)
             return {lat:obj.latitude, lng: obj.longitude};
 
@@ -527,8 +536,18 @@ function getRoutePoint(routes, idx=0, routeIndex=0) {
     return routes.routes[routeIndex].overview_path[idx];
 }
 
-function DrawPath(map, routeData) {
-    var directionsRenderer = new google.maps.DirectionsRenderer();
+function DrawPath(map, routeData, options = null) {
+
+    options = $.extend({
+        preserveViewport: false,
+        suppressMarkers: false,
+        draggable: false,
+        polylineOptions: {
+            strokeColor: 'green'
+        }
+    }, options);
+
+    var directionsRenderer = new google.maps.DirectionsRenderer(options);
     directionsRenderer.setMap(map);
     directionsRenderer.setDirections(routeData);
     return directionsRenderer;
@@ -546,6 +565,17 @@ function StopPropagation(e) {
         e.returnValue = false;  
     }
     return false;
+}
+
+function Wait(checFunc) {
+  return new Promise((resolve) => {
+    let iid = setInterval(() => {
+        if (checFunc()) {
+            clearInterval(iid);
+            resolve();
+        }
+    }, 50);
+  });
 }
 
 Number.prototype.clamp = function(min, max) {

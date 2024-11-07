@@ -29,10 +29,13 @@ ViewManager.setContent = (parent, content, clone = false)=> {
 
     parent.children = {};
     if ($.type(content) === 'array') {
+        let field_number = 0;
         for (let i in content) {
             let idx = i;
             if (content[i].id) idx = content[i].id;
-            parent.children[idx] = new content[i].class(parent, content[i]);
+
+            (parent.children[idx] = new content[i].class(parent, $.extend({field_number: field_number}, content[i])));
+            field_number++;
         }
     } else {
         parent.children[0] = clone ? $(content).clone() : $(content);
@@ -117,8 +120,6 @@ class View extends BaseParentView {
     }
 
     afterResize() {
-        let space = (this.view.outerHeight() - this.view.height()) / 2;
-        v_map.View.css('bottom', this.view.outerHeight() - space);
     }
 
     toAlign() {
@@ -128,6 +129,12 @@ class View extends BaseParentView {
                 this.view.removeClass('radius')
                     .addClass('bottom')
                     .addClass('radiusTop');
+
+                setTimeout((()=>{
+                    let space = (this.view.outerHeight() - this.view.height()) / 2;
+                    v_map.View.css('bottom', this.view.outerHeight() - space);
+
+                }).bind(this), 1000);
 
                 this.afterResize();
             }
@@ -190,11 +197,13 @@ class BottomView extends View {
 }
 
 class BaseField {
-    constructor(parent, params) {
-        this.options = $.extend({}, params);
+    view;
+    constructor(parent, options) {
+        this.options = $.extend({}, options);
         this.parentElement = parent.contentElement;
         this.parent = parent;
         this.initView();
+        this.view.addClass('field-' + this.options.field_number);
     }
 
     getView() {
@@ -210,6 +219,12 @@ class BaseField {
 class DividerField extends BaseField {
     initView() {
         this.view = createField(this.parentElement, this.options, '<div class="divider">');
+    }
+}
+
+class HtmlField extends BaseField {
+    initView() {
+        this.parentElement.append(this.view = templateClone($(this.options.source), this.options));
     }
 }
 

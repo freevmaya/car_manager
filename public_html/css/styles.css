@@ -29,6 +29,10 @@ body {
     transition: 1s filter;
 }
 
+.view.full {
+    width: min(100%, 900px);
+}
+
 .wrapper .pageContent {
     position: absolute;
     left: 0;
@@ -40,10 +44,6 @@ body {
 
 .templates {
     display: none;
-}
-
-.datetime {
-    display: inline-block;
 }
 
 select.time {
@@ -65,7 +65,7 @@ select.time {
     width: 6em;
 }
 
-.datetime .ui-widget-content {
+.ui-widget-content {
     border-radius: 1em !important;
     padding: 1em !important;
 }
@@ -171,7 +171,7 @@ h1, h2 {
     justify-content: center;
 }
 
-.shadow, .datetime .ui-widget-content {
+.shadow, .ui-widget-content {
     box-shadow: 0px 0px 1em #000000ba;    
 }
 
@@ -214,7 +214,7 @@ h1, h2 {
 
 .view {
     max-height: 90%;
-    max-width: 100%;
+    /*max-width: 100%;*/
 
     z-index: 1;
     padding: 0.5em;
@@ -223,10 +223,13 @@ h1, h2 {
 
     animation-name: showView;
     animation-duration: 0.4s;
+
+    transition: width 0.5s ease-in-out;
 }
 
 .dialog {
     margin: 2em;
+    width: 24em;
 }
 
 .view.bottom {
@@ -235,7 +238,11 @@ h1, h2 {
     right: 0px;
     position: absolute;
     margin: 0px;
+    width: 100%;
+}
 
+.view.bottom .footer {
+    margin: 0;
 }
 
 .show {
@@ -339,11 +346,12 @@ h1, h2 {
     flex-direction: column;
     border-radius: 0.5em;
     overflow: hidden;
-    margin-top: 0.5em;
+    margin: 1em;
+    transition: 0.5s width;
+    overflow-y: scroll;
 }
 
 .view .content .group {
-    max-width: 30em;
     min-width: 20em;
     flex-grow: 1;
     display: flex;
@@ -400,15 +408,26 @@ h1, h2 {
     flex-wrap: wrap;
 }
 
-.field input {
-    margin-left: 1em;
+.datetime {
+    display: flex;
+    overflow: hidden;
+    align-items: center
+}
+
+input, select, .datetime {
     border-style: solid;
     border-width: 1px;
     padding: 0.8em 1em;
     border-radius: 1.5em;
+    height: 3em;
 }
 
-.field input:focus{
+.field > input, .field > .datetime {
+    margin-left: 1em;
+    font-size: 0.9em;
+}
+
+input:focus, select:focus {
     outline: none;
 }
 
@@ -418,6 +437,11 @@ h1, h2 {
 
 .view .footer {
     display: flex;
+    margin: 0 1em 1em 1em;
+}
+
+.btn-block {
+    justify-content: center;
 }
 
 .sliderView {
@@ -624,8 +648,20 @@ h1, h2 {
     animation-duration: 1s;
 }
 
+.field .map-layer.show {
+    height: 300px !important;
+    margin: 1em 0 1em 1em;
+}
+
+.field .map-layer {
+    border-radius: 1em;
+    overflow: hidden;
+
+    height: 0px;
+    transition: height 0.5s, margin 0.5s;
+}
+
 .map-layer {
-    height: 100%;
     background-color: white;
     animation-name: showOpacity;
     animation-duration: 1s;
@@ -732,20 +768,39 @@ form .warning::before {
 .selectView .block {
     border: 1px solid gray;
     border-radius: 2em;
-
     display: block;
+    width: 2.6em;
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: center;
     overflow: hidden;
     height: 2.5em;
     float: right;
-
     transition-timing-function: cubic-bezier(.68,-.6,.32,1.6);
     animation-name: showBlock;
-    animation-duration: 0.5s;  
+    animation-duration: 0.5s;
     animation-fill-mode: forwards;
+    animation-delay: 0.1s;
+}
+
+.field-0 .block{
+    animation-delay: 0.25s;
+}
+
+.field-1 .block{
     animation-delay: 0.5s;
+}
+
+.field-2 .block{
+    animation-delay: 0.5s;
+}
+
+.field-3 .block{
+    animation-delay: 0.75s;
+}
+
+.field-4 .block{
+    animation-delay: 1s;
 }
 
 .selectView .items {
@@ -764,6 +819,8 @@ form .warning::before {
     position: absolute;
     height: 2.8em;
     font-size: 0.8em;
+    width: 300px;
+    /* overflow: hidden; */
 }
 
 .trips .block .value {
@@ -919,10 +976,27 @@ form .warning::before {
     float: right;
 }
 
+.field .map-container {
+    height: 0px;
+    transition: height 0.5s;
+}
+
+.show .map-container {
+    height: 300px;
+}
+
 .field .button.open::before {
     rotate: 50grad;
 }
 
 .selectView .button {
     margin: 0;
+}
+
+.carbodies .option .img, .colors .option .img {
+    width: 100%;
+}
+
+.carbodies .option, .colors .option {
+    flex-direction: column;
 }
