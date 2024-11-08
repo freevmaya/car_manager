@@ -9,14 +9,14 @@ class PlaceModel extends BaseModel {
 
 	}
 
-	public function InsertFromRoute($value, $pref) {
+	public function InsertFromRoute($value) {
 		GLOBAL $dbp;
 
-		if ($placeId = @$value[$pref]['placeId']) {
+		if ($placeId = @$value['placeId']) {
 
 			if (!$dbp->line("SELECT id FROM {$this->getTable()} WHERE id = '{$placeId}'")) {
 				$dbp->bquery("INSERT INTO {$this->getTable()} (`id`, `aliase`, `description`) VALUES (?,?,?)",
-						'sss', [$placeId, $value[$pref.'Name'], $value[$pref.'Address']]);
+						'sss', [$placeId, $value['name'], $value['address']]);
 			}
 		}
 		return $placeId;

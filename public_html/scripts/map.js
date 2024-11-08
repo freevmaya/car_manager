@@ -136,7 +136,7 @@ class MarkerManager {
 			let request = {
 			    origin: data.startPlace,
 			    destination: data.finishPlace,
-			    travelMode: 'DRIVING'
+			    travelMode: travelMode
 			};
 
 			v_map.DirectionsService.route(request, (function(result, status) {
@@ -230,14 +230,16 @@ class VMap {
 	#driverManager;
 	#directionsService;
 	#mainMarker;
+	#options;
 
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
 	get View() { return this.#view; }
 
-	constructor(elem, callback = null) {
+	constructor(elem, callback = null, options) {
 		v_map = this;
 		this.#view = elem;
+		this.#options = $.extend({main_marker: true}, options);
 
 		setTimeout((()=>{
 			if (!this.map) 
@@ -296,11 +298,13 @@ class VMap {
 		};
 		
 		this.infoWindow = new InfoWindow();
-		this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
+
+		if (this.#options.main_marker)
+			this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
 	}
 
 	setMainPosition(latLng) {
-		if (latLng)
+		if (latLng && this.#mainMarker)
 			this.#mainMarker.position = latLng;
 	}
 
@@ -312,21 +316,23 @@ class VMap {
 		return this.MarkerManager.CreateMarker(position, 'my-position', 'marker position');
 	}
 
-	getRoutes(startPlace, finishPlace, travelMode, callback) {
+	getRoutes(startPlace, finishPlace, a_travelMode, callback) {
 		function preparePlace(p) {
 			return p.location ? $.extend(p.location, { placeId: p.id }) : 
-						(p.placeId ? p : (p.latLng ? p.latLng : p));
+						(p.placeId ? p : (p.latLng ? p.latLng : 
+							(typeof p.lat == 'function' ? new google.maps.LatLng(p.lat(), p.lng()) : 
+								(p.lat ? new google.maps.LatLng(p.lat, p.lng) : p))));
 		}
 		let request = {
             origin: preparePlace(startPlace),
             destination: preparePlace(finishPlace),
-            travelMode: travelMode
+            travelMode: a_travelMode
         }
+        console.log(request);
 
         this.DirectionsService.route(request, function(result, status) {
             if (status == 'OK')
             	callback(result);
-            else console.log(request);
         });
 	}
 

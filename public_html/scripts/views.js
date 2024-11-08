@@ -181,6 +181,16 @@ class View extends BaseParentView {
         if (value) this.options.curtain.addClass('curtain');
         else this.options.curtain.removeClass('curtain');
     }
+
+    getValues(fields=null) {
+        var $inputs = this.view.find(':input');
+        var values = {};
+        $inputs.each(function() {
+            if (this.name && (!fields || (fields.indexOf(this.name) > -1)))
+                values[this.name] = $(this).val();
+        });
+        return values;
+    }
 }
 
 class BottomView extends View {
@@ -213,6 +223,12 @@ class BaseField {
     }
 
     initView() {
+    }
+}
+
+class HiddenField extends BaseField {
+    initView() {
+        this.view = createField(this.parentElement, this.options, '<input type="hidden">');
     }
 }
 
@@ -324,7 +340,7 @@ function createField(parent, fieldParam, tag) {
         element.text(toLang(fieldParam.text));
 
     if (fieldParam.value)
-        element.text(toLang(fieldParam.value));
+        element.val(fieldParam.value);
 
     return element;
 }

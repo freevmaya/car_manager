@@ -33,6 +33,7 @@ foreach (html::$styles as $style) {?>
         var app = new App();
         var lang = {};
         var fieldIdx = <?=html::fieldIdx()?>;
+        var travelMode = 'WALKING';
 
         function getLocation(action) {
             <?if (DEV) {
@@ -75,8 +76,13 @@ foreach (html::$styles as $style) {?>
         <?=$content?>
     </div>
 
+    <?
+
+    GLOBAL $isDefServer;
+    if (!$isDefServer) {?>
     <!-- Eruda is console for mobile browsers-->
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script> 
+    <script>eruda.init();</script>
+    <?}?> 
 </body>
 </html>

@@ -24,8 +24,12 @@ class OrderModel extends BaseModel {
 		
 		$whereStr = implode(" AND ", $where);
 
-		$query = "SELECT o.*, u.username, u.first_name, u.last_name, r.path AS route FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id WHERE $whereStr ORDER BY `id` DESC";
-		//trace($query);
+		$query = "SELECT o.*, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id WHERE $whereStr ORDER BY `id` DESC";
+		
+		trace($query);
+
+		if (isset($options['limit']))
+			$query .= " LIMIT 0, {$options['limit']}";
 
 		return $dbp->asArray($query);
 	}

@@ -131,13 +131,19 @@ class App {
 }
 
 async function Ajax(params) {
-    var formData = new FormData();
-    for (let key in params) {
-        let data = params[key];
-        formData.append(key, (typeof data == 'string') ? data : JSON.stringify(data));
-    }
 
-    formData.append('ajax-request-id', ajaxRequestId);
+    var formData;
+    if (getClassName(params) == 'FormData') 
+        formData = params
+    else {
+        formData = new FormData();
+        for (let key in params) {
+            let data = params[key];
+            formData.append(key, (typeof data == 'string') ? data : JSON.stringify(data));
+        }
+
+        formData.append('ajax-request-id', ajaxRequestId);
+    }
 
     const request = new Request(BASEURL + "/ajax", {
         method: "POST",
@@ -188,7 +194,7 @@ class AjaxTransport extends EventProvider {
 
         } else {
             this.enableGeo(false);
-            Ajax($.extend(params)).then(this.onRecive.bind(this));
+            Ajax($.extend({}, params)).then(this.onRecive.bind(this));
         }
     }
 
@@ -332,8 +338,9 @@ function PlaceLatLng(place) {
 }
 
 function latLngToString(latLng) {
+    latLng = toLatLng(latLng);
     if (latLng.lat)
-        return round(latLng.lat(), 6) + ", " + round(latLng.lng(), 6);
+        return round(latLng.lat, 6) + ", " + round(latLng.lng, 6);
     return latLng;
 }
 
@@ -344,6 +351,14 @@ function PlaceName(place) {
         return latLngToString(place.latLng);
     
     return latLngToString(place);
+}
+
+function PlaceId(place) {
+    if (place)
+        return isStr(place) ? place : (place.id ? place.id : 
+                (place.placeId ? place.placeId : place));
+    
+    return null;
 }
 
 JSON.parsePlace = function(placeStr) {
@@ -402,13 +417,17 @@ function closeView(view, duration='slow') {
 
 function templateClone(tmpl, data) {
     let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, group) => {
-        return toLang(typeof(data[group]) !== 'undefined' ? data[group] : group);
+        return toLang(typeof(data[group]) !== 'undefined' ? data[group] : '');
     });
     return $(html);
 }
 
 function isFunc(f) {
     return $.type(f) == 'function';
+}
+
+function isStr(s) {
+    return $.type(s) == 'string';
 }
 
 function PrepareInput() {
@@ -423,6 +442,10 @@ function toLatLngF(obj) {
         return obj;
     
     let r = toLatLng(obj);
+
+    if (google.maps.LatLng)
+        return new google.maps.LatLng(r.lat, r.lng);
+
     return {lat: ()=>{return r.lat;}, lng: ()=>{return r.lng;}};
 }
 
@@ -539,7 +562,7 @@ function getRoutePoint(routes, idx=0, routeIndex=0) {
 function DrawPath(map, routeData, options = null) {
 
     options = $.extend({
-        preserveViewport: false,
+        preserveViewport: true,
         suppressMarkers: false,
         draggable: false,
         polylineOptions: {
@@ -567,6 +590,14 @@ function StopPropagation(e) {
     return false;
 }
 
+function Extend(dest, src, fields=null) {
+    if (!fields) fields = Object.keys(src);
+    for (let i=0; i<fields.length; i++)
+        dest[fields[i]] = src[i];
+
+    return dest;
+}
+
 function Wait(checFunc) {
   return new Promise((resolve) => {
     let iid = setInterval(() => {
@@ -578,8 +609,41 @@ function Wait(checFunc) {
   });
 }
 
+function GetPath(routes, startPlace, finishPlace) {
+
+    function addPlaceId(obj, place) {
+        let id = PlaceId(place);
+        if (isStr(id))
+            obj = $.extend(obj, {placeId: id});
+        else if (place.latLng) obj = toLatLng(place.latLng);
+
+        return obj;
+    }
+
+    function placeExt(place) {
+        return $.extend(addPlaceId(toLatLng(getRoutePoint(routes, 0)), place), 
+                        {name: PlaceName(place), address: PlaceAddress(place)});
+    }
+
+    if (routes) {
+
+        return {
+                start: placeExt(startPlace),
+                finish: placeExt(finishPlace),
+                meters: Math.round(CalcPathLength(routes)),
+                travelMode: travelMode
+            };
+    } return null;
+}
+
 Number.prototype.clamp = function(min, max) {
   return Math.min(Math.max(this, min), max);
+};
+
+function getClassName(obj) { 
+   var funcNameRegex = /function (.{1,})\(/;
+   var results = (funcNameRegex).exec((obj).constructor.toString());
+   return (results && results.length > 1) ? results[1] : "";
 };
 
 $(window).ready(()=>{

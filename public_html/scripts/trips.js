@@ -1,23 +1,17 @@
 $(window).ready(() => {
 
     var routeManager = null;
-    var travelMode = 'WALKING';
-
-    function toPlace(str) {
-        let obj = toLatLng(str);
-        if (obj) return toLatLngF(obj);
-        return {
-            placeId: str
-        }
-    }
 
     class RouteManager {
         maps = {};
-        parentElem;
+        contentElem;
         view;
-        constructor(parentElem) {
-            this.parentElem = parentElem;
-            this.view = parentElem.closest('.view');
+
+        get pathElem() { return this.contentElem.find('input[name="path"]'); };
+
+        constructor(contentElem) {
+            this.contentElem = contentElem;
+            this.view = contentElem.closest('.view');
         }
 
         ShowMap(fieldElem) {
@@ -49,22 +43,16 @@ $(window).ready(() => {
             } 
         }
 
-        getPlace(fieldId) {
-            if (this.maps[fieldId])
-                return this.maps[fieldId].place;
-            return toPlace(this.parentElem.find('input[name="' + fieldId + '"]').val());
-        }
+        showRoute(namePoint) {
 
-        showRoute(field) {
+            let ids = [];
+            this.contentElem.find('.field').each(((i, elem)=>{
+                elem = $(elem);
+                if (elem.find('.map-container')) {
+                    ids.push(elem.attr('id'));
 
-            let fid = field.attr('id');
-            this.parentElem.find('.field').each(((i, elem)=>{
-                let other = $(elem);
-                if (other.find('.map-container')) {
-                    let oid = other.attr('id');
-
-                    if (oid != fid) {
-                        this.createRoute(fid, oid);
+                    if (ids.length > 1) {
+                        this.createRoute(ids[0], ids[1]);
                         return false;
                     }
                 }
@@ -72,44 +60,53 @@ $(window).ready(() => {
         }
 
         createRoute(startId, finishId) {
+
             let map1 = this.maps[startId];
             let map2 = this.maps[finishId];
 
-            (map1 ? map1 : map2).getRoutes(this.getPlace(startId), this.getPlace(finishId), travelMode, ((data)=>{
 
-                if (map1) {
-                    if (map1.rpath) 
-                        map1.rpath.setMap(null);
+            let pathStr = this.pathElem.val();    
+            let lastPath = pathStr ? JSON.parse(pathStr) : null;
 
-                    map1.rpath = map1.DrawPath(data);
-                    map1.rpath.setOptions( {suppressMarkers: true} );
-                }
+            if (map1) lastPath.start = map1.getPlace();
+            if (map2) lastPath.finish = map2.getPlace();
 
-                if (map2) {
-                    if (map2.rpath) 
-                        map2.rpath.setMap(null);
+            function showPath(map, data, pidx) {
+                if (map.rpath) 
+                    map.rpath.setMap(null);
 
-                    map2.rpath = map2.DrawPath(data);
-                    map2.rpath.setOptions( {suppressMarkers: true} );
-                }
+                let p = getRoutePoint(data, pidx);
+                map.rpath = map.DrawPath(data);
+                map.setMainPosition(p);
+                map.map.setCenter(p);
 
-            }).bind(this));
+                this.pathElem.val(
+                    JSON.stringify(GetPath(data, lastPath.start,  lastPath.finish))
+                );
+            }
+
+            if (lastPath) {
+                (map1 ? map1 : map2).getRoutes(lastPath.start, lastPath.finish, travelMode, ((data)=>{ 
+                    if (map1) showPath.bind(this)(map1, data, 0);
+                    if (map2) showPath.bind(this)(map2, data, -1);
+                }).bind(this));
+            }
         }
     }
 
     class SelectMap extends VMap {
-        place;
         fieldId;
         parentField;
         rpath;
 
-        get inputElem() { return this.parentField.find('input[name="' + this.fieldId + '"]'); };
-
-        constructor(fieldElem, callback) {
-            super(fieldElem.find('.map-container'), callback);
+        constructor(fieldElem, callback, options) {
+            super(fieldElem.find('.map-container'), callback, $.extend({main_marker: false}, options));
             this.parentField = fieldElem;
             this.fieldId = fieldElem.attr('id');
-            this.place = toPlace(this.inputElem.val());
+        }
+
+        getPlace() {
+            return JSON.parse(this.parentField.data('place'));
         }
 
         async initMap(crd) {
@@ -121,7 +118,6 @@ $(window).ready(() => {
 
                     if (e.placeId) {
                         this.getPlaceDetails(e.placeId).then((place)=>{
-                            //place = $.extend(place, e);
                             this.SelectPlace(place);
                         });
                     } else this.SelectPlace(e);
@@ -132,12 +128,13 @@ $(window).ready(() => {
             }).bind(this));
         }
 
-        SelectPlace(place) {
-            this.place = place;
-            this.parentField.find('.value').text(PlaceName(place));
-            this.inputElem.val(place.id ? place.id : latLngToString(place.latLng));
+        SelectPlace(val) {
+            this.parentField.find('.value').text(PlaceName(val));
+            this.parentField.data('place', 
+                JSON.stringify(Extend({placeId: val.id, latLng: val.location}, val, ['name', 'address']))
+            );
 
-            routeManager.showRoute(this.parentField);
+            routeManager.showRoute(this.fieldId);
         }
 
         Close() {
@@ -155,74 +152,74 @@ $(window).ready(() => {
     }
 
 
-    function newOrderAsRoute(route_id) {
-        Ajax({
-                action: 'GetRoute',
-                data: route_id
-            }).then((route)=>{
+    function newOrderAsRoute(path) {
+        if (path) {
 
-            if (route) {
-
-                let dialog = viewManager.Create({
-                    curtain: $('.wrapper'),
-                    title: toLang('New order trip'),
-                    content: [
-                        {
-                            class: GroupFields,
-                            content: [
-                                {
-                                    name: 'StartPlace',
-                                    label: "Departure point",
-                                    source: '.templates .field',
-                                    placeId: route.startPlaceId ? route.startPlaceId : route.startPlace,
-                                    placeName: route.startPlace,
-                                    class: SelectPlaceField
-                                },{
-                                    name: 'FinishPlace',
-                                    source: '.templates .field',
-                                    label: "Point of arrival",
-                                    placeId: route.finishPlaceId ? route.finishPlaceId : route.finishPlace,
-                                    placeName: route.finishPlace,
-                                    class: SelectPlaceField
-                                },{
-                                    name: 'pickUpTime',
-                                    label: "Departure time",
-                                    class: DateTimeField
-                                }
-                            ]
-                        }
-                    ],
-                    actions: {
-                        Send: ()=>{
-                            dialog.Close();
-                        },
-                        Cancel: ()=>{
-                            dialog.Close();
-                        },
-                        'On map': ()=>{
-                            document.location.href = '/map';
-                        }
+            let dialog = viewManager.Create({
+                curtain: $('.wrapper'),
+                title: toLang('New order trip'),
+                content: [
+                    {
+                        class: GroupFields,
+                        content: [
+                            {
+                                name: 'start',
+                                label: "Departure point",
+                                source: '.templates .field',
+                                place: JSON.stringify(path.start),
+                                placeName: path.startName,
+                                class: SelectPlaceField
+                            },{
+                                name: 'finish',
+                                source: '.templates .field',
+                                label: "Point of arrival",
+                                place: JSON.stringify(path.finish),
+                                placeName: path.finishName,
+                                class: SelectPlaceField
+                            },{
+                                name: 'pickUpTime',
+                                label: "Departure time",
+                                class: DateTimeField
+                            },{
+                                name: 'path',
+                                value: JSON.stringify(path),
+                                class: HiddenField
+                            }
+                        ]
                     }
-                });
+                ],
+                actions: {
+                    Send: ()=>{
+                        Ajax({
+                            action: 'AddOrder',
+                            data: JSON.stringify($.extend(dialog.getValues(['path']), {user_id: user.id}))
+                        });
+                        //dialog.Close();
+                    },
+                    Cancel: ()=>{
+                        dialog.Close();
+                    },
+                    'On map': ()=>{
+                        document.location.href = '/map';
+                    }
+                }
+            });
 
-                dialog.view.find('.popup-button').click((e)=>{
-                    let fieldElem = $(e.currentTarget).closest('.field');
-                    if (!routeManager)
-                        routeManager = new RouteManager(fieldElem.closest('.content'));
+            dialog.view.find('.popup-button').click((e)=>{
+                let fieldElem = $(e.currentTarget).closest('.field');
+                if (!routeManager)
+                    routeManager = new RouteManager(fieldElem.closest('.content'));
 
-                    routeManager.ShowMap(fieldElem);
-                });
-            }
-
-        });
+                routeManager.ShowMap(fieldElem);
+            });
+        }
     }
 
 
     $('.value.trip').click((e) => {
-        let route_id = $(e.currentTarget).closest('.field').data('route_id');
-
-        if (route_id)
-            newOrderAsRoute(route_id);
+        let path = $(e.currentTarget).data('path');
+        if (path)
+            newOrderAsRoute(path);
         
     });
 });

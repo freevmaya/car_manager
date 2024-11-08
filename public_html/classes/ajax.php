@@ -101,9 +101,18 @@ class Ajax extends Page {
 	}
 
 	protected function AddOrder($data) {
+
+		// Параметры: 
+		// path, startPlaceId, finishPlaceId, user_id, pickUpTime
+		// или 
+		// route_id, pickUpTime
+
 		$order_id = false;
 
-		if (($data['route_id'] = (new RouteModel())->Update($data)) && 
+		if (!isset($data['route_id']))
+			$data['route_id'] = (new RouteModel())->Update($data['path']);
+
+		if ($data['route_id'] && 
 			($order_id = (new OrderModel())->AddOrder($data))) {
 			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $this->user['id'], Lang("OrderToProcess"));
 			$this->NotifyOrderToDrivers($order_id);

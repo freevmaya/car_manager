@@ -1,7 +1,6 @@
 class ViewPath extends BottomView {
     #routes;
-    #routeId = 0;
-    travelMode = 'WALKING';
+    #order_id = 0;
     rpath;
 
     setRoutes(routes) {
@@ -14,7 +13,7 @@ class ViewPath extends BottomView {
 
     showPath(startPlace, finishPlace, afterRequest = null) {
         this.closePath();
-        v_map.getRoutes(startPlace, finishPlace, this.travelMode, ((result)=>{
+        v_map.getRoutes(startPlace, finishPlace, travelMode, ((result)=>{
 
             this.setRoutes(result);
             this.rpath = DrawPath(v_map.map, result);
@@ -24,12 +23,12 @@ class ViewPath extends BottomView {
         }).bind(this));
     }
 
-    setRouteId(routeId) {
-        this.#routeId = routeId;
+    setOrderId(v) {
+        this.#order_id = v;
     }
 
-    getRouteId() {
-        return this.#routeId;
+    getOrderId() {
+        return this.#order_id;
     }
 
     closePath() {
@@ -78,7 +77,7 @@ class ViewTarget extends ViewPath {
     }
 
     GetPath() {
-
+        /*
         let routes = this.getRoutes();
 
         if (routes) {
@@ -86,8 +85,8 @@ class ViewTarget extends ViewPath {
             let start = getRoutePoint(routes, 0);
             let finish = getRoutePoint(routes, -1);
             return {
-                    start: { placeId: this.options.startPlace.placeId, lat: start.lat(), lng: start.lng() },
-                    finish: { placeId: this.options.finishPlace.placeId, lat: finish.lat(), lng: finish.lng() },
+                    start: { lat: start.lat(), lng: start.lng() },
+                    finish: { lat: finish.lat(), lng: finish.lng() },
                     startName: PlaceName(this.options.startPlace),
                     finishName: PlaceName(this.options.finishPlace),
                     startAddress: PlaceAddress(this.options.startPlace),
@@ -95,7 +94,9 @@ class ViewTarget extends ViewPath {
                     meters: Math.round(CalcPathLength(this.getRoutes())),
                     travelMode: this.travelMode
                 };
-            } return null;
+            } return null;*/
+
+        return GetPath(this.getRoutes(), this.options.startPlace, this.options.finishPlace);
     }
 
     Go() {
@@ -112,7 +113,7 @@ class ViewTarget extends ViewPath {
                 })
             }).then(((response)=>{
                 if (response.id > 0) {
-                    this.setRouteId(response.id);
+                    this.setOrderId(response.id);
                     this.Close();
                 }
             }).bind(this));
@@ -253,10 +254,10 @@ class TracerView extends ViewPath {
 
     Close() {
         super.Close();
-        if (this.getRouteId())
+        if (this.getOrderId())
             Ajax({
                 action: 'SetState',
-                data: JSON.stringify({id: this.getRouteId(), state: 'finished'})
+                data: JSON.stringify({id: this.getOrderId(), state: 'finished'})
             });
     }
 
@@ -280,20 +281,20 @@ function Mechanics() {
     var routeDialog;
     var tracerDialog;
 
-    function BeginTracer(routeId, path) {
+    function BeginTracer(order) {
         tracerDialog = viewManager.Create({
             title: toLang('Route'),
             content: [{
-                text: routeId,
+                text: order.route_id,
                 class: TextInfoField
             }]
         }, TracerView, ()=>{
             tracerDialog = null;
         });
 
-        tracerDialog.setRouteId(routeId);
-        tracerDialog.travelMode = path.travelMode;
-        tracerDialog.showPath(path.start, path.finish);
+        tracerDialog.setOrderId(order.id);
+        tracerDialog.travelMode = order.travelMode;
+        tracerDialog.showPath(JSON.parse(order.start), JSON.parse(order.finish));
     }
 
     function SelectPlace(place) {
@@ -306,8 +307,8 @@ function Mechanics() {
             routeDialog = new ViewTarget({
                 startPlace: place
             }, () => {
-                if (routeDialog.getRouteId()) {
-                    BeginTracer(routeDialog.getRouteId(), routeDialog.GetPath());
+                if (routeDialog.getOrderId()) {
+                    BeginTracer(routeDialog.getOrderId(), routeDialog.GetPath());
                 }
                 routeDialog = null;
             });
@@ -334,5 +335,5 @@ function Mechanics() {
     });
 
     if (typeof currentOrder == 'object')
-        BeginTracer(currentOrder.id, JSON.parse(currentOrder.route));
+        BeginTracer(currentOrder);
 }
