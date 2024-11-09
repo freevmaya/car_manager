@@ -49,11 +49,19 @@ class RouteModel extends BaseModel {
 
 		if (!$route_id) {
 
+			unset($start['displayName']);
+			unset($start['formattedAddress']);
+
+			unset($finish['displayName']);
+			unset($finish['formattedAddress']);
+
 			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`) VALUES (?, ?, ?, ?, ?, ?, ?)",
 			'isssssd', 
 			BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters'], [0, '{}', '{}', null, null, null, 0]));
 			return $dbp->lastID();
 		}
+
+		return $route_id;
 	}
 }
 ?>

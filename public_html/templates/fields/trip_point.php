@@ -6,7 +6,7 @@
 	<div class="container">
     	<div class="selectView" data-callback-index="field-<?=$fieldIdx?>">
         	<div class="block">
-            	<a class="value trip"<?=isset($value['path']) ? " data-path='{$value['path']}'" : ''?>>
+            	<a class="value trip"<?=isset($value['start']) ? " data-start='{$value['start']}'" : ''?><?=isset($value['finish']) ? " data-finish='{$value['finish']}'" : ''?> data-meters="<?=@$value['meters']?>">
             		<?=$value['startPlace']?>
             		>
             		<?=$value['finishPlace']?>

@@ -16,7 +16,7 @@ class PlaceModel extends BaseModel {
 
 			if (!$dbp->line("SELECT id FROM {$this->getTable()} WHERE id = '{$placeId}'")) {
 				$dbp->bquery("INSERT INTO {$this->getTable()} (`id`, `aliase`, `description`) VALUES (?,?,?)",
-						'sss', [$placeId, $value['name'], $value['address']]);
+						'sss', [$placeId, $value['displayName'], $value['formattedAddress']]);
 			}
 		}
 		return $placeId;

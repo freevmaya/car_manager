@@ -191,6 +191,10 @@ class View extends BaseParentView {
         });
         return values;
     }
+
+    getInput(name) {
+        return this.view.find('input[name="' + name + '"]');
+    }
 }
 
 class BottomView extends View {

@@ -118,7 +118,7 @@ class Ajax extends Page {
 			$this->NotifyOrderToDrivers($order_id);
 		}
 
-		return ["id"=>$order_id];
+		return ["result"=>$order_id];
 	}
 
 	protected function Go($data) {

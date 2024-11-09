@@ -17,7 +17,17 @@ class OrdinaryTripsModel extends BaseModel {
 		if (isset($options['limit']))
 			$query .= " LIMIT 0, {$options['limit']}";
 
-		return $dbp->asArray($query);
+		$items = $dbp->asArray($query);
+		for ($i=0; $i<count($items); $i++) {
+			$im = $items[$i];
+
+			if ($im['startPlaceId'])
+				$items[$i]['start'] = json_encode(['placeId'=>$im['startPlaceId'], 'displayName'=>$im['startPlace']]);
+
+			if ($im['finishPlaceId'])
+				$items[$i]['finish'] = json_encode(['placeId'=>$im['finishPlaceId'], 'displayName'=>$im['finishPlace']]);
+		}
+		return $items;
 	}
 }
 ?>

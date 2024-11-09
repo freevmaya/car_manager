@@ -28,8 +28,9 @@ function getGUID() {
     }
 }
 
-function roundv(v, n) {
-    return round(v * pow(base, exp))
+function roundv($v, $n) {
+    $p = pow(10, $n);
+    return round($v * $p) / $p;
 }
 
 
@@ -51,7 +52,7 @@ function Distance($lat1, $lng1, $lat2, $lng2) {  // generally used geo measureme
 
 function latLngToString($latLng) {
     if (isset($latLng['lat']))
-        return round($latLng['lat'].' '.$latLng['lng'];
+        return roundv($latLng['lat'], 6).' '.roundv($latLng['lng'], 6);
 
     return json_encode($latLng);
 }

@@ -10,6 +10,10 @@
 	html::AddScriptFile('driver-manager.js');
 	html::AddJsCode("driverManager = new DriverManager();");
 
+	/*if (isset(Page::$request['id']))
+		$orders = (new OrderModel())->getItems(Page::$request['id']);
+	else*/ 
+		
 	$orders = (new OrderModel())->getItems(['state'=>'wait']);
 
 	if (count($orders) > 0) 

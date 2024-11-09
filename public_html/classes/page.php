@@ -33,12 +33,17 @@ class Page {
 			}
 
 			if ($key == 'subpage') {
-				$subpage = $value;
-				$classFileName = dirname(__FILE__).'/'.$page.'/'.$subpage.'.php';
+				if (is_numeric($value))
+					Page::$request['id'] = $value;
+				else {
+					$subpage = $value;
 
-				if (file_exists($classFileName)) {
-					$className = lcfirst($subpage);
-					include($classFileName);
+					$classFileName = dirname(__FILE__).'/'.$page.'/'.$subpage.'.php';
+
+					if (file_exists($classFileName)) {
+						$className = lcfirst($subpage);
+						include($classFileName);
+					}
 				}
 			}
 		}

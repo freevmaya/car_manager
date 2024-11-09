@@ -235,20 +235,28 @@ class VMap {
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
 	get View() { return this.#view; }
+	get MainMarker() { return this.#mainMarker; }
 
 	constructor(elem, callback = null, options) {
 		v_map = this;
 		this.#view = elem;
-		this.#options = $.extend({main_marker: true}, options);
+		this.#options = $.extend({
+			main_marker: true, 
+			start_position: false
+		}, options);
 
-		setTimeout((()=>{
-			if (!this.map) 
-				this.initMap(null).then(callback);
-		}).bind(this), 10000);
+		if (this.#options.start_position)
+			this.initMap(this.#options.start_position).then(callback);
+		else {
+			setTimeout((()=>{
+				if (!this.map) 
+					this.initMap(null).then(callback);
+			}).bind(this), 10000);
 
-		getLocation(((pos) => {
-			this.initMap(pos).then(callback);
-		}).bind(this));
+			getLocation(((pos) => {
+				this.initMap(pos).then(callback);
+			}).bind(this));
+		}
 	}
 
 	get DriverManager() {
@@ -318,22 +326,27 @@ class VMap {
 
 	getRoutes(startPlace, finishPlace, a_travelMode, callback) {
 		function preparePlace(p) {
-			return p.location ? $.extend(p.location, { placeId: p.id }) : 
-						(p.placeId ? p : (p.latLng ? p.latLng : 
-							(typeof p.lat == 'function' ? new google.maps.LatLng(p.lat(), p.lng()) : 
-								(p.lat ? new google.maps.LatLng(p.lat, p.lng) : p))));
+			let result = p.location ? { placeId: p.id } : 
+						(p.placeId ? { placeId: p.placeId } : (p.latLng ? latLngToString(p.latLng) :  
+								(p.lat ? latLngToString(p) : p)));
+
+			return result;
 		}
+
 		let request = {
             origin: preparePlace(startPlace),
             destination: preparePlace(finishPlace),
             travelMode: a_travelMode
         }
-        console.log(request);
 
-        this.DirectionsService.route(request, function(result, status) {
-            if (status == 'OK')
-            	callback(result);
-        });
+        if (!isEmpty(request.origin) && !isEmpty(request.destination)) {
+	        console.log(request);
+
+	        this.DirectionsService.route(request, function(result, status) {
+	            if (status == 'OK')
+	            	callback(result);
+	        });
+	    }
 	}
 
 	async getPlaceDetails(placeId) {

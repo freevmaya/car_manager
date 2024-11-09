@@ -820,6 +820,7 @@ form .warning::before {
     height: 2.8em;
     font-size: 0.8em;
     width: 300px;
+    text-decoration: none;
     /* overflow: hidden; */
 }
 

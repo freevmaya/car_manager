@@ -77,25 +77,6 @@ class ViewTarget extends ViewPath {
     }
 
     GetPath() {
-        /*
-        let routes = this.getRoutes();
-
-        if (routes) {
-
-            let start = getRoutePoint(routes, 0);
-            let finish = getRoutePoint(routes, -1);
-            return {
-                    start: { lat: start.lat(), lng: start.lng() },
-                    finish: { lat: finish.lat(), lng: finish.lng() },
-                    startName: PlaceName(this.options.startPlace),
-                    finishName: PlaceName(this.options.finishPlace),
-                    startAddress: PlaceAddress(this.options.startPlace),
-                    finishAddress: PlaceAddress(this.options.finishPlace),
-                    meters: Math.round(CalcPathLength(this.getRoutes())),
-                    travelMode: this.travelMode
-                };
-            } return null;*/
-
         return GetPath(this.getRoutes(), this.options.startPlace, this.options.finishPlace);
     }
 
@@ -112,8 +93,8 @@ class ViewTarget extends ViewPath {
                     path: path
                 })
             }).then(((response)=>{
-                if (response.id > 0) {
-                    this.setOrderId(response.id);
+                if (response.result > 0) {
+                    this.setOrderId(response.result);
                     this.Close();
                 }
             }).bind(this));
@@ -176,25 +157,6 @@ class ViewTarget extends ViewPath {
         }).bind(this));
     }
 
-/*
-    prepareToClose(afterPrepare) {
-        if (this.options.id) {
-            app.showQuestion('Do you want to cancel your order?', (()=>{
-                Ajax({
-                    action: 'CancelOrder',
-                    data: {id: this.options.id }
-                }).then((response)=>{
-                    if (response.result == 'ok') {
-                        ListOffers = null;
-                        this.options.id = null;
-                        afterPrepare();
-                    }
-                })
-            }).bind(this));
-        } else afterPrepare();
-    }
-*/
-
     destroy() {
         if (this.listenerId > 0) 
             transport.RemoveListener('notificationList', this.listenerId);
@@ -202,6 +164,8 @@ class ViewTarget extends ViewPath {
         this.closePath();
         super.destroy();
     }
+
+
 }
 
 
@@ -253,12 +217,14 @@ class TracerView extends ViewPath {
     }
 
     Close() {
-        super.Close();
-        if (this.getOrderId())
-            Ajax({
-                action: 'SetState',
-                data: JSON.stringify({id: this.getOrderId(), state: 'finished'})
-            });
+        app.showQuestion('Do you want to cancel your order?', (()=>{
+            super.Close();
+            if (this.getOrderId())
+                Ajax({
+                    action: 'SetState',
+                    data: JSON.stringify({id: this.getOrderId(), state: 'finished'})
+                });
+        }).bind(this));
     }
 
     onFinish() {
@@ -294,7 +260,7 @@ function Mechanics() {
 
         tracerDialog.setOrderId(order.id);
         tracerDialog.travelMode = order.travelMode;
-        tracerDialog.showPath(JSON.parse(order.start), JSON.parse(order.finish));
+        tracerDialog.showPath(order.start, order.finish);
     }
 
     function SelectPlace(place) {
@@ -308,7 +274,7 @@ function Mechanics() {
                 startPlace: place
             }, () => {
                 if (routeDialog.getOrderId()) {
-                    BeginTracer(routeDialog.getOrderId(), routeDialog.GetPath());
+                    BeginTracer(routeDialog.GetPath());
                 }
                 routeDialog = null;
             });
@@ -334,6 +300,9 @@ function Mechanics() {
         return StopPropagation(e);
     });
 
-    if (typeof currentOrder == 'object')
+    if (typeof currentOrder == 'object') {
+        currentOrder.start = JSON.parse(currentOrder.start);
+        currentOrder.finish = JSON.parse(currentOrder.finish);
         BeginTracer(currentOrder);
+    }
 }

@@ -7,6 +7,7 @@ lang = {
 	'Car brand': 'Марка авто',
 	'Car number': 'Номер авто',
 	'Car color': 'Цвет авто',
+	'Distance': 'Расстояние (м.)',
 	'Ok': 'Да',
 	'Cancel': 'Отмена',
 	'Driver': 'Водитель',

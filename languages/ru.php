@@ -22,6 +22,7 @@ $lang = [
 	'Edit car'=>'Редактировать авто',
 	'Number'=>'Номер авто',
 	'Carbody'=>'Кузов',
+	'My current trips'=>'Мои текущие поездки',
 	'Color'=>'Цвет',
 	'Order cancelled'=>'Заказ отменен',
 	'Route types'=>'Типы маршрутов',

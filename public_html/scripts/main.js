@@ -237,11 +237,13 @@ class AjaxTransport extends EventProvider {
 class DateTime {
     DataFormat = 'dd.mm.yy';
     TimyFormat = "dd.MM HH:mm";
+    #options;
     #mstep;
     #datetime;
 
-    constructor(element, datetime, mstep = 30) {
+    constructor(element, datetime, mstep = 30, options=null) {
 
+        this.#options = $.extend({name: 'DateTime'}, options);
         this.#mstep = mstep;
         this.view = element;
         this.view.addClass('datetime');
@@ -272,6 +274,7 @@ class DateTime {
         this.view.empty();
         this.view.append(this.date = $('<input type="text" class="date">'));
         this.view.append(this.time = $('<select class="time">'));
+        this.view.append(this.input = $('<input type="hidden" name="' + this.#options + '">'));
 
         this.date.datepicker({ defaultDate: new Date(), dateFormat: this.DataFormat });
         this.date.datepicker('setDate', dta[0]);
@@ -345,12 +348,16 @@ function latLngToString(latLng) {
 }
 
 function PlaceName(place) {
-    if (place.displayName)
-        return place.displayName;
-    if (place.latLng)
-        return latLngToString(place.latLng);
-    
-    return latLngToString(place);
+
+    if (place) {
+        if (place.displayName)
+            return place.displayName;
+        if (place.latLng)
+            return latLngToString(place.latLng);
+        
+        return latLngToString(place);
+    }
+    return null;
 }
 
 function PlaceId(place) {
@@ -417,7 +424,10 @@ function closeView(view, duration='slow') {
 
 function templateClone(tmpl, data) {
     let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, group) => {
-        return toLang(typeof(data[group]) !== 'undefined' ? data[group] : '');
+        let v = toLang(!isEmpty(data[group]) ? data[group] : '');
+        if (typeof(v) == 'object')
+            v = JSON.stringify(v).replaceAll('"', '&quot;');
+        return v;
     });
     return $(html);
 }
@@ -428,6 +438,10 @@ function isFunc(f) {
 
 function isStr(s) {
     return $.type(s) == 'string';
+}
+
+function isEmpty(v) {
+    return (typeof(v) === 'undefined') || (v == null) || (v.length == 0);
 }
 
 function PrepareInput() {
@@ -466,12 +480,6 @@ function toLatLng(obj) {
         return {lat:obj.lat, lng: obj.lng};
     }
     return null;
-}
-
-function isNull(latLng) {
-    if (latLng)
-        return typeof(latLng.lat) == 'undefined';
-    return true;
 }
 
 var EARTHRADIUS = 6378.137; // Radius of earth in KM
@@ -593,7 +601,8 @@ function StopPropagation(e) {
 function Extend(dest, src, fields=null) {
     if (!fields) fields = Object.keys(src);
     for (let i=0; i<fields.length; i++)
-        dest[fields[i]] = src[i];
+        if (src[fields[i]])
+            dest[fields[i]] = src[fields[i]];
 
     return dest;
 }
@@ -621,8 +630,7 @@ function GetPath(routes, startPlace, finishPlace) {
     }
 
     function placeExt(place) {
-        return $.extend(addPlaceId(toLatLng(getRoutePoint(routes, 0)), place), 
-                        {name: PlaceName(place), address: PlaceAddress(place)});
+        return Extend(addPlaceId(toLatLng(getRoutePoint(routes, 0)), place), place, ['displayName', 'formattedAddress']);
     }
 
     if (routes) {
