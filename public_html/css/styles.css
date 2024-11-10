@@ -718,15 +718,17 @@ input:focus, select:focus {
     margin: 1em;
 }
 
-form .warning {
+.warning {
     padding: 0.8em;
     font-size: 0.8em;
     margin-top: 0.5em;
+    margin-bottom: 8px;
+    margin-right: 8px;
     animation-name: showView;
     animation-duration: 0.2s;
 }
 
-form .warning::before {
+.warning::before {
     content: ' ';
     width: 20px;
     height: 20px;

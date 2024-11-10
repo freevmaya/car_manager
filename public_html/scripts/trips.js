@@ -19,15 +19,16 @@ $(window).ready(() => {
 
         ShowMap(fieldElem, dialog) {
 
-            this.dialog = dialog;
             let fieldId = fieldElem.attr('id');
+            this.control = dialog.fieldById(fieldId);
+            this.dialog = dialog;
 
             if (this.openMap)
                 this.openMap.destroy();
 
             let place = fieldElem.data('place');
 
-            let mapObject = new SelectMap(fieldElem, null, {
+            let mapObject = new SelectMap(this.control, null, {
                 start_position: place.latLng ? place.latLng : false
             });
 
@@ -73,25 +74,25 @@ $(window).ready(() => {
                 this.dialog.getInput("meters").val(Math.round(CalcPathLength(data)));
                 this.rpath = this.openMap.DrawPath(data);
                 this.openMap.map.setCenter(p);
-
-                if (!isEmpty(this.openMap.MainMarker))
-                    this.openMap.MainMarker.setMap(null);
+                this.openMap.visMainMarker(false);
             }).bind(this));
         }
     }
 
     class SelectMap extends VMap {
         fieldId;
-        parentField;
+        #elem;
+        #control;
 
-        constructor(fieldElem, callback, options) {
-            super(fieldElem.find('.map-container'), callback, $.extend({main_marker: options.start_position === false}, options));
-            this.parentField = fieldElem;
-            this.fieldId = fieldElem.attr('id');
+        constructor(control, callback, options) {
+            super(control.view.find('.map-container'), callback, $.extend({main_marker: options.start_position === false}, options));
+            this.#control = control;
+            this.#elem = control.view;
+            this.fieldId = control.name;
         }
 
         getPlace() {
-            return this.parentField.data('place');
+            return this.#elem.data('place');
         }
 
         onMapClick(e) {
@@ -113,20 +114,19 @@ $(window).ready(() => {
         }
 
         SelectPlace(val) {
-            this.parentField.find('.value').text(PlaceName(val));
+            this.#elem.find('.value').text(PlaceName(val));
 
             let place = val.location ? 
                             Extend({placeId: val.id, latLng: val.location}, val, ['displayName', 'formattedAddress']) :
                         toLatLng(val.latLng)
-
-            this.parentField.data('place', place);
+            this.#control.val(place);
 
             routeManager.showRoute(this.fieldId);
         }
 
 
         Close() {
-            this.parentField
+            this.#elem
                 .closest('.field')
                 .find('.map-layer')
                 .removeClass('show');
@@ -134,7 +134,7 @@ $(window).ready(() => {
         }
 
         destroy() {
-            this.parentField.find('.map-layer').removeClass('show');
+            this.#elem.find('.map-layer').removeClass('show');
             if (routeManager.openMap)
                 routeManager.openMap = null;
             super.destroy();
@@ -156,6 +156,7 @@ $(window).ready(() => {
                             label: "Departure point",
                             source: '.templates .field',
                             place: start,
+                            validator: requiredValidator,
                             placeName: PlaceName(start),
                             class: SelectPlaceField
                         },{
@@ -163,13 +164,14 @@ $(window).ready(() => {
                             source: '.templates .field',
                             label: "Point of arrival",
                             place: finish,
+                            validator: requiredValidator,
                             placeName: PlaceName(finish),
                             class: SelectPlaceField
                         },{
                             name: 'meters',
                             label: toLang("Distance"),
                             value: meters,
-                            readOnly: true,
+                            readonly: true,
                             class: FormField
                         },{
                             name: 'pickUpTime',
@@ -181,19 +183,21 @@ $(window).ready(() => {
             ],
             actions: {
                 Send: ()=>{
-                    let path = {};
-                    dialog.view.find('.field').each((i, field)=>{
-                        field = $(field);
-                        path[field.attr('id')] = field.data('place');
-                    });
-                    Ajax({
-                        action: 'AddOrder',
-                        data: JSON.stringify($.extend(dialog.getValues(['pickUpTime', 'meters']), 
-                                {user_id: user.id, path: path }))
-                    }).then((data)=>{
-                        if (data.result > 0)
-                            dialog.Close();
-                    });
+                    let path = dialog.getValues();
+
+                    if (path.start && path.finish) {
+
+                        Ajax({
+                            action: 'AddOrder--asd',
+                            data: JSON.stringify({user_id: user.id, path: path })
+                        }).then((data)=>{
+                            if (data.result > 0) {
+                                dialog.Close().then(()=>{
+                                    window.location.reload();
+                                });
+                            }
+                        });
+                    }
                     //dialog.Close();
                 },
                 Cancel: ()=>{

@@ -1,13 +1,35 @@
-class Validator {
+class ValidatorList {
 	#form;
 	#submit;
 	#items = [];
 	checkForm() {
 		if (!this.#form) {
 			this.#form = $('form');
-			this.#form.on('submit', (() => {return this.isSendAllowed();}).bind(this));
+			this.#form.on('submit', this.onSubmit.bind(this));
 			this.#submit = this.#form.find('*[type="submit"]');
 		}
+	}
+
+	onSubmit(e) {
+		let ainput = document.activeElement;
+		if (ainput && (ainput.type == 'text')) {
+			let idx = this.indexOf(ainput.name);
+			if (idx > -1) {
+				this.#items[idx].doAfterChange(((value)=>{
+					if (value) this.#form.submit();
+				}).bind(this));
+				e.preventDefault();
+				return false;
+			}
+		}
+		return this.isSendAllowed();
+	}
+
+	indexOf(name) {
+		for (let i in this.#items)
+			if (this.#items[i].name == name)
+				return i;
+		return -1;
 	}
 
 	isSendAllowed() {
@@ -37,20 +59,26 @@ class Validator {
 
 class BaseValidator {
 	parent;
-	#elem;
+	#control;
 	_allowed = true;
 	#model;
-	constructor(name, model) {
-		this.#elem = $('*[name="' + name + '"]');
+
+	get name() { return this.#control.name; }
+	get control() { return this.#control; }
+	getModel() { return this.#model; }
+
+	constructor(control, model = '') {
+		if (isStr(control))
+			control = formView.fieldById(control);
+		
+		this.#control = control;
 		this.#model = model;
 	}
-
-	getElem() { return this.#elem; }
-	getModel() { return this.#model; }
 
 	setAllowed(value) {
 		this._allowed = value;
 		this.refreshFieldMessage();
+		this.parent.refresh();
 	}
 
 	getAllowed() {
@@ -62,8 +90,7 @@ class BaseValidator {
 	}
 
 	refreshFieldMessage() {
-		console.log(this.getAllowed());
-		app.ToggleWarning(this.getElem(), !this.getAllowed(), this.getMessage());
+		app.ToggleWarning(this.control.view, !this.getAllowed(), this.getMessage());
 	}
 }
 
@@ -71,15 +98,21 @@ class inputValidator extends BaseValidator {
 	constructor(name, model) {
 		super(name, model);
 
-		this.getElem()
-			.change((() => { this.onChange(this.afterValidate.bind(this)); }).bind(this));
+		this.control.change(this.doAfterChange.bind(this));
+	}
+
+	doAfterChange(outside = null) {
+		this.afterChange(((a_allowed)=>{
+			this.afterValidate(a_allowed);
+			if (isFunc(outside)) outside(a_allowed);
+		}).bind(this));
 	}
 
 	afterValidate(a_allowed) {
 		this.setAllowed(a_allowed);
 	}
 
-	onChange(action) {
+	afterChange(action) {
 		action(true);
 	}
 
@@ -96,14 +129,10 @@ class requiredValidator extends inputValidator {
 	}
 
 	isNotEmpty() {
-		let elem = this.getElem();
-		if (elem.attr('type') == 'hidden')
-			return elem.val() > 0;
-
-		return elem.val().length > 0;
+		return !isEmpty(this.control.val());
 	}
 
-	onChange(action) {
+	afterChange(action) {
 		let na = this.isNotEmpty();
 		let hm = na && !this._allowed;
 		action(na);
@@ -115,19 +144,19 @@ class uniqueValidator extends requiredValidator {
 	#origin;
 	constructor(name, model) {
 		super(name, model);
-		this.#origin = this.getElem().val();
+		this.#origin = this.control.val();
 	}
 
 
-	onChange(action) {
-		super.onChange(((allowed)=>{
+	afterChange(action) {
+		super.afterChange(((allowed)=>{
 			if (allowed) {
-				if (this.getElem().val() != this.#origin) {
+				if (this.control.val() != this.#origin) {
 					Ajax({
 						action:"checkUnique",
 						data: JSON.stringify({
 							model: this.getModel(),
-							value: this.getElem().val()
+							value: this.control.val()
 						})
 					}).then(action.bind(this));
 				} else action(allowed);
@@ -140,4 +169,4 @@ class uniqueValidator extends requiredValidator {
 	}
 }
 
-var validator = new Validator();
+var validatorList = new ValidatorList();

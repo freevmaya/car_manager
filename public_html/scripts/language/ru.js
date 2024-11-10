@@ -45,5 +45,6 @@ lang = {
 	'Departure point': 'Пункт отправления',
 	'Point of arrival': 'Пункт прибытия',
 	'Departure time': 'Время отправления',
-	'On map': 'На карте'
+	'On map': 'На карте',
+	'The value cannot be empty.': 'Значение не может быть пустым.'
 };

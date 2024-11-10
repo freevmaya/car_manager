@@ -109,11 +109,12 @@ class html {
 
 	protected static function addValidator($validator, $options, $nameModel) {
 		html::AddScriptFile('validator.js');
+		html::AddScriptFile('views.js');
 
 		if (is_array($validator)) {
 			foreach ($validator as $v)
-				html::AddJsCode('validator.add(new '.$v."Validator('{$options['name']}', '{$nameModel}'));\n");
-		} else html::AddJsCode('validator.add(new '.$validator."Validator('{$options['name']}', '{$nameModel}'));\n");
+				html::AddJsCode('validatorList.add(new '.$v."Validator('{$options['name']}', '{$nameModel}'));\n");
+		} else html::AddJsCode('validatorList.add(new '.$validator."Validator('{$options['name']}', '{$nameModel}'));\n");
 	}
 
 	public static function RenderField($options, $value, $nameModel=null) {

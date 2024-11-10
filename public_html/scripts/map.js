@@ -311,6 +311,11 @@ class VMap {
 			this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
 	}
 
+	visMainMarker(visible) {
+		if (this.#mainMarker)
+			this.#mainMarker.setMap(visible ? this.map : null);
+	}
+
 	setMainPosition(latLng) {
 		if (latLng && this.#mainMarker)
 			this.#mainMarker.position = latLng;

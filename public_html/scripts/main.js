@@ -98,7 +98,7 @@ class App {
         if (visible) {
             if (w.length > 0)
                 w.text(text);
-            else parent.append(w = $('<div class="warning" style="width: ' + elem.width() + 'px">' + text + '</div>'));
+            else parent.append(w = $('<div class="warning" style="width: ' + (elem.width() - 10) + 'px">' + text + '</div>'));
         } else w.Remove();
     }
 
@@ -241,27 +241,30 @@ class DateTime {
     #mstep;
     #datetime;
 
-    constructor(element, datetime, mstep = 30, options=null) {
+    constructor(element, options=null) {
 
-        this.#options = $.extend({name: 'DateTime'}, options);
-        this.#mstep = mstep;
+        this.#options = $.extend({name: 'DateTime', step: 30, value: null}, options);
+
+        this.#mstep = this.#options.step;
         this.view = element;
         this.view.addClass('datetime');
         this.view.empty();
 
-        if ($.type(datetime) == 'string')
-            datetime = Date.parse(datetime);
-        else if ($.type(datetime) == 'undefined')
-            datetime = Date.now();
+        let val = this.#options.value;
 
-        if ($.type(datetime) == 'number') {
-            this.#datetime = this.Format(datetime);
+        if ($.type(val) == 'string')
+            val = Date.parse(val);
+        else if (isEmpty(val))
+            val = Date.now();
+
+        if ($.type(val) == 'number') {
+            this.#datetime = this.Format(val);
 
             if (this.Format(Date.now()) == this.#datetime) {
                 this.view.text(toLang('Now')).click(this.onNowClick.bind(this));
             }
             else InitInputs();
-        } else console.log("Unknown datetime format");
+        } else console.log("Unknown val format");
     }
 
     onNowClick() {
@@ -274,8 +277,9 @@ class DateTime {
         this.view.empty();
         this.view.append(this.date = $('<input type="text" class="date">'));
         this.view.append(this.time = $('<select class="time">'));
-        this.view.append(this.input = $('<input type="hidden" name="' + this.#options + '">'));
 
+        this.date.attr('name', this.#options.name);
+        this.date.data('control', this);
         this.date.datepicker({ defaultDate: new Date(), dateFormat: this.DataFormat });
         this.date.datepicker('setDate', dta[0]);
 
@@ -315,7 +319,7 @@ class DateTime {
         return $.format.date(this.date.datepicker('getDate'), dateOnlyFormat);
     }
 
-    getValue() {
+    val() {
         if (this.date)
             return this.getDate() + ' ' + this.getTime();
         else return this.#datetime;

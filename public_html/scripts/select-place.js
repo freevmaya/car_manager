@@ -1,16 +1,20 @@
 class SelectPlaceField extends HtmlField {
 
-	setOptions(options) {
-        super.setOptions(options);
-        this.view.find('.popup-button').click(this.onPopupClick.bind(this));
+    #sendChange() {
+        for (let i in this.listeners)
+            this.listeners[i]();
     }
 
-    onPopupClick() {
-    	let map = this.view.find('.map');
-    	if (map) map = this.addMapControl();
+    val() {
+        if (arguments.length == 0)
+            return this.view.data('place');
+        else {
+            this.view.data('place', arguments[0]);
+            this.#sendChange();
+        }
     }
 
-    addMapControl() {
-    	this.view.find('.container').append('<div class="map"></div>');
+    change(listener) {
+        this.listeners.push(listener);
     }
 }

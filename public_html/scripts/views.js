@@ -20,26 +20,26 @@ class ViewManager {
     }
 }
 
-ViewManager.setContent = (parent, content, clone = false)=> {
+ViewManager.setContent = function($this, content, clone = false)  {
 
-    if (parent.children)
-        for (let idx in parent.children)
-            parent.children[idx].destroy();
-    parent.children = {};
+    if ($this.children)
+        for (let idx in $this.children)
+            $this.children[idx].destroy();
+    $this.children = {};
 
-    parent.children = {};
+    $this.children = {};
     if ($.type(content) === 'array') {
         let field_number = 0;
         for (let i in content) {
             let idx = i;
             if (content[i].id) idx = content[i].id;
 
-            (parent.children[idx] = new content[i].class(parent, $.extend({field_number: field_number}, content[i])));
+            ($this.children[idx] = new content[i].class($this, $.extend({field_number: field_number}, content[i])));
             field_number++;
         }
     } else {
-        parent.children[0] = clone ? $(content).clone() : $(content);
-        parent.contentElement.append(parent.children[0]);
+        $this.children[0] = clone ? $(content).clone() : $(content);
+        $this.contentElement.append($this.children[0]);
     }
 }
 
@@ -47,15 +47,43 @@ class BaseParentView {
 
     children;
 
-    constructor() {}
+    constructor() {
+        this.children = {};
+    }
 
     fieldById(idx) {
+
+        if ($.type(idx) == 'string') {
+            for (let i in this.children) {
+                let ch = this.children[i];
+                let r = ch.fieldById(idx);
+                if (!isEmpty(r))
+                    return r;
+                if (ch.name == idx)
+                    return ch;
+            }
+        }
+
         return this.children[idx];
+    }
+
+    getValues(fields=null) {
+        var values = {};
+        $.each(this.children, function(i, field) {
+            if (field.name) {
+                if (!fields || (fields.indexOf(field.name) > -1))
+                    values[field.name] = field.value;
+            } else values = $.extend(values, field.getValues());
+        });
+        return values;
     }
 }
 
 class View extends BaseParentView {
-
+    view;
+    headerElement;
+    contentElement;
+    footerElement;
     constructor(options = {actions: {}}, afterDestroy = null) {
         super();
         this.afterDestroy = afterDestroy;
@@ -182,16 +210,6 @@ class View extends BaseParentView {
         else this.options.curtain.removeClass('curtain');
     }
 
-    getValues(fields=null) {
-        var $inputs = this.view.find(':input');
-        var values = {};
-        $inputs.each(function() {
-            if (this.name && (!fields || (fields.indexOf(this.name) > -1)))
-                values[this.name] = $(this).val();
-        });
-        return values;
-    }
-
     getInput(name) {
         return this.view.find('input[name="' + name + '"]');
     }
@@ -210,14 +228,79 @@ class BottomView extends View {
     }
 }
 
-class BaseField {
+class BaseField extends BaseParentView {
     view;
-    constructor(parent, options) {
+    #listeners;
+
+    get name() { return this.options.name; };
+    get value() { return this.val(); };
+    get listeners() { return this.#listeners; };
+
+    constructor(options = null) {
+        super();
+        this.#listeners = [];
         this.options = $.extend({}, options);
+    }
+
+    val() {
+        return this.getInput().val();
+    }
+
+    change(onFunc) {
+        this.getInput().change(onFunc);
+    }
+
+    getInput() {
+        return this.view.find('input');
+    }
+}
+
+class Form extends BaseParentView {
+
+    contentElement;
+    constructor(formElem) {
+        super();
+        this.contentElement = formElem;
+        this.initFields();
+    }
+
+    initFields() {
+        this.contentElement.find('.field').each(((i, elem)=>{
+            let input = $(elem).find('input');
+            if (!isEmpty(input)) {
+                let field = new PageFormField($(elem), input);
+                this.children[field.name] = field;
+            }
+        }).bind(this));
+    }
+}
+
+class PageFormField extends BaseField {
+
+    #input;
+    constructor(fieldElem, input, options = null) {
+        super($.extend({name: input.attr('name')}, options));
+        this.view = fieldElem;
+        this.#input = input;
+    }
+
+    getInput() {
+        return this.#input;
+    }
+}
+
+class BaseViewField extends BaseField {
+
+    constructor(parent, options = null) {
+        super(options);
         this.parentElement = parent.contentElement;
         this.parent = parent;
+
         this.initView();
         this.view.addClass('field-' + this.options.field_number);
+
+        if (this.options.validator)
+            validatorList.add(new this.options.validator(this));
     }
 
     getView() {
@@ -230,26 +313,26 @@ class BaseField {
     }
 }
 
-class HiddenField extends BaseField {
+class HiddenField extends BaseViewField {
     initView() {
         this.view = createField(this.parentElement, this.options, '<input type="hidden">');
     }
 }
 
-class DividerField extends BaseField {
+class DividerField extends BaseViewField {
     initView() {
         this.view = createField(this.parentElement, this.options, '<div class="divider">');
     }
 }
 
-class HtmlField extends BaseField {
+class HtmlField extends BaseViewField {
     initView() {
         this.parentElement.append(this.view = templateClone($(this.options.source), this.options));
     }
 }
 
 
-class TextField extends BaseField {
+class TextField extends BaseViewField {
 
     initView() {
         this.view = createField(this.parentElement, this.options, '<p>');
@@ -269,26 +352,27 @@ class TextInfoField extends TextField {
     }
 }
 
-class DateTimeField extends BaseField {
+class DateTimeField extends BaseViewField {
 
     initView() {
-        this.view = createField(this.parentElement, this.options, '<div>');
-        this.component = new DateTime(this.view, this.options.value);
+        let cont = $('<div>');
+        this.view = createField(this.parentElement, this.options, cont);
+        this.component = new DateTime(cont, this.options);
     }
 
-    getValue() {
-        return this.component.getValue();
+    val() {
+        return this.component.val();
     }
 }
 
 
-class FormField extends BaseField {
+class FormField extends BaseViewField {
     initView() {
         this.view = createField(this.parentElement, this.options, '<input type="text"/>');
     }
 }
 
-class ButtonField extends BaseField {
+class ButtonField extends BaseViewField {
     initView() {
         this.view = createButton(this.parentElement, this.options.label, (()=>{
             this.getView().Close().then(this.options.action());
@@ -297,9 +381,7 @@ class ButtonField extends BaseField {
 }
 
 
-class GroupFields extends BaseField {
-
-    children = null;
+class GroupFields extends BaseViewField {
 
     initView() {
         this.parentElement.append(this.view = this.contentElement = $('<div class="group">'));
@@ -307,6 +389,10 @@ class GroupFields extends BaseField {
             this.view.addClass(this.options.classes[i]);
 
         ViewManager.setContent(this, this.options.content, this.options.clone);
+    }
+
+    val() {
+        return this.getValues();
     }
 }
 
@@ -346,7 +432,10 @@ function createField(parent, fieldParam, tag) {
     if (fieldParam.value)
         element.val(fieldParam.value);
 
-    return element;
+    if (fieldParam.readonly)
+        element.prop('readonly', true);
+
+    return container;
 }
 
 function setValues(elem, attibutes) {
@@ -362,8 +451,15 @@ function setValues(elem, attibutes) {
 }
 
 var viewManager;
+var formView;
+
 $(window).ready(()=>{
     viewManager = new ViewManager();
     if ($('#' + windowsLayerId).length == 0)
         $('body').prepend($('<div id="' + windowsLayerId + '">'));
+
+    let pageForm = $('form');
+    if (pageForm) {
+        formView = new Form(pageForm);
+    }
 });

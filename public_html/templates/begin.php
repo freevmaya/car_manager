@@ -1,7 +1,7 @@
 <?	
 include_once(TEMPLATES_PATH.'/toolbar.php');
 
-html::AddScriptFiles(['views.js', 'map.js', 'trips.js',
+html::AddScriptFiles(['views.js', 'map.js', 'trips.js', 'validator.js',
 					  'jquery-dateformat.min.js',
 					  'https://code.jquery.com/ui/1.14.0/jquery-ui.js']);
 html::AddStyleFile('css/jquery-ui.css');
