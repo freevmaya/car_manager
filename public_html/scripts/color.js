@@ -4,7 +4,11 @@ class Color {
   constructor(r, g, b) {
     if (typeof r === 'string') {
       this.setAsString(r);
-    } else this.set(this.check(r), this.check(g), this.check(b));
+    } else {
+      if (typeof r == 'object')
+        this.set(this.check(r[0]), this.check(r[1]), this.check(r[2]));
+      else this.set(this.check(r), this.check(g), this.check(b));
+    }
   }
 
   check(v) {

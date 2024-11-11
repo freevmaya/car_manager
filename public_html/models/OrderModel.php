@@ -29,9 +29,13 @@ class OrderModel extends BaseModel {
 		
 		$whereStr = implode(" AND ", $where);
 
-		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id ".
-			"LEFT JOIN driverOnTheLine d ON d.user_id=o.driver_id ".
-			"LEFT JOIN users driver ON d.user_id=o.driver_id ".
+		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters, driver.id AS driverId, driver.username AS driverName, c.number, c.comfort, c.seating, cb.symbol AS car_body, cc.rgb AS car_color, cc.name AS car_colorName ".
+			"FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id ".
+			"LEFT JOIN driverOnTheLine ON driverOnTheLine.id=o.driver_id ".
+			"LEFT JOIN users driver ON driver.id=driverOnTheLine.user_id ".
+			"LEFT JOIN car c ON c.id=driverOnTheLine.car_id ".
+			"LEFT JOIN car_bodies cb ON cb.id=c.car_body_id ".
+			"LEFT JOIN car_color cc ON cc.id=c.color_id ".
 			"WHERE $whereStr ORDER BY `id` DESC";
 
 		if (isset($options['limit']))

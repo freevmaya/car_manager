@@ -29,9 +29,6 @@ if ($this->asDriver()) {
 		$lastTrips = BaseModel::FullItems($orederModel->getItems(['o.user_id'=>$user['id'], 'state'=>'finished', 'limit'=>3]), ['route_id'=>new RouteModel()]);
 		
 		$lastTripCount = count($lastTrips);
-	} else {
-		html::AddJsData($currentList, 'currentList');
-		html::AddJsCode("renderList('currentList', $('#currentList'));\n");
 	}
 ?>
 <div class="pageContent trips">
@@ -60,11 +57,11 @@ if ($this->asDriver()) {
 			<?}?>
 			<?if ($currentTripCount > 0) {?>
 			<div class="group">
-				<h2><?=lang('My current trips')?></h2>
+				<h2><?=lang('My current trip')?></h2>
 				<div id="currentList">
 				<?
 				for ($i=0; $i<$currentTripCount; $i++)
-					echo html::RenderField(['type'=>'trip_point'], 
+					echo html::RenderField(['type'=>'order'], 
 						array_merge($currentList[$i], $currentList[$i]['route']));
 				?>
 				</div>
@@ -87,13 +84,6 @@ if ($this->asDriver()) {
 	        </div>
 	    </div>
         <?=html::RenderField(['type'=>'map', 'id'=>"map-{field_number}"], 'map')?>
-	</div>
-
-	<div class="currentList">
-		<div class="item">
-			<div class="header">{id}</div>
-			<div class="content">{pickUpTime}</div>
-		</div>
 	</div>
 </div>
 <?}?>

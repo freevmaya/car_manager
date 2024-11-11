@@ -2,6 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    text-align: left;
 }
 
 html {
@@ -360,13 +361,27 @@ h1, h2 {
     min-width: 20em;
     flex-grow: 1;
     display: flex;
-    flex-flow: column;
+    flex-direction: column;
+}
+
+.group.hori {
+    justify-content: end;
+    flex-direction: row !important;
+}
+
+.group.hori .field {
+    justify-content: end;
+    width: -webkit-fill-available;
+}
+
+.group.hori .field > input, .group.hori .field > .datetime {
+    margin-left: 0 !important;
 }
 
 .field {
-    margin: 0.1em;
+    margin: 0.5em 0;
     display: flex;
-    flex-flow: column;
+    flex-direction: column;
     overflow: hidden;
 }
 
@@ -1007,4 +1022,49 @@ input:focus, select:focus {
 
 .carbodies .option, .colors .option {
     flex-direction: column;
+}
+
+/*--------------------ORDER----------------*/
+
+.data .block {
+    margin: 2em 0.5em;
+    text-align: left;
+    border: 1px solid #ffffff12;
+    border-radius: 1em;
+    padding: 1em;
+    box-shadow: 2px 2px 1em #00000059;
+}
+
+.data .block  h3 {
+    /* margin: 1em; */
+    margin-top: -1.5em;
+    background: #2b2427;
+    margin: -2em 2em 0 2em;
+    width: fit-content;
+    padding: 0 1em;
+    font-style: italic;
+    color: aquamarine;
+    font-size: 0.9em;
+}
+
+.data .block a.trip {
+    display: block;
+}
+
+.data .block .name {padding: 0.5em 0;color: #ffffffab;}
+
+.data .block  .param {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+}
+
+.data .param .item-image span {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    color: #ffffff12;
 }

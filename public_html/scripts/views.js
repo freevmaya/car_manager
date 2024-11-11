@@ -416,10 +416,10 @@ function createField(parent, fieldParam, tag) {
         container.attr("data-id", fieldParam.id);
 
     if (fieldParam.label) {
-        label = container.append($('<label class="title">')
+        container.append((label = $('<label class="title">'))
                 .text(toLang(fieldParam.label)));
-        if (fieldParam.name)
-            label.attr("for", fieldParam.name);
+        //if (fieldParam.name)
+            //label.attr("for", fieldParam.name);
     }
     container.append(element = $(tag));
 

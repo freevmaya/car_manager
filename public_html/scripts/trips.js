@@ -229,17 +229,24 @@ $(window).ready(() => {
                             placeName: PlaceName(finish),
                             class: SelectPlaceField
                         },{
-                            name: 'meters',
-                            label: toLang("Distance"),
-                            value: meters,
-                            readonly: true,
-                            class: FormField
-                        },{
-                            name: 'pickUpTime',
-                            label: "Departure time",
-                            value: pickUpTime,
-                            readonly: readonly,
-                            class: DateTimeField
+                            class: GroupFields,
+                            classes: ['hori'],
+                            content: [
+                                {
+                                    name: 'pickUpTime',
+                                    label: "Departure time",
+                                    value: pickUpTime,
+                                    readonly: readonly,
+                                    class: DateTimeField
+                                },
+                                {
+                                    name: 'meters',
+                                    label: toLang("Distance"),
+                                    value: meters,
+                                    readonly: true,
+                                    class: FormField
+                                }
+                            ]
                         }
                     ]
                 }
