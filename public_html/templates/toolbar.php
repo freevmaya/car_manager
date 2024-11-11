@@ -1,9 +1,10 @@
 <?
+	GLOBAL $user;
 	html::AddScriptFiles(['views.js', "jquery-dateformat.min.js"]);
 	$notifyModel = new NotificationModel();
 	$driverModel = new DriverModel();
 
-	$options = ['user_id' => Page::$current->user['id'], 'state'=>['receive', 'active']];
+	$options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
 
 	html::addStyleFile(BASEURL.'/css/toolbar.css');
 	html::AddScriptFile("toolbar.js");

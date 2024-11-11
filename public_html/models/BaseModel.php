@@ -12,8 +12,8 @@ abstract class BaseModel {
 		$optionCondition = '';
 		if (isset($options[$paramName])) {
 			if (is_array($options[$paramName]))
-				$optionCondition = "`{$paramName}` IN ('".implode("','", $options[$paramName])."')";
-			else $optionCondition = "`{$paramName}` {$operand} '{$options[$paramName]}'";
+				$optionCondition = "{$paramName} IN ('".implode("','", $options[$paramName])."')";
+			else $optionCondition = "{$paramName} {$operand} '{$options[$paramName]}'";
 		}
 		if ($optionCondition) $whereList[] = $optionCondition;
 		return $whereList;

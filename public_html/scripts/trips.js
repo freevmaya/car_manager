@@ -96,13 +96,16 @@ $(window).ready(() => {
         }
 
         onMapClick(e) {
-            this.setMainPosition(e.latLng);
 
-            if (e.placeId) {
-                this.getPlaceDetails(e.placeId).then((place)=>{
-                    this.SelectPlace(place);
-                });
-            } else this.SelectPlace(e);
+            if (!this.#control.options.readonly) {
+                this.setMainPosition(e.latLng);
+
+                if (e.placeId) {
+                    this.getPlaceDetails(e.placeId).then((place)=>{
+                        this.SelectPlace(place);
+                    });
+                } else this.SelectPlace(e);
+            }
             
             return StopPropagation(e);
         }
@@ -142,11 +145,67 @@ $(window).ready(() => {
     }
 
 
-    function newOrderAsRoute(start, finish, meters) {
+    function newOrderAsRoute(start, finish, meters, orderId, pickUpTime) {
+        let dialog;
+        let readonly = orderId > 0;
+        let actions = {};
+        if (readonly)
+            actions = {
+                Finish: {
+                    type: 'submit',
+                    action: ()=>{
+                        dialog.Close().then(()=>{
+                            app.showQuestion(toLang('Are you sure you want to end the trip?'), ()=>{
+                                Ajax({
+                                    action: 'SetState',
+                                    data: JSON.stringify({id: orderId, state: 'finished' })
+                                }).then((data)=>{
+                                    if (data.result > 0)
+                                        window.location.reload();
+                                });
 
-        let dialog = viewManager.Create({
+                            });
+                        })
+                    }
+                }
+            }
+        else actions = {
+                Send: {
+                    type: 'submit',
+                    action: ()=>{
+                        let path = dialog.getValues();
+
+                        validatorList.refresh();
+
+                        if (validatorList.isSendAllowed() && path.start && path.finish) {
+
+                            Ajax({
+                                action: 'AddOrder',
+                                data: JSON.stringify({user_id: user.id, path: path, pickUpTime: path.pickUpTime })
+                            }).then((data)=>{
+                                if (data.result > 0) {
+                                    dialog.Close().then(()=>{
+                                        window.location.reload();
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+        actions = $.extend(actions, {
+            Close: ()=>{
+                dialog.Close();
+            },
+            'On map': ()=>{
+                document.location.href = BASEURL + '/map';
+            }
+        });
+
+        dialog = viewManager.Create({
             curtain: $('.wrapper'),
-            title: toLang('New order trip'),
+            title: toLang(readonly ? 'Current order' : 'New order trip'),
             content: [
                 {
                     class: GroupFields,
@@ -156,6 +215,7 @@ $(window).ready(() => {
                             label: "Departure point",
                             source: '.templates .field',
                             place: start,
+                            readonly: readonly,
                             validator: requiredValidator,
                             placeName: PlaceName(start),
                             class: SelectPlaceField
@@ -164,6 +224,7 @@ $(window).ready(() => {
                             source: '.templates .field',
                             label: "Point of arrival",
                             place: finish,
+                            readonly: readonly,
                             validator: requiredValidator,
                             placeName: PlaceName(finish),
                             class: SelectPlaceField
@@ -176,37 +237,14 @@ $(window).ready(() => {
                         },{
                             name: 'pickUpTime',
                             label: "Departure time",
+                            value: pickUpTime,
+                            readonly: readonly,
                             class: DateTimeField
                         }
                     ]
                 }
             ],
-            actions: {
-                Send: ()=>{
-                    let path = dialog.getValues();
-
-                    if (path.start && path.finish) {
-
-                        Ajax({
-                            action: 'AddOrder--asd',
-                            data: JSON.stringify({user_id: user.id, path: path })
-                        }).then((data)=>{
-                            if (data.result > 0) {
-                                dialog.Close().then(()=>{
-                                    window.location.reload();
-                                });
-                            }
-                        });
-                    }
-                    //dialog.Close();
-                },
-                Cancel: ()=>{
-                    dialog.Close();
-                },
-                'On map': ()=>{
-                    document.location.href = '/map';
-                }
-            }
+            actions: actions
         });
 
         dialog.view.find('.popup-button').click((e)=>{
@@ -222,9 +260,9 @@ $(window).ready(() => {
 
 
     $('.value.trip').click((e) => {
-        let start = $(e.currentTarget).data('start');
-        let finish = $(e.currentTarget).data('finish');
-        newOrderAsRoute(start, finish, $(e.currentTarget).data('meters'));
+        let link = $(e.currentTarget);
+        newOrderAsRoute(link.data('start'), link.data('finish'), 
+            link.data('meters'), link.data('order_id'), link.data('pickuptime'));
         
     });
 });

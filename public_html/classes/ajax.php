@@ -36,17 +36,17 @@ class Ajax extends Page {
 	}
 
 	protected function BeginDriver($data) {
-		GLOBAL $dbp;
-		$result = $dbp->query("REPLACE driverOnTheLine (`user_id`, `car_id`, `active`, `activationTime`, `closeTime`) VALUES ({$this->user['id']}, {$data['car_id']}, 1, NOW(), null)");
+		GLOBAL $dbp, $user;
+		$result = $dbp->query("REPLACE driverOnTheLine (`user_id`, `car_id`, `active`, `activationTime`, `closeTime`) VALUES ({$user['id']}, {$data['car_id']}, 1, NOW(), null)");
 
 		return ["result"=>$result];
 	}
 
 	protected function checkState($data) {
-		GLOBAL $dbp;
+		GLOBAL $dbp, $user;
 
 		$result = [];
-		$notificationList = $dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$this->user['id']}");
+		$notificationList = $dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$user['id']}");
 
 		for ($i=0;$i<count($notificationList);$i++) {
 			$ct = $notificationList[$i]['content_type'];
@@ -58,17 +58,17 @@ class Ajax extends Page {
 
 		if (isset($data['lat'])) {
 			$dbp->bquery("UPDATE users SET last_time = NOW(), lat = ?, lng = ? WHERE id = ?", 'ddi', 
-							[$data['lat'], $data['lng'], $this->user['id']]);
+							[$data['lat'], $data['lng'], $user['id']]);
 
-			$this->user['lat'] = $data['lat'];
-			$this->user['lng'] = $data['lng'];
-			Page::setSession('user', $this->user);			
+			$user['lat'] = $data['lat'];
+			$user['lng'] = $data['lng'];
+			Page::setSession('user', $user);			
 
 			if (isset($data['requireDrivers']))
 				$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng']);
 
 		}
-		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$this->user['id']}");
+		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");
 		return $result;
 	}
 
@@ -79,13 +79,18 @@ class Ajax extends Page {
 	}
 
 	protected function offerToPerform($data) {
+		GLOBAL $user;
+
 		$result = false;
 		$error = 'unknown error';
-		if ($order = (new OrderModel())->getItem($data['id'])) {
+		$orderModel = new OrderModel();
+		if ($order = $orderModel->getItem($data['id'])) {
 
-			if ($driver = (new DriverModel())->getItem($this->getUser()['id']))
-				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], 'Offer to perform the order', $driver['id']);
-			else $error = 'Driver not activated';
+			if ($driver = (new DriverModel())->getItem($user['id'])) {
+
+				if ($orderModel->SetState($data['id'], 'accepted', $driver['id']))
+					$result = (new NotificationModel())->AddNotify($order['id'], 'acceptedOrder', $order['user_id'], 'The order has been accepted', $driver['id']);
+			} else $error = 'Driver not activated';
 		}
 		return ['result'=> $result ? 'ok' : $error];
 	}
@@ -101,6 +106,7 @@ class Ajax extends Page {
 	}
 
 	protected function AddOrder($data) {
+		GLOBAL $user;
 
 		// Параметры: 
 		// path, startPlaceId, finishPlaceId, user_id, pickUpTime
@@ -114,7 +120,7 @@ class Ajax extends Page {
 
 		if ($data['route_id'] && 
 			($order_id = (new OrderModel())->AddOrder($data))) {
-			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $this->user['id'], Lang("OrderToProcess"));
+			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $user['id'], Lang("OrderToProcess"));
 			$this->NotifyOrderToDrivers($order_id);
 		}
 

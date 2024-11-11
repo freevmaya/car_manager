@@ -14,7 +14,7 @@
 		$orders = (new OrderModel())->getItems(Page::$request['id']);
 	else*/ 
 		
-	$orders = (new OrderModel())->getItems(['state'=>'wait']);
+	$orders = (new OrderModel())->getItems(['state'=>['wait', 'accepted']]);
 
 	if (count($orders) > 0) 
 		html::AddJsCode("currentOrder = ".json_encode($orders[0]).';');

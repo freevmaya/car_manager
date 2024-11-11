@@ -4,6 +4,7 @@ class html {
 	public static $scripts = [];
 	public static $styles = [];
 	public static $jscode = [];
+	public static $jsdata = [];
 	protected static $field_id = 0;
 	protected static $autoKey = 0;
 
@@ -92,6 +93,10 @@ class html {
 			html::$jscode[$key] = $code;
 	}
 
+	public static function AddJsData($data, $section) {
+		html::$jsdata[$section] = $data;
+	}
+
 	public static function AddScriptFile($fileName) {
 		if (!in_array($fileName, html::$scripts))
 			html::$scripts[] = $fileName;
@@ -118,6 +123,7 @@ class html {
 	}
 
 	public static function RenderField($options, $value, $nameModel=null) {
+		GLOBAL $user;
 		$fileName = TEMPLATES_PATH.'/fields/'.$options['type'].'.php';
 
 		if (file_exists($fileName)) {
@@ -130,6 +136,71 @@ class html {
 				html::addValidator($options['validator'], $options, $nameModel);
 		} else $result = "File {$fileName} not found";
 		return $result;
+	}
+
+	public static function RenderJSData() {
+		$list = [];
+		foreach (html::$jsdata as $key=>$data) {
+			if (is_array($data))
+				$data = json_encode($data);
+
+			$list[] = "{$key}: {$data}";
+		}
+
+		return count($list) > 0 ? "var jsdata = {\n".implode(",\n", $list)."\n}\n" : '';
+	}
+
+	public static function RenderJSCode() {
+		$result = '';
+		if (count(html::$jscode) > 0) {
+	        $result .= "$(window).ready(() => {\n";
+	        foreach (html::$jscode as $key=>$code) {
+	            $result .= "//----JS-{$key}---\n";
+	            $result .= $code."\n";
+	        }
+	        $result .= "});\n";
+	    }
+	    return $result;
+	}
+
+	public static function RenderJSFiles() {
+		GLOBAL $anti_cache;
+		$result = '';
+		html::$scripts = array_unique(html::$scripts);
+		foreach (html::$scripts as $script) {
+		    $scriptUrl = strpos($script, '//') > -1 ? $script : (SCRIPTURL.'/'.$script.$anti_cache);
+			$result .= "<script src=\"{$scriptUrl}\"></script>\n";
+		}
+		return $result;
+	}
+
+	public static function RenderStyleFiles($value='')
+	{
+		GLOBAL $anti_cache;
+		$result = '';
+		html::$styles = array_unique(html::$styles);
+		foreach (html::$styles as $style)
+	    	$result .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$style}{$anti_cache}\"></script>\n";
+		return $result;
+	}
+
+	public static function toData($values, $fields=null) {
+		if (!$fields) 
+			$fields = array_keys($values);
+
+		$result = [];
+		foreach ($fields as $key){
+
+			if (isset($values[$key])) {
+				$value = $values[$key];
+				
+				if (is_array($value))
+					$value = json_encode($value);
+
+				$result[] = "data-{$key}='{$value}'";
+			}
+		}
+		return implode(" ", $result);
 	}
 }
 

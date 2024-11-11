@@ -65,6 +65,11 @@ select.time {
     width: 6em;
 }
 
+.date:read-only {
+    width: auto;
+    text-align: left;
+}
+
 .ui-widget-content {
     border-radius: 1em !important;
     padding: 1em !important;

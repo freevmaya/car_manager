@@ -1,8 +1,9 @@
 <?
 
+$user;
+
 class Page {
 	protected $title = "";
-	protected $user;
 	protected $model;
 	protected $dataId;
 
@@ -57,7 +58,7 @@ class Page {
 	}
 
 	public function __construct() {
-		GLOBAL $lang, $dbp, $_GET;
+		GLOBAL $lang, $dbp, $_GET, $user;
 
 		Page::$current = $this;
 		$dbp = new mySQLProvider('localhost', _dbname_default, _dbuser, _dbpassword);
@@ -67,19 +68,18 @@ class Page {
 		if (isset($_GET['username']))
 			$this->setUser($_GET);
 		else if (Page::getSession('user'))
-			$this->user = Page::getSession('user');
+			$user = Page::getSession('user');
 		else if (DEVUSER) 
 			$this->setUser(json_decode(DEVUSER, true));
 
-		if ($this->user) {
-			$language = $this->user['language_code'];
+		if ($user) {
+			$language = $user['language_code'];
 		} else $language = 'en';
 		
 		include_once(BASEDIR.'/languages/'.$language.'.php');
 
-		if ($this->user) {
-
-			$this->dataId = $this->user['id'];
+		if ($user) {
+			$this->dataId = $user['id'];
 			$this->model = $this->initModel();
 
 			if ($this->model && $this->isReciveData()) {
@@ -99,9 +99,10 @@ class Page {
 	}
 
 	public function asDriver() {
+		GLOBAL $user;
 		
 		if ($this->asDriver == -1) {
-			$driverOnTheLine = (new DriverModel())->getItem($this->user['id']);
+			$driverOnTheLine = (new DriverModel())->getItem($user['id']);
 			if ($driverOnTheLine && ($driverOnTheLine['active'] > 0))
 				$this->asDriver = 1;
 			else $this->asDriver = 0;
@@ -111,9 +112,10 @@ class Page {
 	}
 
 	public function haveActiveOrder() {
+		GLOBAL $user;
 
 		if ($this->haveActiveOrder == -1) {
-			if ((new OrderModel())->haveActiveOrder($this->user['id']))
+			if ((new OrderModel())->haveActiveOrder($user['id']))
 				$this->haveActiveOrder = 1;
 			else $this->haveActiveOrder = 0;
 		}
@@ -175,22 +177,23 @@ class Page {
 	}
 
 	public function getUser() {
-		return $this->user;
+		GLOBAL $user;
+		return $user;
 	}
 
 	protected function setUser($data) {
-		GLOBAL $dbp;
+		GLOBAL $dbp, $user;
 		if (!Page::getSession('user'))
-			Page::setSession('user', $this->user = $data);
+			Page::setSession('user', $user = $data);
 
-		if ($set = isset($this->user['id'])) {
+		if ($set = isset($user['id'])) {
 			$userModel = new UserModel();
-			$item = $userModel->getItem($this->user['id']);
+			$item = $userModel->getItem($user['id']);
 			
 			if ($item) {
-				$dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$this->user['id']}");
+				$dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");
 			} else {
-				$query = "INSERT INTO users (`id`, `first_name`, `last_name`, `username`, `language_code`, `create_date`, `last_time`) VALUES ({$this->user['id']}, '{$this->user['first_name']}', '{$this->user['last_name']}', '{$this->user['username']}', '{$this->user['language_code']}', NOW(), NOW())";
+				$query = "INSERT INTO users (`id`, `first_name`, `last_name`, `username`, `language_code`, `create_date`, `last_time`) VALUES ({$user['id']}, '{$user['first_name']}', '{$user['last_name']}', '{$user['username']}', '{$user['language_code']}', NOW(), NOW())";
 				$dbp->query($query);
 			}
 		}
@@ -252,7 +255,7 @@ class Page {
 	}
 
 	protected function RenderContent($templateFile) {
-		GLOBAL $dbp;
+		GLOBAL $dbp, $user;
 		ob_start();
 		include($templateFile);
 		$result = ob_get_contents();

@@ -98,13 +98,13 @@ class DriverModel extends BaseModel {
 				'user_id'=> Page::$current->getUser()['id'],
 				'model' => 'CarModel',
 				'required' => true
-			],
+			]/*,
 			'route_types' => [
 				'label' => 'Route types',
 				'type' => 'route_types',
 				'model' => 'RouteTypesModel',
 				'user_id'=> Page::$current->getUser()['id']
-			]
+			]*/
 		];
 	}
 }

@@ -1,5 +1,5 @@
 <?
-GLOBAL $devUser;
+GLOBAL $devUser, $user;
 $anti_cache = '?_=22';
 ?>
 <!DOCTYPE html>
@@ -12,19 +12,8 @@ $anti_cache = '?_=22';
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/colors-<?=$this->colorSheme('01')?>.css<?=$anti_cache?>">
     <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>    
     <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>
-<?
-
-html::$scripts = array_unique(html::$scripts);
-foreach (html::$scripts as $script) {
-    $scriptUrl = strpos($script, '//') > -1 ? $script : (SCRIPTURL.'/'.$script.$anti_cache);
-?>
-    <script src="<?=$scriptUrl?>"></script>
-<?
-}
-html::$styles = array_unique(html::$styles);
-foreach (html::$styles as $style) {?>
-    <link rel="stylesheet" type="text/css" href="<?=$style.$anti_cache?>"></script>
-<?}?>
+    <?=html::RenderJSFiles();?>
+    <?=html::RenderStyleFiles();?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>
     <script type="text/javascript">
         var BASEURL = '<?=BASEURL?>';
@@ -46,29 +35,21 @@ foreach (html::$styles as $style) {?>
             <?}?>
         }
         
-    <?if ($this->user) {?>
+    <?if ($user) {?>
 
-        var user = <?=json_encode($this->user)?>;
+        var user = <?=json_encode($user)?>;
         <?=$this->asDriver() ? "user.asDriver = true;\n" : ''?>
         <?=$this->sendCoordinates() ? "user.sendCoordinates = true;\n" : ''?>
         $.getScript('<?=SCRIPTURL?>/language/' + user.language_code + '.js');
 
-    <?} else {?>
+    <?} else if (DEV) {?>
 
         var user = <?=$devUser?>;
         $.getScript('<?=SCRIPTURL?>/language/en.js');
 
     <?}?>
-    <?
-    if (count(html::$jscode) > 0) {
-        echo "$(window).ready(() => {\n";
-        foreach (html::$jscode as $key=>$code) {
-            echo "//----JS-{$key}---\n";
-            echo $code."\n";
-        }
-        echo "});\n";
-    }
-    ?>
+    <?=html::RenderJSData()?>
+    <?=html::RenderJSCode()?>
     </script>
 </head>
 <body>

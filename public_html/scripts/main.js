@@ -263,12 +263,12 @@ class DateTime {
             if (this.Format(Date.now()) == this.#datetime) {
                 this.view.text(toLang('Now')).click(this.onNowClick.bind(this));
             }
-            else InitInputs();
+            else this.InitInputs();
         } else console.log("Unknown val format");
     }
 
     onNowClick() {
-        if (!this.date) this.InitInputs();
+        if (!this.date && !this.#options.readonly) this.InitInputs();
     }
 
     InitInputs() {
@@ -276,27 +276,30 @@ class DateTime {
 
         this.view.empty();
         this.view.append(this.date = $('<input type="text" class="date">'));
-        this.view.append(this.time = $('<select class="time">'));
 
         this.date.attr('name', this.#options.name);
         this.date.data('control', this);
-        this.date.datepicker({ defaultDate: new Date(), dateFormat: this.DataFormat });
-        this.date.datepicker('setDate', dta[0]);
+        if (this.#options.readonly)
+            this.date.val(this.#datetime).prop('readonly', true);
+        else {
+            this.view.append(this.time = $('<select class="time">'));
+            this.date.datepicker({ defaultDate: new Date(), dateFormat: this.DataFormat });
+            this.date.datepicker('setDate', dta[0]);
 
+            let inTime = null;
 
-        let inTime = null;
+            if (dta.length > 1)
+                inTime = dta[1];
 
-        if (dta.length > 1)
-            inTime = dta[1];
-
-        let timeCount = 24 * 60 / this.#mstep;
-        for (let i=0; i < timeCount; i++) {
-            let time = this.MinuteToStr(i * this.#mstep);
-            let o = $('<option>').text(time);
-            this.time.append(o);
-            if (time == inTime)
-                o.attr('selected', 'true');
-        }
+            let timeCount = 24 * 60 / this.#mstep;
+            for (let i=0; i < timeCount; i++) {
+                let time = this.MinuteToStr(i * this.#mstep);
+                let o = $('<option>').text(time);
+                this.time.append(o);
+                if (time == inTime)
+                    o.attr('selected', 'true');
+            }
+        } 
     }
 
     Format(millisec) {
@@ -424,6 +427,36 @@ function closeView(view, duration='slow') {
             view.remove();
         }
     );
+}
+
+function getTemplate(parent, selector, defTag = '<div>') {
+    let result = parent ? parent.find(selector) : $(selector);
+    if (isEmpty(result))
+        result = $(defTag);
+    return result;
+}
+
+function renderList(nameData, toContainer = null) {
+
+    let list = jsdata[nameData];
+    let tmplList = getTemplate(null, '.templates .' + nameData).clone();
+    let itemSrc = getTemplate(tmplList, '.item');
+    let itemTmpl = itemSrc.clone();
+    itemSrc.remove();
+
+    if (isEmpty(list))
+        console.log("Not found template or data " + nameData);
+    else {
+        for (let i in list) {
+            tmplList.append(templateClone(itemTmpl, list[i]));
+        }
+
+        if (toContainer) {
+            toContainer.empty();
+            toContainer.append(tmplList);
+        }
+    }
+    return tmplList;
 }
 
 function templateClone(tmpl, data) {

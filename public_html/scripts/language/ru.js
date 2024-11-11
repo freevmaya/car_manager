@@ -10,6 +10,7 @@ lang = {
 	'Distance': 'Расстояние (м.)',
 	'Ok': 'Да',
 	'Cancel': 'Отмена',
+	'Close': 'Закрыть',
 	'Driver': 'Водитель',
 	'From': 'От',
 	'Pick me up': 'Забрать меня',
@@ -41,10 +42,14 @@ lang = {
 	'OrderToProcess': 'Заказ принят',
 	'Order сreated': 'Заказ создан',
 	'Active': 'Активен',
+	'Finish': 'Завершить',
+	'Current order': 'Текущий заказ',
 	'New order trip': 'Новый заказ поездки',
 	'Departure point': 'Пункт отправления',
 	'Point of arrival': 'Пункт прибытия',
 	'Departure time': 'Время отправления',
 	'On map': 'На карте',
-	'The value cannot be empty.': 'Значение не может быть пустым.'
+	'The value cannot be empty.': 'Значение не может быть пустым.',
+	'The order has been accepted': 'Заказ принят',
+	'Are you sure you want to end the trip?': 'Вы уверены, что хотите завершить поездку?'
 };

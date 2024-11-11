@@ -1,7 +1,7 @@
 class MarkerManager {
 
-	constructor(map) {
-		this.map = map;
+	constructor(mapControl) {
+		this.ctrl = mapControl;
 		this.markers = {
 			cars: [],
 			users: []
@@ -24,7 +24,7 @@ class MarkerManager {
     	let idx = this.IndexOfByOrder(order_id);
     	if (idx > -1) {
     		let market = this.markers.users[idx];
-    		v_map.map.setCenter(market.position);
+    		this.ctrl.map.setCenter(market.position);
     		let e = $(market.content);
     		if (e.hasClass('animShake')) {
     			e.removeClass('animShake');
@@ -75,11 +75,15 @@ class MarkerManager {
 
     AddOrder(order, anim) {
 
-		order.startPlace = JSON.parse(order.startPlace);
-		order.finishPlace = JSON.parse(order.finishPlace);
-		let latLng = { lat: order.startPlace.lat, lng: order.startPlace.lng };
+		order.start = JSON.parse(order.start);
+		order.finish = JSON.parse(order.finish);
 
-    	this.#createFromOrder(latLng, order, anim);
+		if (order.start.lat)
+	    	this.#createFromOrder(toLatLng(order.start), order, anim);
+	    else this.ctrl.getPlaceDetails(order.start.placeId, ['location']).then((place)=>{
+	    	order.start = Extend(order.start, place.location, ['lat', 'lng']);
+			this.#createFromOrder(place.location, order, anim);
+	    });
     }
 
     AddOrders(orders) {
@@ -99,8 +103,8 @@ class MarkerManager {
 		priceTag.className = className;
 		if (addClass) priceTag.addClass(addClass);
 
-		let marker = new v_map.Classes['AdvancedMarkerElement']({
-		    map: this.map,
+		let marker = new this.ctrl.Classes['AdvancedMarkerElement']({
+		    map: this.ctrl.map,
 		    position: position,
 		    title: title,
 		    content: priceTag,
@@ -139,10 +143,10 @@ class MarkerManager {
 			    travelMode: travelMode
 			};
 
-			v_map.DirectionsService.route(request, (function(result, status) {
+			this.ctrl.DirectionsService.route(request, (function(result, status) {
 				if (status == 'OK') {
 					if (this.selectPath) this.selectPath.setMap(null);
-					this.selectPath = DrawPath(this.map, result);
+					this.selectPath = DrawPath(this.ctrl.map, result);
 				}
 			}).bind(this));
 
@@ -187,7 +191,7 @@ class MarkerManager {
 		Ajax({
 			action: 'getOrders',
 			data: {
-				location: this.map.position
+				location: this.ctrl.map.position
 			}
 		}).then(((data)=>{
 			let item;
@@ -274,7 +278,7 @@ class VMap {
 
 	get MarkerManager() {
 		if (!this.#markerManager)
-			this.#markerManager = new MarkerManager(this.#map);
+			this.#markerManager = new MarkerManager(this);
 		return this.#markerManager; 
 	}
 
@@ -354,14 +358,14 @@ class VMap {
 	    }
 	}
 
-	async getPlaceDetails(placeId) {
+	async getPlaceDetails(placeId, fields = ["location", "displayName", "formattedAddress"]) {
 
 	    const place = new this.Classes["Place"]({
 	        id: placeId,
 	        requestedLanguage: user.language_code, // optional
 	    });
 
-	    await place.fetchFields({ fields: ["location", "displayName", "formattedAddress"] });
+	    await place.fetchFields({ fields: fields });
 	    return place;
 	}
 

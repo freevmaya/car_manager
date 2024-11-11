@@ -442,7 +442,7 @@ function setValues(elem, attibutes) {
 
     if ($.type(attibutes) == 'object') {
         for (let i in attibutes)
-            if ($.type(attibutes[i]) == 'function')
+            if (isFunc(attibutes[i]))
                 elem.click(attibutes[i]);
             else elem.prop(i, attibutes[i]);
     }
