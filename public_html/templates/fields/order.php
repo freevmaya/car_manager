@@ -31,9 +31,9 @@
 	    	</div>
 			<div class="param"><span><?=lang('Distance')?></span><span><?=roundv($value['meters'] / 1000, 1).lang('km.')?></span></div>
     	</div>
-    	<?if ($value['driverName']) {?>
 		<div class="block">
 			<h3><?=lang('Driver/auto')?></h3>
+    		<?if ($value['driverName']) {?>
 			<div class="name"><?=$value['driverName']?></div>
 			<div class="param"><span><?=lang('Number')?></span><span><?=$value['number']?></span></div>
 			<div class="param"><span><?=lang('Comfort')?></span><span><?=$value['comfort']?></span></div>
@@ -42,7 +42,9 @@
 			<div class="param"><span><?=lang('Car color')?></span><span><?=$value['car_colorName']?></span></div>
 			<div class="param"><div class="item-image" style="background-image: url(<?=BASEURL?>/css/images/<?=$value['car_body']?>.png)" data-color="<?=$value['car_color']?>">
 			</div></div>
+			<?} else {?>
+				<div class="param wait"><span></span></div>
+			<?}?>
 		</div>
-		<?}?>
 	</div>
 </div>

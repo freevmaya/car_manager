@@ -56,19 +56,18 @@ class DriverModel extends BaseModel {
 
 		$drivers = [];
 		if ($lat) {
-			$query = "SELECT d.id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, c.comfort, c.seating ".
+			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, c.comfort, c.seating, c.comfort, cb.symbol AS car_boby, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat ".
 
-			"FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id INNER JOIN car c ON d.car_id = c.id ".
+			"FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id INNER JOIN car c ON d.car_id = c.id INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
 
-			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.order_id IS NULL";
+			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval}";
 
-			//trace($query);
-			$drivers = $dbp->asArray($query);
+			trace($query);
+			$list = $dbp->asArray($query);
 
-			/*
 			foreach ($list as $driver)
-				if ($this->PointInArea($driver, $lat, $lng))
-					$drivers[] = $driver;*/
+				if ($this->PointInArea($driver, $lat, $lng) && ($driver['available_seat'] > 0))
+					$drivers[] = $driver;
 		}
 
 		return $drivers;
