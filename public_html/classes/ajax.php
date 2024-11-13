@@ -47,14 +47,18 @@ class Ajax extends Page {
 
 		$result = [];
 		$notificationList = $dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$user['id']}");
+		$count = count($notificationList);
 
-		for ($i=0;$i<count($notificationList);$i++) {
-			$ct = $notificationList[$i]['content_type'];
-			if (($ct == 'orderCreated') || ($ct == 'orderCancelled'))
-				$notificationList[$i]['order'] = $this->getOrder($notificationList[$i]['content_id']);
-		}
-		if (count($notificationList))
+		if ($count > 0) {
+			$orderModel = new OrderModel();
+			for ($i=0;$i<$count;$i++) {
+				$ct = $notificationList[$i]['content_type'];
+				if (($ct == 'orderCreated') || ($ct == 'orderCancelled'))
+					$notificationList[$i]['content'] = $orderModel->getItem($notificationList[$i]['content_id']);
+			}
+				
 			$result['notificationList'] = $notificationList;
+		}
 
 		if (isset($data['lat'])) {
 			$dbp->bquery("UPDATE users SET last_time = NOW(), lat = ?, lng = ? WHERE id = ?", 'ddi', 
@@ -87,9 +91,7 @@ class Ajax extends Page {
 		if ($order = $orderModel->getItem($data['id'])) {
 
 			if ($driver = (new DriverModel())->getItem($user['id'])) {
-
-				if ($orderModel->SetState($data['id'], 'accepted', $driver['id']))
-					$result = (new NotificationModel())->AddNotify($order['id'], 'acceptedOrder', $order['user_id'], 'The order has been accepted', $driver['id']);
+				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], null, $driver['id']);
 			} else $error = 'Driver not activated';
 		}
 		return ['result'=> $result ? 'ok' : $error];
@@ -120,8 +122,14 @@ class Ajax extends Page {
 
 		if ($data['route_id'] && 
 			($order_id = (new OrderModel())->AddOrder($data))) {
-			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $user['id'], Lang("OrderToProcess"));
-			$this->NotifyOrderToDrivers($order_id);
+
+			$drivers = (new DriverModel())->SuitableDrivers();
+			$countDriver = count($drivers);
+
+			if ($countDriver > 0)
+				$this->NotifyOrderToDrivers($drivers, $order_id);
+
+			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $user['id'], Lang("OrderToProcess")." ({$countDriver})");
 		}
 
 		return ["result"=>$order_id];
@@ -133,20 +141,18 @@ class Ajax extends Page {
 	}
 
 	protected function SetState($data) {
-		return ["result"=>(new OrderModel())->SetState($data['id'], $data['state'])];
+		$result = (new OrderModel())->SetState($data['id'], $data['state']);
+		if ($result && $data['state'] == 'cancel')
+			$result = $result && $this->NotifyOrderToDrivers((new NotificationModel())->NotifiedDrivers($data['id'], 'orderCreated'), $data['id'], 'orderCancelled', 'Order cancelled');
+
+		return ["result"=>$result ? 'ok' : false];
 	}
 
-	protected function NotifyOrderToDrivers($order_id, $content_type='orderCreated', $text="Order сreated") {
-		
-		$drivers = (new DriverModel())->SuitableDrivers();
+	protected function NotifyOrderToDrivers($drivers, $content_id, $content_type='orderCreated', $text="Order сreated") {
 		foreach ($drivers as $driver)
-			(new NotificationModel())->AddNotify($order_id, $content_type, $driver['user_id'], Lang($text));
-	}
+			(new NotificationModel())->AddNotify($content_id, $content_type, $driver['user_id'], Lang($text));
 
-	protected function getOrder($order_id) {
-		GLOBAL $dbp;
-		return $dbp->line("SELECT o.*, u.first_name, u.last_name, u.username ".
-			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.id={$order_id}");
+		return true;
 	}
 
 	protected function getOrders($data) {

@@ -1,6 +1,13 @@
 <?
 GLOBAL $devUser, $user;
 $anti_cache = '?_=23';
+
+$options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
+
+html::AddJsData(json_encode(
+    BaseModel::FullItems((new NotificationModel())->getItems($options), ['content_id'=>new OrderModel()])
+), 'notificationList');
+
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -57,8 +64,9 @@ $anti_cache = '?_=23';
         <?=$content?>
     </div>
 
-    <?
+    <?=html::RenderTemplates()?>
 
+    <?
     GLOBAL $isDefServer;
     if (!$isDefServer) {?>
     <!-- Eruda is console for mobile browsers-->

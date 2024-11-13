@@ -1,24 +1,14 @@
 <?
-	html::AddScriptFile('select-place.js');
-	html::AddScriptFile('color.js');
-
-
-	html::AddJsCode('
-		$(".param .item-image").each((i, elem)=>{
-			elem = $(elem);
-
-			const color = new Color(hexToRgb(elem.data("color")));
-		    const solver = new Solver(color);
-		    const result = solver.solve();
-		    elem.attr("style", elem.attr("style") + ";" + result.filter);
-		});
-	', 'CarColorInit');
 
 	$fieldIdx = html::fieldIdx();
 
+	html::AddScriptFile('select-place.js');
+	html::AddScriptFile('color.js');
+	html::AddScriptFile('order.js');
+
     $data_block = html::toData($value, ['start', 'finish', 'meters', 'order_id', 'pickUpTime']);
 ?>
-<div class="field field-<?=$fieldIdx?>"<?=$data_block?>>
+<div class="field order field-<?=$fieldIdx?>"<?=$data_block?>>
 	<div class="data">
 		<div class="block">
 			<h3><?=lang('Route')?></h3>
@@ -43,8 +33,14 @@
 			<div class="param"><div class="item-image" style="background-image: url(<?=BASEURL?>/css/images/<?=$value['car_body']?>.png)" data-color="<?=$value['car_color']?>">
 			</div></div>
 			<?} else {?>
-				<div class="param wait"><span></span></div>
+				<div class="name wait">
+					<div><?=lang('Please wait, we are selecting a driver')?></div>
+				</div>
+				<?=html::RenderField(['type'=>'loader']);?>
 			<?}?>
+			<div>
+				<button class="button center"><?=lang("Cancel")?></button>
+			</div>
 		</div>
 	</div>
 </div>

@@ -42,14 +42,23 @@ class NotificationModel extends BaseModel {
 		return $dbp->asArray($query);
 	}
 
+	public function NotifiedDrivers($content_id, $content_type) {
+		GLOBAL $dbp;
+
+		$query = "SELECT user_id FROM {$this->getTable()} WHERE `content_id`={$content_id} AND content_type='{$content_type}'";
+
+		return $dbp->asArray($query);
+
+	}
+
 	public function AddNotify($content_id, $content_type, $user_id, $text='', $offered_driver_id=null) {
 		GLOBAL $dbp;
 		$result = false;
 		if ($offered_driver_id) {
-			$query = "INSERT INTO notifications (`content_id`, `content_type`, `user_id`, `text`, `offered_driver_id`) VALUES (?, ?, ?, ?, ?)";
+			$query = "INSERT INTO {$this->getTable()} (`content_id`, `content_type`, `user_id`, `text`, `offered_driver_id`) VALUES (?, ?, ?, ?, ?)";
 			$result = $dbp->bquery($query, 'isisi', [$content_id, $content_type, $user_id, $text, $offered_driver_id]);
 		} else {
-			$query = "INSERT INTO notifications (`content_id`, `content_type`, `user_id`, `text`) VALUES (?, ?, ?, ?)";
+			$query = "INSERT INTO {$this->getTable()} (`content_id`, `content_type`, `user_id`, `text`) VALUES (?, ?, ?, ?)";
 			$result = $dbp->bquery($query, 'isis', [$content_id, $content_type, $user_id, $text]);
 		}
 		return $result;

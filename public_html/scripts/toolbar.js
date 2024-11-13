@@ -4,7 +4,7 @@ class ToolbarUser {
 	#notifyList;
 	#view;
 	#listView;
-	constructor(toolbarElem, notifyList) {
+	constructor(toolbarElem) {
 		this.#view = toolbarElem;
 		this.#wicon = this.#view.find('.warning');
 		this.#notifyList = [];
@@ -14,7 +14,8 @@ class ToolbarUser {
 		this.#listenerId = transport.AddListener('notificationList', ((e)=>{
 			this.appendReceiveNotifyList(e.value);
 		}).bind(this));
-		this.appendReceiveNotifyList(notifyList);
+
+		this.appendReceiveNotifyList(jsdata.notificationList);
 	}
 
 	onUserClick() {
@@ -28,11 +29,12 @@ class ToolbarUser {
 	}
 
 	appendReceiveNotifyList(data) {
-		if (data) {
-			this.#notifyList = this.#notifyList.concat(data);
+		if (!isEmpty(data)) {
 			for (let i in data) {
-	            if (data[i].state == 'active')
+	            if (!isEmpty(data[i].text)) {
 					transport.SendStatusNotify(data[i], 'receive');
+					this.#notifyList.push(data[i]);
+	            }
 	        }
 
 	        this.showWarning(this.isNotify());
@@ -49,11 +51,15 @@ class ToolbarUser {
 		for (let i in this.#notifyList) {
 			let item = this.#notifyList[i];
 			let time = $.format.date(Date.parse(item.time), dateTinyFormat);
-			let option = $('<div class="option" data-id="' + item.id + '">');
-			option.append($('<div class="header ' + item.content_type + '">').html('<span>' + time + '</span>' + toLang(item.text)));
-			if (item.order) {
-				option.append($('<div class="order">').text(getOrderInfo(item.order)));
-				option.data('order_id', item.order.id);
+
+			let option = $('<div class="option ' + item.content_type + '" data-id="' + item.id + '">');
+			option.append($('<div class="header">')
+				.html('<span>' + time + '</span>' + toLang(item.text)));
+
+			if (item.content) {
+				let tmpl = $('.templates .' + item.content_type);
+				if (!isEmpty(tmpl))
+					option.append(templateClone(tmpl, item));
 			}
 			content.append(option);
 		}
@@ -65,11 +71,11 @@ class ToolbarUser {
 						content: content}, View, (()=>{
 							this.#listView = null;
 						}).bind(this));
-		this.notifyOptionList().click(this.onClickItem.bind(this));
+		this.notifyOptionHeaderList().click(this.onClickItem.bind(this));
 	}
 
-	notifyOptionList() {
-		return this.#listView.contentElement.find('.option');
+	notifyOptionHeaderList() {
+		return this.#listView.contentElement.find('.option .header');
 	}
 
 	removeNotify(id) {
@@ -82,7 +88,7 @@ class ToolbarUser {
 	}
 
 	onClickItem(e) {
-		let option = $(e.currentTarget);
+		let option = $(e.currentTarget).closest('.option');
 		let nid = option.data('id');
 		transport.SendStatusNotify({id: nid}, 'read');
 
@@ -90,7 +96,7 @@ class ToolbarUser {
 		option.remove();
 		this.removeNotify(nid);
 
-		if ((this.notifyOptionList().length == 0) || (order_id)) 
+		if ((this.notifyOptionHeaderList().length == 0) || (order_id)) 
 			this.#listView.Close();
 
 		if (order_id)

@@ -15,6 +15,18 @@
     html::AddStyleFile('css/cars.css');
 
     $carbodies = $dbp->asArray("SELECT *, 'Rajesh' AS `driver`, 'ER 131321 DF' AS `number` FROM `car_bodies`");
+
+    html::AddTemplate('<div class="notify car">
+        <div class="car-image-box chess light">
+            <img class="car-image" src="css/images/{symbol}.png"></img>
+            <span>{symbol}</span>
+        </div>
+        <button>{Go}</button>
+        <div class="block">
+            <div>Driver: {driver}</div>
+            <div>Number: {number}</div>
+        </div>
+    </div>');
 ?>
 <style type="text/css">
     .content > div {
@@ -39,19 +51,6 @@
         }
     });
 </script>
-<div class="templates">
-    <div class="notify car">
-        <div class="car-image-box chess light">
-            <img class="car-image" src="css/images/{symbol}.png"></img>
-            <span>{symbol}</span>
-        </div>
-        <button>{Go}</button>
-        <div class="block">
-            <div>Driver: {driver}</div>
-            <div>Number: {number}</div>
-        </div>
-    </div>
-</div>
 
 <div id="windows">
   <div class="view shadow radiusTop" style="bottom: 0px;">

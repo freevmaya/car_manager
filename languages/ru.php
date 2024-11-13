@@ -30,10 +30,12 @@ $lang = [
 	'My current trips'=>'Мои текущие поездки',
 	'My current trip'=>'Моя текущая поездка',
 	'Color'=>'Цвет',
+	'Cancel'=>'Отмена',
 	'Order cancelled'=>'Заказ отменен',
 	'Route types'=>'Типы маршрутов',
 	'BeginPageDescription'=> 'Вы можете начать поездку, используя шаблон прошлых поездок',
 	'Trip'=>'Поездка',
-	'Car color'=>'Цвет авто'
+	'Car color'=>'Цвет авто',
+	'Please wait, we are selecting a driver'=>'Ожидайте, мы подбираем водителя'
 ];
 ?>

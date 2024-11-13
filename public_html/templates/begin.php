@@ -30,6 +30,20 @@ if ($this->asDriver()) {
 		
 		$lastTripCount = count($lastTrips);
 	}
+
+	html::AddTemplate('
+	<div class="field" id="{name}" data-place=\'{place}\'>
+	    <label for="{name}" class="title">{label}</label>
+	    <div class="container">
+	        <div class="selectView" data-callback-index="{name}">
+	            <div class="block">
+	                <div class="value">{placeName}</div>
+	                <a class="button popup-button"></a>
+	            </div>
+	        </div>
+	    </div>
+        '.html::RenderField(['type'=>'map', 'id'=>"map-{field_number}"], 'map').'
+	</div>', 'trip-item');
 ?>
 <div class="pageContent trips">
 	<?if ($currentTripCount == 0) {?>
@@ -68,22 +82,6 @@ if ($this->asDriver()) {
 			</div>
 			<?}?>
 		</div>
-	</div>
-</div>
-
-
-<div class="templates">
-	<div class="field" id="{name}" data-place='{place}'>
-	    <label for="{name}" class="title">{label}</label>
-	    <div class="container">
-	        <div class="selectView" data-callback-index="{name}">
-	            <div class="block">
-	                <div class="value">{placeName}</div>
-	                <a class="button popup-button"></a>
-	            </div>
-	        </div>
-	    </div>
-        <?=html::RenderField(['type'=>'map', 'id'=>"map-{field_number}"], 'map')?>
 	</div>
 </div>
 <?}?>

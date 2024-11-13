@@ -8,10 +8,13 @@ class OrderModel extends BaseModel {
 	public function getItem($options) {
 		GLOBAL $dbp;
 		if (is_array($options)) {
-			$where = implode(" AND ", BaseModel::AddWhere([], $options, 'state'));
-		} else $where = "id = {$options}";
+			$where = implode(" AND ", BaseModel::AddWhere([], $options, 'o.state'));
+		} else $where = "o.id = {$options}";
 		
-		$query = "SELECT * FROM {$this->getTable()} WHERE {$where}";
+		$query = "SELECT o.*, u.username, u.first_name, u.last_name, r.meters, r.start, r.finish ".
+			"FROM {$this->getTable()} o LEFT JOIN users u ON u.id = o.user_id ".
+			"LEFT JOIN route r ON o.route_id=r.id ".
+			"WHERE {$where}";
 		return $where ? $dbp->line($query) : null;
 	}
 

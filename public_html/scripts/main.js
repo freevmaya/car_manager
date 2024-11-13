@@ -169,6 +169,9 @@ class AjaxTransport extends EventProvider {
     constructor(periodTime) {
         super();
         this.intervalID = setInterval(this.update.bind(this), periodTime);
+
+        if (!isEmpty(jsdata) && !isEmpty(jsdata.notificationList))
+            this.onRecive(jsdata.notificationList);
     }
 
     update() {
@@ -460,10 +463,16 @@ function renderList(nameData, toContainer = null) {
 }
 
 function templateClone(tmpl, data) {
-    let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, group) => {
-        let v = toLang(!isEmpty(data[group]) ? data[group] : '');
-        if (typeof(v) == 'object')
-            v = JSON.stringify(v).replaceAll('"', '&quot;');
+    let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, field) => {
+        let v;
+        let fg = field.match(/([\w\s\d.\-_]+)\([\w\s\d.\-_]*\)/);
+        if (!isEmpty(fg)) {
+            eval('v = ' + field);
+        } else {
+            v = toLang(!isEmpty(data[field]) ? data[field] : '');
+            if (typeof(v) == 'object')
+                v = JSON.stringify(v).replaceAll('"', '&quot;');
+        }
         return v;
     });
     return $(html);
@@ -573,6 +582,15 @@ function CalcPathLength(routeData, routeIndex = 0, outList=null) {
 
 function HideDriverMenu() {
     $('#DriverMenu').remove();
+}
+
+function getOrderInfo(order) {
+    let start = isStr(order.start) ? JSON.parse(order.start) : order.start;
+    let finish = isStr(order.finish) ? JSON.parse(order.finish) : order.finish;
+    return PlaceName(start) + " > " + PlaceName(finish) + '. ' +
+            toLang("User") + ': ' + (order.username ? order.username : (order.first_name + " " + order.last_name)) + ". " + 
+            toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat) + ". " + 
+            toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
 }
 
 function ShowDriverMenu() {

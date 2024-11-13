@@ -5,6 +5,7 @@ class html {
 	public static $styles = [];
 	public static $jscode = [];
 	public static $jsdata = [];
+	public static $templates = [];
 	protected static $field_id = 0;
 	protected static $autoKey = 0;
 
@@ -84,6 +85,11 @@ class html {
 		return html::$field_id;
 	}
 
+	public static function AddTemplate($value, $key)
+	{
+		html::$templates[$key] = $value;
+	}
+
 	public static function AddJsCode($code, $key=null) {
 		if (!$key) {
 			html::$jscode[html::$autoKey] = $code;
@@ -122,7 +128,7 @@ class html {
 		} else html::AddJsCode('validatorList.add(new '.$validator."Validator('{$options['name']}', '{$nameModel}'));\n");
 	}
 
-	public static function RenderField($options, $value, $nameModel=null) {
+	public static function RenderField($options, $value=null, $nameModel=null) {
 		GLOBAL $user;
 		$fileName = TEMPLATES_PATH.'/fields/'.$options['type'].'.php';
 
@@ -147,7 +153,15 @@ class html {
 			$list[] = "{$key}: {$data}";
 		}
 
-		return count($list) > 0 ? "var jsdata = {\n".implode(",\n", $list)."\n}\n" : '';
+		return "var jsdata = {\n".implode(",\n", $list)."\n}\n";
+	}
+
+	public static function RenderTemplates() {
+		$list = [];
+		foreach (html::$templates as $key=>$template)
+			$list[] = $template;
+
+		return count($list) > 0 ? '<div class="templates">'.implode("\n", $list)."\n</div>" : '';
 	}
 
 	public static function RenderJSCode() {

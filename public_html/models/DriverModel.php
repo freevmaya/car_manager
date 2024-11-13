@@ -46,6 +46,15 @@ class DriverModel extends BaseModel {
 		return null;
 	}
 
+	public function OrderDrivers($order_id) {
+		GLOBAL $dbp;
+
+		$query = "SELECT d.* FROM driverOnTheLine d INNER JOIN orders o ON o.driver_id=d.id WHERE o.id={$order_id}";
+
+		//trace($query);
+		return $dbp->asArray($query);
+	}
+
 	public function SuitableDrivers($lat = null, $lng = null) {
 		GLOBAL $dbp;
 		if (!$lat) {
@@ -61,13 +70,14 @@ class DriverModel extends BaseModel {
 			"FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id INNER JOIN car c ON d.car_id = c.id INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
 
 			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval}";
-
-			trace($query);
 			$list = $dbp->asArray($query);
 
 			foreach ($list as $driver)
 				if ($this->PointInArea($driver, $lat, $lng) && ($driver['available_seat'] > 0))
 					$drivers[] = $driver;
+
+			if (count($drivers) == 0)
+				trace($query);
 		}
 
 		return $drivers;

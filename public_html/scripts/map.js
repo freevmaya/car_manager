@@ -13,7 +13,7 @@ class MarkerManager {
         for (let i in list) {
         	let item = list[i];
         	if (item.content_type == "orderCreated") 
-        		this.AddOrder(item.order, true);
+        		this.AddOrder(item.content, true);
         	else if (item.content_type == "orderCancelled") {
         		this.RemoveOrder(item.content_id);
         	}
@@ -75,8 +75,8 @@ class MarkerManager {
 
     AddOrder(order, anim) {
 
-		order.start = JSON.parse(order.start);
-		order.finish = JSON.parse(order.finish);
+		order.start = isStr(order.start) ? JSON.parse(order.start) : order.start;
+		order.finish = isStr(order.finish) ? JSON.parse(order.finish) : order.finish;
 
 		if (order.start.lat)
 	    	this.#createFromOrder(toLatLng(order.start), order, anim);
@@ -216,12 +216,6 @@ class MarkerManager {
 		if (this.selectPath)
 			this.selectPath.setMap(null);
 	}
-}
-
-function getOrderInfo(order) {
-	return toLang("User") + ': ' + (order.username ? order.username : (order.first_name + " " + order.last_name)) + ". " + 
-			toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat) + ". " + 
-			toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
 }
 
 var v_map;

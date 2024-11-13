@@ -4,11 +4,9 @@
 	$notifyModel = new NotificationModel();
 	$driverModel = new DriverModel();
 
-	$options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
-
 	html::addStyleFile(BASEURL.'/css/toolbar.css');
 	html::AddScriptFile("toolbar.js");
-	html::AddJsCode("new ToolbarUser($('.toolbar .user'), ".json_encode($notifyModel->getItems($options)).");");
+	html::AddJsCode("new ToolbarUser($('.toolbar .user'));");
 
 	$menu = [
 		[
@@ -23,9 +21,28 @@
 			[ Page::link(['settings', 'user']), lang('User') ],
 			[ Page::link('driver'), lang('Driver') ]
 		]
-	]
+	];
 
+	html::addTemplate('<div class="orderCreated">
+		<div class="content" data-id="{id}">
+			{getOrderInfo(data.content)}
+		</div>
+		<div class="btn-block">
+			<button class="button" onclick="$(this).closest(\'.option\').remove()">'.lang('Accept').'</button>
+			<button class="button" onclick="$(this).closest(\'.option\').remove()">'.lang('To map').'</button>
+		</div>
+		</div>', 'orderCreated');
 
+	html::addTemplate('<div class="orderCancelled">
+			<div class="content" data-id="{id}">
+				{getOrderInfo(data.content)}
+			</div>
+		</div>', 'orderCancelled');
+
+	/*
+	html::AddJsCode('
+		templateClone($(".templates .orderCancelled"), {id: 123});
+	');*/
 ?>
 <div id="toolbarMenu">
 	<div class="toolbar top shadow">

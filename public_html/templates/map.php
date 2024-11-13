@@ -19,12 +19,10 @@
 	if (count($orders) > 0) 
 		html::AddJsCode("currentOrder = ".json_encode($orders[0]).';');
 
-?>
-<div class="templates">
-	<div class="car">
+	html::AddTemplate('<div class="car">
         <div class="car-image-box">
             <img class="car-image"></img>
             <span>{name}</span>
         </div>
-    </div>
-</div>
+    </div>');
+?>
