@@ -4,7 +4,7 @@
 
 	define('BASEDIR', dirname(__FILE__, 2));
 	define("BOTTOKEN", "7915848901:AAH-dqgbcU3olF_52Lwc1Uml_sKu9xu3M7s");
-	define("DEV", true);//$isDefServer);
+	define("DEV", $isDefServer);
 	define("INCLUDE_PATH", BASEDIR."/include/");
 	define('LOGPATH', BASEDIR.'/logs/');
 	define("MAINDOMAIN", $_SERVER['SERVER_NAME']);
