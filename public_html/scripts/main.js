@@ -529,13 +529,13 @@ var EARTHRADIUS = 6378.137; // Radius of earth in KM
 
 function Lepr(p1, p2, t) {
     return {
-        lat: p1.lat() * (1 - t) + lat2 * t,
-        lng: lng1 * (1 - t) + lng2 * t
+        lat: p1.lat() * (1 - t) + p2.lat() * t,
+        lng: p1.lng() * (1 - t) + p2.lng() * t
     }
 }
 
 function CalcAngleRad(p1, p2) {
-    return Math.atan2(lng2 - lng1, (lat2 - p1.lat()) * 1.5);
+    return Math.atan2(p2.lng() - p1.lng(), (p2.lat() - p1.lat()) * 1.5);
 }
 
 function CalcAngle(p1, p2) {

@@ -40,25 +40,22 @@ class DriverModel extends BaseModel {
 			$user_id = $data;
 		else $user_id = @$data['user_id'];
 
-		if ($user_id) {
-			$query = "SELECT CONCAT(u.username, ' ', u.phone) as driver, d.car_id, IF(`expiredTime` >= NOW(), d.active, 0) as active, d.id FROM users u ".
-					"LEFT JOIN {$this->getTable()} d ON d.user_id = u.id ".
-					"WHERE u.id = {$user_id}";
-
-			return $dbp->line($query);
-		} else if (isset($data['driver_id'])) {
-
-			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
+		$query = "SELECT d.id, d.active, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, d.car_id, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
 
 			"FROM {$this->getTable()} d ".
 				"INNER JOIN users u ON d.user_id = u.id ".
 				"INNER JOIN car c ON d.car_id = c.id ".
 				"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
-				"INNER JOIN car_color cc ON cc.id = c.color_id ".
+				"INNER JOIN car_color cc ON cc.id = c.color_id ";
 
-			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.id={$data['driver_id']}";
-			
-			//trace($query);
+		if ($user_id) {
+
+			$query .= "WHERE u.id = {$user_id}";
+			return $dbp->line($query);
+		} else if (isset($data['driver_id'])) {
+
+			$query .= "WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.id={$data['driver_id']}";
+
 			return $dbp->line($query);
 		}
 
@@ -116,17 +113,18 @@ class DriverModel extends BaseModel {
 				'label' => 'Active',
 				'type' => 'bool'
 			],
-			'driver' => [
-				'label'=> 'Driver',
-				'readonly' => true
-			],
 			'car_id' => [
 				'type' => 'car',
 				'label' => 'Car',
 				'user_id'=> Page::$current->getUser()['id'],
 				'model' => 'CarModel',
 				'required' => true
-			]/*,
+			]/*
+			,
+			'driver' => [
+				'label'=> 'Driver',
+				'readonly' => true
+			],
 			'route_types' => [
 				'label' => 'Route types',
 				'type' => 'route_types',

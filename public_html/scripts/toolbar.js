@@ -48,9 +48,10 @@ class ToolbarUser {
 	}
 
 	appendReceiveNotifyList(data) {
+
 		if (!isEmpty(data)) {
 			for (let i in data) {
-	            if (!isEmpty(data[i].text)) {
+	            if (!isEmpty(data[i].text) && (data[i].text[0] != '{')) {
 					transport.SendStatusNotify(data[i], 'receive');
 					this.#notifyList.push(data[i]);
 	            }

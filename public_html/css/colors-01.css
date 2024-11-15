@@ -111,6 +111,10 @@ body {
     background-image: url('images/position.png');
 }
 
+.user-current {
+    background-image: url('images/user-current.png');
+}
+
 .user-marker {
     background-image: url('images/user-marker.png');
 }

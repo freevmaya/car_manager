@@ -86,7 +86,7 @@ class Ajax extends Page {
 		if ($order = $orderModel->getItem($data['id'])) {
 
 			if ($driver = (new DriverModel())->getItem(['user_id'=>$user['id']])) {
-				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], null, $driver['id']);
+				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driver), $driver['id']);
 			} else $error = 'Driver not activated';
 		}
 		return ['result'=> $result ? 'ok' : $error];
@@ -140,9 +140,15 @@ class Ajax extends Page {
 	}
 
 	protected function SetState($data) {
-		$result = (new OrderModel())->SetState($data['id'], $data['state']);
-		if ($result && $data['state'] == 'cancel')
-			$result = $result && $this->NotifyOrderToDrivers((new NotificationModel())->NotifiedDrivers($data['id'], 'orderCreated'), $data['id'], 'orderCancelled', 'Order cancelled');
+		$result = (new OrderModel())->SetState($data['id'], $data['state'], @$data['driver_id']);
+		if ($result) {
+			if ($data['state'] == 'accepted') {
+				$driver = (new DriverModel())->getItem($data);
+				$result = $result && (new NotificationModel())->AddNotify($data['id'], 'acceptedOffer', $driver['user_id'], Lang('The offer has been accepted'));
+			}
+			else if ($data['state'] == 'cancel')
+				$result = $result && $this->NotifyOrderToDrivers((new NotificationModel())->NotifiedDrivers($data['id'], 'orderCreated'), $data['id'], 'orderCancelled', 'Order cancelled');
+		}
 
 		return ["result"=>$result ? 'ok' : false];
 	}

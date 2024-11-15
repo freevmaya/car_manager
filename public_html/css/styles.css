@@ -121,7 +121,7 @@ h1, h2 {
     margin-top: -64px;
 }
 
-.user-marker {
+.user-marker, .user-current {
     position: absolute;
     width: 4em;
     height: 4em;

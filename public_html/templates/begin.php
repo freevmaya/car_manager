@@ -5,7 +5,7 @@ if ($this->asDriver()) {
 	include_once(TEMPLATES_PATH.'/driver/begin.php');
 } else {
 
-	html::AddScriptFiles(['views.js', 'map.js', 'trips.js', 'validator.js',
+	html::AddScriptFiles(['views.js', 'driver-manager.js', 'map.js', 'trips.js', 'validator.js',
 						  'jquery-dateformat.min.js',
 						  'https://code.jquery.com/ui/1.14.0/jquery-ui.js']);
 	html::AddStyleFile('css/jquery-ui.css');

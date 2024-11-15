@@ -1,6 +1,6 @@
 <?
 GLOBAL $devUser, $user;
-$anti_cache = '?_=23';
+$anti_cache = '?_=24';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
 html::AddJsData(json_encode(
@@ -75,7 +75,7 @@ html::AddJsData(json_encode(
     <?if ($user) {?>
 
         var user = <?=json_encode($user)?>;
-        <?=$this->asDriver() ? "user.asDriver = true;\n" : ''?>
+        <?=$this->asDriver() ? "user.asDriver = {$this->asDriver()};\n" : ''?>
         <?=$this->sendCoordinates() ? "user.sendCoordinates = true;\n" : ''?>
         $.getScript('<?=SCRIPTURL?>/language/' + user.language_code + '.js');
 

@@ -103,7 +103,9 @@ class MarkerOrderManager extends MarkerManager {
     #createFromOrder(latLng, order, anim) {
         let m = this.CreateUserMarker(latLng, 'user-' + order.user_id, (()=>{
             this.#showInfoOrder(m, order);
-        }).bind(this), anim ? 'user-marker anim' : 'user-marker');
+        }).bind(this), 
+                (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 
+                (anim ? ' anim' : ''));
         m.order_id = order.id;
     }
 

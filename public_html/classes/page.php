@@ -104,11 +104,11 @@ class Page {
 		if ($this->asDriver == -1) {
 			$driverOnTheLine = (new DriverModel())->getItem(['user_id'=>$user['id']]);
 			if ($driverOnTheLine && ($driverOnTheLine['active'] > 0))
-				$this->asDriver = 1;
+				$this->asDriver = $driverOnTheLine['id'];
 			else $this->asDriver = 0;
 		}
 
-		return $this->asDriver > 0;
+		return $this->asDriver;
 	}
 
 	public function haveActiveOrder() {

@@ -10,13 +10,15 @@ class PlaceModel extends BaseModel {
 	}
 
 	public function InsertFromRoute($value) {
-		GLOBAL $dbp;
+		GLOBAL $dbp, $user;
 
 		if ($placeId = @$value['placeId']) {
 
-			if (!$dbp->line("SELECT id FROM {$this->getTable()} WHERE id = '{$placeId}'")) {
-				$dbp->bquery("INSERT INTO {$this->getTable()} (`id`, `aliase`, `description`) VALUES (?,?,?)",
-						'sss', [$placeId, $value['displayName'], $value['formattedAddress']]);
+			$lang = $user['language_code'];
+
+			if (!$dbp->line("SELECT id FROM {$this->getTable()} WHERE id = '{$placeId}' AND lang='{$lang}'")) {
+				$dbp->bquery("INSERT INTO {$this->getTable()} (`id`, `lang`, `aliase`, `description`) VALUES (?,?,?,?)",
+						'ssss', [$placeId, $lang, $value['displayName'], $value['formattedAddress']]);
 			}
 		}
 		return $placeId;
