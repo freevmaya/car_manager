@@ -96,8 +96,8 @@ class DriverModel extends BaseModel {
 				}
 			}
 
-			if (count($drivers) == 0)
-				trace($query);
+			//if (count($drivers) == 0)
+				//trace($query);
 		}
 
 		return $drivers;
