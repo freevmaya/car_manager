@@ -39,7 +39,7 @@ class OrderModel extends BaseModel {
 			"LEFT JOIN car c ON c.id=driverOnTheLine.car_id ".
 			"LEFT JOIN car_bodies cb ON cb.id=c.car_body_id ".
 			"LEFT JOIN car_color cc ON cc.id=c.color_id ".
-			"WHERE $whereStr ORDER BY `id` DESC";
+			"WHERE $whereStr ORDER BY `id` DESC ASD";
 
 		if (isset($options['limit']))
 			$query .= " LIMIT 0, {$options['limit']}";

@@ -53,8 +53,8 @@ class dataBaseProvider {
 	}
 
 	public function error($text) {
-		$this->log_errors($text, 3);
-		throw new Exception($text, 1);
+		trace($text, 'file', 3, true);
+		//throw new Exception($text, 1);
 	}
 
 	public function safeVal($str) {
@@ -99,28 +99,5 @@ class dataBaseProvider {
     		return $this->cache->get($cacheKey);
     	} else return false;
     }
-
-	protected function log_errors($message, $level=2) {
-		$file_log=_file_log;
-
-		if (!isset($file_log)) {
-			return "ERROR: NOT DEFINED \$file_log, '$message'";
-		}
-	    
-	    $message = date('Y-m-d H:i:s');
-	    if (function_exists('GetStack')) {
-	    	$stack = GetStack();
-		    $message .= "function=\"{$stack[$level]['file']}=>{$stack[$level]['line']}\"";
-		}
-		$message .= "message=\"$message\"\n";
-
-		if ($handle = fopen($file_log,'a')) {
-			fwrite($handle, "$message");
-			fclose($handle);
-			return $message;
-		} else {
-			return "ERROR: unable to open log file \"$file_log\", '$message'\n";
-		}
-	}
 }
 ?>

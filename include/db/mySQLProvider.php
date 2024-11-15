@@ -28,24 +28,28 @@
 	    }
 
 	    public function bquery($query, $types, $params) {
-			$stmt = $this->mysqli->prepare($query);
-			$result = false;
 
 			try {
+				$stmt = $this->mysqli->prepare($query);
+				$result = false;
 				$stmt->bind_param($types, ...$params);
 				$result = $stmt->execute();
 				$stmt->store_result();
 				$stmt->close();
 			} catch (Exception $e) {
-				trace($e->getMessage(), 'file', 3, true);
+				$this->error('mysql_error='.$e->getMessage().' query='.$query);
 			}
 
 			return $result;
 	    }
 
 		public function query($query) {
-			if (!($result = $this->mysqli->query($query)))
-				$this->error('mysql_error='.$this->mysqli->error.' query='.$query);
+			$result = false;
+			try {
+				$result = $this->mysqli->query($query);
+			} catch (Exception $e) {
+				$this->error('mysql_error='.$e->getMessage().' query='.$query);
+			}
 
 			return $result;
 		}
@@ -55,10 +59,13 @@
 		}
 
 		protected function dbAsArray($query) {
-			$result=$this->query($query);
-			$ret=array();
-			while ($row=$result->fetch_array($this->result_type)) $ret[]=$row;
-			$result->free();
+			$ret = [];
+			if ($result = $this->query($query)) {
+				while ($row = $result->fetch_array($this->result_type)) 
+					$ret[] = $row;
+				
+				$result->free();
+			}
 			return $ret;
 		}
 
