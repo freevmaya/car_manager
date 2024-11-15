@@ -73,7 +73,7 @@ html::AddJsData(json_encode(
                 action(latLng);
             <?} else {?>
                 navigator.geolocation.getCurrentPosition((result)=>{
-                    let latLng = toLatLng(result.coords.langitude);
+                    let latLng = toLatLng(result.coords);
                     user = $.extend(user, latLng);
                     action(latLng);
                 });
