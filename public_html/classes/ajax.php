@@ -115,6 +115,7 @@ class Ajax extends Page {
 		if (!isset($data['route_id']))
 			$data['route_id'] = (new RouteModel())->Update($data['path']);
 
+		trace($data['route_id']);
 		if ($data['route_id'] && 
 			($order_id = (new OrderModel())->AddOrder($data))) {
 

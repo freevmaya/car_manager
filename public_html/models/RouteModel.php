@@ -56,8 +56,6 @@ class RouteModel extends BaseModel {
 			unset($finish['displayName']);
 			unset($finish['formattedAddress']);
 
-			trace($value);
-
 			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`) VALUES (?, ?, ?, ?, ?, ?, ?)",
 			'isssssd', 
 			BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters'], [0, '{}', '{}', null, null, null, 0]));
