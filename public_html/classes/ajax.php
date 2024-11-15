@@ -46,19 +46,14 @@ class Ajax extends Page {
 		GLOBAL $dbp, $user;
 
 		$result = [];
-		$notificationList = $dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$user['id']}");
+		$notificationList = (new NotificationModel())->getItems(
+			['user_id'=>$user['id'], 'state'=>'active']
+		);
+		//$dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$user['id']}");
 		$count = count($notificationList);
 
-		if ($count > 0) {
-			$orderModel = new OrderModel();
-			for ($i=0;$i<$count;$i++) {
-				$ct = $notificationList[$i]['content_type'];
-				if (($ct == 'orderCreated') || ($ct == 'orderCancelled'))
-					$notificationList[$i]['content'] = $orderModel->getItem($notificationList[$i]['content_id']);
-			}
-				
+		if ($count > 0)
 			$result['notificationList'] = $notificationList;
-		}
 
 		if (isset($data['lat'])) {
 			$dbp->bquery("UPDATE users SET last_time = NOW(), lat = ?, lng = ? WHERE id = ?", 'ddi', 
@@ -90,7 +85,7 @@ class Ajax extends Page {
 		$orderModel = new OrderModel();
 		if ($order = $orderModel->getItem($data['id'])) {
 
-			if ($driver = (new DriverModel())->getItem($user['id'])) {
+			if ($driver = (new DriverModel())->getItem(['user_id'=>$user['id']])) {
 				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], null, $driver['id']);
 			} else $error = 'Driver not activated';
 		}
@@ -133,6 +128,10 @@ class Ajax extends Page {
 		}
 
 		return ["result"=>$order_id];
+	}
+
+	protected function GetDriver($data) {
+		return ["result"=>(new DriverModel())->getItem($data)];
 	}
 
 	protected function Go($data) {

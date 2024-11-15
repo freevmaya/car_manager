@@ -51,5 +51,7 @@ lang = {
 	'On map': 'На карте',
 	'The value cannot be empty.': 'Значение не может быть пустым.',
 	'The order has been accepted': 'Заказ принят',
-	'Are you sure you want to end the trip?': 'Вы уверены, что хотите завершить поездку?'
+	'Are you sure you want to end the trip?': 'Вы уверены, что хотите завершить поездку?',
+	'Offer sent': 'Предложение отправлено',
+	'Distance to start': 'Расстояние до отправной точки'
 };

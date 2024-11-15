@@ -1,6 +1,7 @@
 <?
 	GLOBAL $user;
-	html::AddScriptFiles(['views.js', "jquery-dateformat.min.js"]);
+	html::AddScriptFiles(['views.js', 'data-view.js', 'jquery-dateformat.min.js']);
+
 	$notifyModel = new NotificationModel();
 	$driverModel = new DriverModel();
 
@@ -25,17 +26,17 @@
 
 	html::addTemplate('<div class="orderCreated">
 		<div class="content" data-id="{id}">
-			{getOrderInfo(data.content)}
+			{this.getOrderInfo(true)}
 		</div>
 		<div class="btn-block">
-			<button class="button" onclick="$(this).closest(\'.option\').remove()">'.lang('Accept').'</button>
-			<button class="button" onclick="$(this).closest(\'.option\').remove()">'.lang('To map').'</button>
+			<button class="button" onclick="toolbar.acceptOrder({id})">'.lang('Accept').'</button>
+			<button class="button" onclick="toolbar.toMap({id})">'.lang('To map').'</button>
 		</div>
 		</div>', 'orderCreated');
 
 	html::addTemplate('<div class="orderCancelled">
 			<div class="content" data-id="{id}">
-				{getOrderInfo(data.content)}
+				{this.getOrderInfo()}
 			</div>
 		</div>', 'orderCancelled');
 

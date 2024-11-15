@@ -3,7 +3,6 @@ GLOBAL $devUser, $user;
 $anti_cache = '?_=23';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
-
 html::AddJsData(json_encode(
     BaseModel::FullItems((new NotificationModel())->getItems($options), ['content_id'=>new OrderModel()])
 ), 'notificationList');
@@ -31,13 +30,44 @@ html::AddJsData(json_encode(
         var fieldIdx = <?=html::fieldIdx()?>;
         var travelMode = 'WALKING';
 
+        function watchPosition(action) {
+            <?if (DEV) {
+                ?>
+                let latLng = toLatLng(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
+
+                user = $.extend(user, latLng);
+                return setInterval(()=>{
+                    action(latLng);
+                }, 500);
+            <?} else {?>
+                return navigator.geolocation.watchPosition((result)=>{
+                    let latLng = toLatLng(result.coords);
+                    user = $.extend(user, latLng);
+                    action(latLng);
+                });
+            <?}?>
+        }
+
+        function clearWatchPosition(watchId) {
+            <?if (DEV) {?>
+                clearInterval(watchId);
+            <?} else {?>
+                navigator.geolocation.clearWatch(watchId);
+            <?}?>
+        }
+
         function getLocation(action) {
             <?if (DEV) {
                 ?>
-                action(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
+                let latLng = toLatLng(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
+
+                user = $.extend(user, latLng);
+                action(latLng);
             <?} else {?>
                 navigator.geolocation.getCurrentPosition((result)=>{
-                    action(result.coords);
+                    let latLng = toLatLng(result.coords.langitude);
+                    user = $.extend(user, latLng);
+                    action(latLng);
                 });
             <?}?>
         }

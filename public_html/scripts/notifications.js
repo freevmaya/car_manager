@@ -37,7 +37,10 @@ class NotifyItem {
 
         if (this.data.content_type == "orderCreated") {
             this.view.append($('<div class="header">').text(toLang("Application received")));
-            this.view.append($('<p>').text(getOrderInfo(this.data.order)));
+
+            getOrderInfo(this.data.order, ((str)=>{
+                this.view.append($('<p>').text(str);
+            }).bind(this));
         }
         else this.view.append($('<p>').text(this.data.text));
 

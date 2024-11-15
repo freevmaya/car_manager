@@ -102,8 +102,19 @@ class App {
         } else w.Remove();
     }
 
-    showQuestion(text, afterOk) {
+    showQuestion(text, afterOk = null) {
         if (this.#question == null) {
+
+            let actions = isFunc(afterOk) ? {
+                'Ok': (()=>{
+                        this.#question.Close();
+                        afterOk();
+                    }).bind(this),
+                'Cancel': (()=>{
+                    this.#question.Close();
+                }).bind(this)
+            } : {};
+
             this.#question = viewManager.Create({curtain: $('#map'),
                 title: 'Warning!',
                 content: [
@@ -112,17 +123,7 @@ class App {
                         class: TextField
                     }
                 ],
-                actions: {
-
-                    'Ok': (()=>{
-                        this.#question.Close();
-                        afterOk();
-                    }).bind(this),
-
-                    'Cancel': (()=>{
-                        this.#question.Close();
-                    }).bind(this)
-                }
+                actions: actions
             }, View, (()=>{
                 this.#question = null;
             }).bind(this));
@@ -189,7 +190,7 @@ class AjaxTransport extends EventProvider {
                 if (mpos)
                     data = $.extend(data, toLatLng(mpos));
             } else if (this.#getPosition) {
-                data = $.extend(data, toLatLng(this.#getPosition));
+                data = $.extend(data, this.#getPosition);
             }
 
             params.data = JSON.stringify(data);
@@ -201,19 +202,15 @@ class AjaxTransport extends EventProvider {
         }
     }
 
-    getGeoPosition() {
-        return this.#getPosition;
-    }
-
     receiveGeo(position) {
-        this.#getPosition = position.coords;
+        this.#getPosition = position;
     }
 
     enableGeo(enable) {
         if (enable && !this.#geoId) {
-            this.#geoId = navigator.geolocation.watchPosition(this.receiveGeo.bind(this));
+            this.#geoId = watchPosition(this.receiveGeo.bind(this));
         } else if (!enable && this.#geoId > 0) {
-            navigator.geolocation.clearWatch(this.#geoId);
+            clearWatchPosition(this.#geoId);
             this.#geoId = false;
         }
     }
@@ -532,13 +529,13 @@ var EARTHRADIUS = 6378.137; // Radius of earth in KM
 
 function Lepr(p1, p2, t) {
     return {
-        lat: p1.lat() * (1 - t) + p2.lat() * t,
-        lng: p1.lng() * (1 - t) + p2.lng() * t
+        lat: p1.lat() * (1 - t) + lat2 * t,
+        lng: lng1 * (1 - t) + lng2 * t
     }
 }
 
 function CalcAngleRad(p1, p2) {
-    return Math.atan2(p2.lng() - p1.lng(), (p2.lat() - p1.lat()) * 1.5);
+    return Math.atan2(lng2 - lng1, (lat2 - p1.lat()) * 1.5);
 }
 
 function CalcAngle(p1, p2) {
@@ -547,17 +544,28 @@ function CalcAngle(p1, p2) {
 
 function Distance(p1, p2) {  // generally used geo measurement function
 
-    var dLat = p2.lat() * Math.PI / 180 - p1.lat() * Math.PI / 180;
-    var dLon = p2.lng() * Math.PI / 180 - p1.lng() * Math.PI / 180;
+    let lat1 = isFunc(p1.lat) ? p1.lat() : p1.lat;
+    let lng1 = isFunc(p1.lng) ? p1.lng() : p1.lng;
+    let lat2 = isFunc(p2.lat) ? p2.lat() : p2.lat;
+    let lng2 = isFunc(p2.lng) ? p2.lng() : p2.lng;
+
+    var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+    var dLon = lng2 * Math.PI / 180 - lng1 * Math.PI / 180;
 
     var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(p1.lat() * Math.PI / 180) * Math.cos(p2.lat() * Math.PI / 180) *
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
             Math.sin(dLon/2) * Math.sin(dLon/2);
 
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     var d = EARTHRADIUS * c;
 
     return d * 1000; // meters
+}
+
+function DistanceToStr(v) {
+    if (v > 1000)
+        return round(v / 1000, 1) + toLang('km.');
+    return round(v, 0) + toLang('m.');
 }
 
 function CalcCoordinate(center, angle, distanceMeters) {
@@ -584,13 +592,28 @@ function HideDriverMenu() {
     $('#DriverMenu').remove();
 }
 
-function getOrderInfo(order) {
+function intoTag(value, tag = '<span>') {
+    return $(tag).html(value)[0].outerHTML;
+}
+
+function getOrderInfo(order, callback = null) {
     let start = isStr(order.start) ? JSON.parse(order.start) : order.start;
     let finish = isStr(order.finish) ? JSON.parse(order.finish) : order.finish;
-    return PlaceName(start) + " > " + PlaceName(finish) + '. ' +
+    let result = PlaceName(start) + " > " + PlaceName(finish) + '. ' +
             toLang("User") + ': ' + (order.username ? order.username : (order.first_name + " " + order.last_name)) + ". " + 
             toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat) + ". " + 
             toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
+
+    if (callback) {
+        if (start.lat) {
+            result += ' ' + toLang('Distance to start') + ": " + DistanceToStr(Distance(start, user));
+            callback(result);
+        } else {
+            getPlaceDetails(start.placeId, ['location']);
+        }
+    }
+
+    return result
 }
 
 function ShowDriverMenu() {

@@ -102,7 +102,7 @@ class Page {
 		GLOBAL $user;
 		
 		if ($this->asDriver == -1) {
-			$driverOnTheLine = (new DriverModel())->getItem($user['id']);
+			$driverOnTheLine = (new DriverModel())->getItem(['user_id'=>$user['id']]);
 			if ($driverOnTheLine && ($driverOnTheLine['active'] > 0))
 				$this->asDriver = 1;
 			else $this->asDriver = 0;

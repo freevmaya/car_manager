@@ -4,6 +4,7 @@ class DriverModel extends BaseModel {
 	protected $expiredInterval = 'INTERVAL 1 DAY';
 	protected $offlineInterval = 'INTERVAL 15 SECOND';
 	protected $lostConnectInterval = 'INTERVAL 10 MINUTE';
+	protected static $maxDistanceToStart = 5000; // Удаленость от старта
 	
 	protected function getTable() {
 		return 'driverOnTheLine';
@@ -32,14 +33,32 @@ class DriverModel extends BaseModel {
 		//(new NotificationModel()).AddNo
 	}
 
-	public function getItem($user_id) {
+	public function getItem($data) {
 		GLOBAL $dbp;
+
+		if (is_numeric($data))
+			$user_id = $data;
+		else $user_id = @$data['user_id'];
 
 		if ($user_id) {
 			$query = "SELECT CONCAT(u.username, ' ', u.phone) as driver, d.car_id, IF(`expiredTime` >= NOW(), d.active, 0) as active, d.id FROM users u ".
 					"LEFT JOIN {$this->getTable()} d ON d.user_id = u.id ".
 					"WHERE u.id = {$user_id}";
 
+			return $dbp->line($query);
+		} else if (isset($data['driver_id'])) {
+
+			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
+
+			"FROM {$this->getTable()} d ".
+				"INNER JOIN users u ON d.user_id = u.id ".
+				"INNER JOIN car c ON d.car_id = c.id ".
+				"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
+				"INNER JOIN car_color cc ON cc.id = c.color_id ".
+
+			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.id={$data['driver_id']}";
+			
+			//trace($query);
 			return $dbp->line($query);
 		}
 
@@ -65,26 +84,26 @@ class DriverModel extends BaseModel {
 
 		$drivers = [];
 		if ($lat) {
-			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, c.comfort, c.seating, c.comfort, cb.symbol AS car_boby, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat ".
+			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat ".
 
 			"FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id INNER JOIN car c ON d.car_id = c.id INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
 
 			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval}";
 			$list = $dbp->asArray($query);
 
-			foreach ($list as $driver)
-				if ($this->PointInArea($driver, $lat, $lng) && ($driver['available_seat'] > 0))
+			foreach ($list as $driver) {
+				$distance =  Distance($driver['lat'], $driver['lng'], $lat, $lng);
+				if (($distance < DriverModel::$maxDistanceToStart) && ($driver['available_seat'] > 0)) {
+					$driver['distanceStart'] = $distance;
 					$drivers[] = $driver;
+				}
+			}
 
 			if (count($drivers) == 0)
 				trace($query);
 		}
 
 		return $drivers;
-	}
-
-	public static function PointInArea($driver, $lat, $lng) {
-		return Distance($driver['lat'], $driver['lng'], $lat, $lng) < 100000; // В радиусе километра для DEV
 	}
 
 	public function getFields() {

@@ -6,7 +6,7 @@ class NotificationModel extends BaseModel {
 	}
 
 	public function getItems($options) {
-		GLOBAL $dbp;
+		GLOBAL $dbp, $user;
 
 		$where = BaseModel::AddWhere(
 					BaseModel::AddWhere(
@@ -17,6 +17,22 @@ class NotificationModel extends BaseModel {
 		$whereStr = implode(" AND ", $where);
 
 		$query = "SELECT * FROM {$this->getTable()} WHERE $whereStr";
+
+		$notificationList = $dbp->asArray($query);
+		$count = count($notificationList);
+
+		if ($count > 0) {
+			$orderModel = new OrderModel();
+			for ($i=0;$i<$count;$i++) {
+				$ct = $notificationList[$i]['content_type'];
+				if (($ct == 'orderCreated') || ($ct == 'orderCancelled'))
+					$notificationList[$i]['content'] = $orderModel->getItem($notificationList[$i]['content_id']);
+			}
+				
+			$result['notificationList'] = $notificationList;
+		}
+
+
 		return $dbp->asArray($query);
 	}
 

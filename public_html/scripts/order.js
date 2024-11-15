@@ -8,6 +8,41 @@ class OrderProcess {
 						.click(this.onCancelClick.bind(this));
 
 		this.refreshColor();
+
+		transport.AddListener('notificationList', 
+        	this.onNotificationList.bind(this));
+	}
+
+	onNotificationList(e) {
+		let list = e.value;
+        for (let i in list) {
+            let item = list[i];
+            if (item.content_type == "offerToPerform") 
+                this.offerToPerform(item);
+        }
+	}
+
+	offerToPerform(data) {
+		if (data.content_id == this.order_id) {
+			Ajax({
+				action: 'GetDriver',
+				data: {driver_id: data.offered_driver_id}
+			}).then(((driver)=>{
+				this.onReceiveDriver(driver, data);
+			}).bind(this));
+		}
+	}
+
+	onReceiveDriver(v, notify) {
+		if (v.result) {
+			let infoBlock = this.field.find('.driver-info');
+
+			infoBlock.empty()
+					.append(templateClone($('.templates .driver'), v.result));
+			this.refreshColor();
+
+			transport.SendStatusNotify(notify);
+		}
 	}
 
 	onCancelClick(e) {

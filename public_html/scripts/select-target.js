@@ -198,7 +198,7 @@ class TracerView extends ViewPath {
 
     #receiveGeo(position) {
 
-        let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        let latLng = new google.maps.LatLng(position.lat, position.lng);
 
         if (!isNaN(latLng.lat())) {
 
@@ -209,9 +209,9 @@ class TracerView extends ViewPath {
 
     enableGeo(enable) {
         if (enable && !this.#geoId) {
-            this.#geoId = navigator.geolocation.watchPosition(this.#receiveGeo.bind(this));
+            this.#geoId = watchPosition(this.#receiveGeo.bind(this));
         } else if (!enable && this.#geoId > 0) {
-            navigator.geolocation.clearWatch(this.#geoId);
+            clearWatchPosition(this.#geoId);
             this.#geoId = false;
         }
     }

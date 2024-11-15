@@ -327,7 +327,10 @@ class DividerField extends BaseViewField {
 
 class HtmlField extends BaseViewField {
     initView() {
-        this.parentElement.append(this.view = templateClone($(this.options.source), this.options));
+        if (this.options.content)
+            this.view = this.options.content;
+        else this.view = templateClone($(this.options.source), this.options);
+        this.parentElement.append(this.view);
     }
 }
 

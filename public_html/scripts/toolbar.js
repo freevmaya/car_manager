@@ -1,3 +1,5 @@
+var toolbar;
+
 class ToolbarUser {
 	#wicon;
 	#listenerId;
@@ -15,6 +17,8 @@ class ToolbarUser {
 			this.appendReceiveNotifyList(e.value);
 		}).bind(this));
 
+		toolbar = this;
+
 		this.appendReceiveNotifyList(jsdata.notificationList);
 	}
 
@@ -26,6 +30,21 @@ class ToolbarUser {
 
 	isNotify() {
 		return this.#notifyList.length > 0;
+	}
+
+	#notifyIndexOf(id) {
+		for (let i in this.#notifyList)
+			if (this.#notifyList[i].id == id) 
+				return i;
+		return -1;
+	}
+
+	removeNotify(id) {
+		let idx = this.#notifyIndexOf(id);
+		if (idx > -1) {
+			this.#notifyList.splice(idx, 1);
+			this.showWarning(this.isNotify());
+		}
 	}
 
 	appendReceiveNotifyList(data) {
@@ -55,12 +74,9 @@ class ToolbarUser {
 			let option = $('<div class="option ' + item.content_type + '" data-id="' + item.id + '">');
 			option.append($('<div class="header">')
 				.html('<span>' + time + '</span>' + toLang(item.text)));
+			
+			DataView.Create(option, item);
 
-			if (item.content) {
-				let tmpl = $('.templates .' + item.content_type);
-				if (!isEmpty(tmpl))
-					option.append(templateClone(tmpl, item));
-			}
 			content.append(option);
 		}
 
@@ -78,15 +94,6 @@ class ToolbarUser {
 		return this.#listView.contentElement.find('.option .header');
 	}
 
-	removeNotify(id) {
-		for (let i in this.#notifyList)
-			if (this.#notifyList[i].id == id) {
-				this.#notifyList.splice(i, 1);
-				this.showWarning(this.isNotify());
-				break;
-			}
-	}
-
 	onClickItem(e) {
 		let option = $(e.currentTarget).closest('.option');
 		let nid = option.data('id');
@@ -101,6 +108,45 @@ class ToolbarUser {
 
 		if (order_id)
 			v_map.MarkerManager.ShowMarkerOfOrder(order_id);
+	}
+
+	getOrder(notify_id) {
+
+		let order = this.#notifyList[this.#notifyIndexOf(notify_id)].content;
+
+		if (isStr(order.start)) order.start = JSON.parse(order.start);
+		if (isStr(order.finish)) order.finish = JSON.parse(order.finish);
+
+		return order;
+	}
+
+	toMap(notify_id) {
+
+		let order = this.getOrder(notify_id);
+		if (v_map) {
+			v_map.MarkerManager.ShowMarkerOfOrder(order.id, order);
+		} else window.location.href = BASEURL + '/map/driver/' + order.id;
+
+		this.#listView.Close();
+	}
+
+	acceptOrder(notify_id) {
+		let order = this.getOrder(notify_id);
+		
+		if (order) {
+			Ajax({
+	            action: 'offerToPerform',
+	            data: JSON.stringify({id: order.id})
+	        }).then(((response)=>{
+	            if (response.result == 'ok')
+	                this.#listView.Close()
+	            		.then(()=>{
+	            			app.showQuestion(toLang('Offer sent'));
+	            		});
+	            else console.log(response);
+	        }).bind(this));
+
+		}
 	}
 
 	destroy() {

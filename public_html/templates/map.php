@@ -7,8 +7,8 @@
 		html::AddJsCode("user.requireDrivers = true;");
 
 	html::AddScriptFile("select-target.js");
-	html::AddScriptFile('driver-manager.js');
-	html::AddJsCode("driverManager = new DriverManager();");
+	//html::AddScriptFile('driver-manager.js');
+	//html::AddJsCode("driverManager = new DriverManager();");
 
 	/*if (isset(Page::$request['id']))
 		$orders = (new OrderModel())->getItems(Page::$request['id']);
@@ -24,5 +24,7 @@
             <img class="car-image"></img>
             <span>{name}</span>
         </div>
-    </div>');
+    </div>', 'car');
+    
+	html::AddJsCode("new VMap($('#map'), Mechanics);");
 ?>
