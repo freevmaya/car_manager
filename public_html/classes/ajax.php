@@ -130,6 +130,10 @@ class Ajax extends Page {
 		return ["result"=>$order_id];
 	}
 
+	protected function catchError($data) {
+		return (new ErrorsModel())->Add($data['message'], $data['stack']);
+	}
+
 	protected function GetDriver($data) {
 		return ["result"=>(new DriverModel())->getItem($data)];
 	}

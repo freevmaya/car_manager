@@ -22,6 +22,14 @@ html::AddJsData(json_encode(
     <?=html::RenderStyleFiles();?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>
     <script type="text/javascript">
+
+        window.addEventListener("error", (e) => {
+            Ajax({
+                action: 'catchError',
+                data: {message: e.message, stack: e.error.stack}
+            });
+        });
+
         var BASEURL = '<?=BASEURL?>';
         var ajaxRequestId = '<?=$this->createRequestId(get_class($this))?>';
         var transport = new AjaxTransport(1000);
