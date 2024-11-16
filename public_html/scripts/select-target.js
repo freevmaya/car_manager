@@ -286,7 +286,7 @@ function Mechanics() {
             return;
 
         if (tracerDialog) {
-            tracerDialog.setTracerPoint(e.latLng);
+            //tracerDialog.setTracerPoint(e.latLng);
             return StopPropagation(e);
         }
 

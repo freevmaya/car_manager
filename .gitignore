@@ -2,3 +2,5 @@
 *.log.*
 logs/*
 config/*
+dev
+dev/*

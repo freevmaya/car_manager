@@ -7,8 +7,10 @@ class RouteModel extends BaseModel {
 
 	public function getItem($id) {
 		GLOBAL $dbp, $user;
+
+		$query = "SELECT r.*, r.id AS route_id, sp.id AS startPlaceId, fp.id AS finishPlaceId, sp.aliase as startPlace, fp.aliase as finishPlace FROM {$this->getTable()} r LEFT JOIN places sp ON r.startPlaceId = sp.id AND sp.lang='{$user['language_code']}' LEFT JOIN places fp ON r.finishPlaceId = fp.id AND fp.lang='{$user['language_code']}' WHERE r.id = {$id}";
 		
-		$item = $dbp->line("SELECT r.*, r.id AS route_id, sp.id AS startPlaceId, fp.id AS finishPlaceId, sp.aliase as startPlace, fp.aliase as finishPlace FROM {$this->getTable()} r LEFT JOIN places sp ON r.startPlaceId = sp.id AND sp.lang='{$user['language_code']}' LEFT JOIN places fp ON r.finishPlaceId = fp.id AND fp.lang='{$user['language_code']}' WHERE r.id = {$id}");
+		$item = $dbp->line($query);
 
 		if ($item) {
 			if (!$item['startPlace'])
