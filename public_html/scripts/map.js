@@ -51,6 +51,19 @@ class MarkerManager {
 		}
 		this.markers.users = [];
 	}
+
+	ClearAllCars() {
+		for (let i=0; i<this.markers.cars.length; i++) {
+			this.markers.cars[i].setMap(null);
+			delete this.markers.cars[i];
+		}
+		this.markers.cars = [];
+	}
+}
+
+MarkerManager.setPos = (marker, latLng, angle) => {
+	marker.position = latLng;
+	marker.content.style = "rotate:" + angle + "deg";
 }
 
 var v_map;
@@ -70,33 +83,14 @@ class VMap {
 	get View() { return this.#view; }
 	get MainMarker() { return this.#mainMarker; }
 
-	get DriverManager() {
-		if (!this.#driverManager)
-			this.#driverManager = new this.#options.driverManagerClass(this.#map);
-		return this.#driverManager; 
-	}
-
-
-	get DirectionsService() {
-		if (!this.#directionsService)
-			this.#directionsService = new this.Classes['DirectionsService'](this.#map);
-		return this.#directionsService; 
-	}
-
-	get MarkerManager() {
-		if (!this.#markerManager)
-			this.#markerManager = new this.#options.markerManagerClass(this);
-		return this.#markerManager; 
-	}
-
 	constructor(elem, callback = null, options) {
 		v_map = this;
 		this.#view = elem;
 		this.#options = $.extend({
 			main_marker: true, 
 			start_position: false,
-			driverManagerClass: DriverManager,
 			markerManagerClass: MarkerManager,
+			driverManagerClass: DriverManager,
 		}, options);
 
 		if (this.#options.start_position)
@@ -111,6 +105,22 @@ class VMap {
 				this.initMap(pos).then(callback);
 			}).bind(this));
 		}
+	}
+
+	get DirectionsService() {
+		if (!this.#directionsService)
+			this.#directionsService = new this.Classes['DirectionsService'](this.#map);
+		return this.#directionsService; 
+	}
+
+	get MarkerManager() {
+		if (!this.#markerManager)
+			this.#markerManager = new this.#options.markerManagerClass(this);
+		return this.#markerManager; 
+	}
+
+	get DriverManager() {
+		return this.#driverManager; 
 	}
 
 	async initMap(crd) {
@@ -144,6 +154,16 @@ class VMap {
 
 		if (this.#options.main_marker)
 			this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
+	}
+
+	driverManagerOn(value) {
+		if (value) {
+			if (!this.#driverManager)
+				this.#driverManager = new this.#options.driverManagerClass(this);
+		} else if (this.#driverManager) {
+			this.#driverManager.destroy();
+			this.#driverManager = null;
+		}
 	}
 
 	visMainMarker(visible) {

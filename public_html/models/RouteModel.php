@@ -8,7 +8,10 @@ class RouteModel extends BaseModel {
 	public function getItem($id) {
 		GLOBAL $dbp, $user;
 
-		$query = "SELECT r.*, r.id AS route_id, sp.id AS startPlaceId, fp.id AS finishPlaceId, sp.aliase as startPlace, fp.aliase as finishPlace FROM {$this->getTable()} r LEFT JOIN places sp ON r.startPlaceId = sp.id AND sp.lang='{$user['language_code']}' LEFT JOIN places fp ON r.finishPlaceId = fp.id AND fp.lang='{$user['language_code']}' WHERE r.id = {$id}";
+		$query = "SELECT r.*, r.id AS route_id, sp.id AS startPlaceId, fp.id AS finishPlaceId, sp.aliase as startPlace, fp.aliase as finishPlace FROM {$this->getTable()} r ".
+			"LEFT JOIN places sp ON r.startPlaceId = sp.id AND sp.lang='{$user['language_code']}' ".
+			"LEFT JOIN places fp ON r.finishPlaceId = fp.id AND fp.lang='{$user['language_code']}' ".
+			"WHERE r.id = {$id}";
 		
 		$item = $dbp->line($query);
 
@@ -58,9 +61,9 @@ class RouteModel extends BaseModel {
 			unset($finish['displayName']);
 			unset($finish['formattedAddress']);
 
-			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`) VALUES (?, ?, ?, ?, ?, ?, ?)",
-			'isssssd', 
-			BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters'], [0, '{}', '{}', null, null, null, 0]));
+			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`, `routes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+			'isssssds', 
+			BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters', 'routes'], [0, '{}', '{}', null, null, null, 0, null]));
 			return $dbp->lastID();
 		}
 

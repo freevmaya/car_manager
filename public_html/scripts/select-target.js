@@ -11,16 +11,19 @@ class ViewPath extends BottomView {
         return this.#routes;
     }
 
-    showPath(startPlace, finishPlace, afterRequest = null) {
+    showPath(startPlace, finishPlace, routes, afterRequest = null) {
         this.closePath();
-        v_map.getRoutes(startPlace, finishPlace, travelMode, ((result)=>{
 
+        function setRoutes(result) {
             this.setRoutes(result);
             this.rpath = DrawPath(v_map.map, result);
             if (afterRequest)
                 afterRequest();
+        }
 
-        }).bind(this));
+        if (routes) {
+            setRoutes.bind(this)(routes);
+        } else v_map.getRoutes(startPlace, finishPlace, travelMode, setRoutes.bind(this));
     }
 
     setOrderId(v) {
@@ -177,10 +180,8 @@ class TracerView extends ViewPath {
 
     #setMainPoint(latLng, angle) {
         //v_map.setMainPosition(latLng);
-        if (this.#marker) {
-            this.#marker.position = latLng;
-            this.#marker.content.style = "rotate:" + angle + "deg";
-        }
+        if (this.#marker)
+            MarkerManager.setPos(this.#marker, latLng, angle);
     }
 
     setRoutes(routes) {
@@ -260,6 +261,7 @@ function Mechanics() {
 
         tracerDialog.setOrderId(order.id);
         tracerDialog.travelMode = order.travelMode;
+
         tracerDialog.showPath(order.start, order.finish);
     }
 
@@ -281,6 +283,8 @@ function Mechanics() {
         } else routeDialog.SelectPlace(place);
     }
 
+
+    v_map.driverManagerOn(true);
     v_map.map.addListener("click", (e) => {
         if (routeDialog && routeDialog.options.id)
             return;

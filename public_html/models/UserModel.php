@@ -19,6 +19,12 @@ class UserModel extends BaseModel {
 		return null;
 	}
 
+	public function UpdatePosition($user_id, $data, $angle = 0) {
+		GLOBAL $dbp;
+		return $dbp->bquery("UPDATE users SET last_time = NOW(), lat = ?, lng = ?, angle = ? WHERE id = ?", 'dddi', 
+							[$data['lat'], $data['lng'], $angle, $user_id]);
+	}
+
 	public function Update($values) {
 		GLOBAL $dbp;
 

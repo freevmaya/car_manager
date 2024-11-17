@@ -56,8 +56,8 @@ class Ajax extends Page {
 			$result['notificationList'] = $notificationList;
 
 		if (isset($data['lat'])) {
-			$dbp->bquery("UPDATE users SET last_time = NOW(), lat = ?, lng = ? WHERE id = ?", 'ddi', 
-							[$data['lat'], $data['lng'], $user['id']]);
+
+			(new UserModel())->UpdatePosition($user['id'], $data);
 
 			$user['lat'] = $data['lat'];
 			$user['lng'] = $data['lng'];

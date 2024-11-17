@@ -11,7 +11,7 @@ class OrderModel extends BaseModel {
 			$where = implode(" AND ", BaseModel::AddWhere([], $options, 'o.state'));
 		} else $where = "o.id = {$options}";
 		
-		$query = "SELECT o.*, u.username, u.first_name, u.last_name, r.meters, r.start, r.finish ".
+		$query = "SELECT o.*, u.username, u.first_name, u.last_name, r.meters, r.start, r.finish, r.routes ".
 			"FROM {$this->getTable()} o LEFT JOIN users u ON u.id = o.user_id ".
 			"LEFT JOIN route r ON o.route_id=r.id ".
 			"WHERE {$where}";
@@ -32,7 +32,7 @@ class OrderModel extends BaseModel {
 		
 		$whereStr = implode(" AND ", $where);
 
-		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters, driver.id AS driverId, driver.username AS driverName, c.number, c.comfort, c.seating, cb.symbol AS car_body, cc.rgb AS car_color, cc.name AS car_colorName ".
+		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters ".(isset($options['routes'])?', r.routes':'').", driver.id AS driverId, driver.username AS driverName, c.number, c.comfort, c.seating, cb.symbol AS car_body, cc.rgb AS car_color, cc.name AS car_colorName ".
 			"FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id ".
 			"LEFT JOIN driverOnTheLine ON driverOnTheLine.id=o.driver_id ".
 			"LEFT JOIN users driver ON driver.id=driverOnTheLine.user_id ".

@@ -167,9 +167,12 @@ class AjaxTransport extends EventProvider {
 
     #geoId;
     #getPosition;
+    requireDrivers;
+
     constructor(periodTime) {
         super();
         this.intervalID = setInterval(this.update.bind(this), periodTime);
+        this.requireDrivers = false;
 
         if (!isEmpty(jsdata) && !isEmpty(jsdata.notificationList))
             this.onRecive(jsdata.notificationList);
@@ -178,14 +181,14 @@ class AjaxTransport extends EventProvider {
     update() {
         let params = {action: "checkState", data: null};
 
-        if (user.sendCoordinates || user.requireDrivers) {
+        if (user.sendCoordinates || this.requireDrivers) {
             this.enableGeo(true);
         
             let data = {};
-            if (user.requireDrivers)
+            if (this.requireDrivers)
                 data.requireDrivers = true;
 
-            if (user.requireDrivers) {
+            if (this.requireDrivers) {
                 let mpos = v_map.getMainPosition();
                 if (mpos)
                     data = $.extend(data, toLatLng(mpos));
@@ -696,6 +699,32 @@ function Wait(checFunc) {
   });
 }
 
+function ToRouteData(db_routes, travelMode) {
+    if (!isEmpty(db_routes)) {
+        if (isStr(db_routes))
+            db_routes = JSON.parse(db_routes);
+
+        for (let i=0; i<db_routes.length; i++)
+            db_routes[i] = new google.maps.LatLng(db_routes[i].lat, db_routes[i].lng);
+
+        return {
+            travelMode: travelMode,
+            routes: [{
+                overview_path: db_routes
+            }]
+        }
+    }
+    return null;
+}
+/*
+function GetOverviewPath(routes) {
+    let result = [];
+    for (let i in routes.routes)
+        result = result.concat(routes.routes[i].overview_path);
+    return result;
+}
+*/
+
 function GetPath(routes, startPlace, finishPlace) {
 
     function addPlaceId(obj, place) {
@@ -717,7 +746,8 @@ function GetPath(routes, startPlace, finishPlace) {
                 start: placeExt(startPlace),
                 finish: placeExt(finishPlace),
                 meters: Math.round(CalcPathLength(routes)),
-                travelMode: travelMode
+                travelMode: travelMode,
+                routes: GetOverviewPath(routes)
             };
     } return null;
 }
