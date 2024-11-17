@@ -16,14 +16,14 @@ class ViewPath extends BottomView {
 
         function setRoutes(result) {
             this.setRoutes(result);
-            this.rpath = DrawPath(v_map.map, result);
+            this.rpath = DrawPath(v_map.map, result, {preserveViewport: false});
             if (afterRequest)
                 afterRequest();
         }
 
-        if (routes) {
-            setRoutes.bind(this)(routes);
-        } else v_map.getRoutes(startPlace, finishPlace, travelMode, setRoutes.bind(this));
+        if (isEmpty(routes)) 
+            v_map.getRoutes(startPlace, finishPlace, travelMode, setRoutes.bind(this));
+        else setRoutes.bind(this)(routes);
     }
 
     setOrderId(v) {
@@ -148,7 +148,7 @@ class ViewTarget extends ViewPath {
     }
 
     SelectPlace(finishPlace) {
-        this.showPath(this.options.startPlace, this.options.finishPlace = finishPlace, (()=>{
+        this.showPath(this.options.startPlace, this.options.finishPlace = finishPlace, null, (()=>{
             let field = this.fieldById("finishPlace");
             field.view.text(PlaceName(this.options.finishPlace));
             field.infoView.text(PlaceAddress(this.options.finishPlace));
@@ -290,7 +290,7 @@ function Mechanics() {
             return;
 
         if (tracerDialog) {
-            //tracerDialog.setTracerPoint(e.latLng);
+            tracerDialog.setTracerPoint(e.latLng);
             return StopPropagation(e);
         }
 

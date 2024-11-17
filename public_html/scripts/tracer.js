@@ -191,10 +191,11 @@ class Tracer extends EventProvider {
                     this.#routeDistance = distance;
                     this.#routePos = p;
 
-                    if (tearedTime) {
-                        this.#avgSpeed = speed;
+                    if (tearedTime)
                         this.SendEvent('TEAREDTIME', tearedDist);
-                    } else this.SendEvent('TEAREDDIST', tearedDist);
+                    else this.SendEvent('TEAREDDIST', tearedDist);
+                        
+                    this.#avgSpeed = speed;
 
                     console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
                 } else {

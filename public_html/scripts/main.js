@@ -545,12 +545,56 @@ function CalcAngle(p1, p2) {
     return CalcAngleRad(p1, p2) / Math.PI * 180;
 }
 
+function LatLngMul(p, f) {
+    return new google.maps.LatLng(
+        Lat(p) * f,
+        Lng(p) * f
+    );
+}
+
+function LatLngAdd(p1, p2) {
+    return new google.maps.LatLng(
+        Lat(p1) + Lat(p2),
+        Lng(p1) + Lng(p2)
+    );
+}
+
+function LatLngSub(p1, p2) {
+    return new google.maps.LatLng(
+        Lat(p1) - Lat(p2),
+        Lng(p1) - Lng(p2)
+    );
+}
+
+function LatLngLepr(p1, p2, f) {
+    let lat1 = Lat(p1);
+    let lng1 = Lng(p1);
+    let lat2 = Lat(p2);
+    let lng2 = Lng(p2);
+    return new google.maps.LatLng(lat1 * f + lat2 * (1 - f), lng1 * f + lng2 * (1 - f));
+}
+
+function LatLngNormal(p) {
+    let lat = Lat(p);
+    let lng = Lng(p);
+    let len = Math.sqrt(lat * lat, lng * lng);
+    return new google.maps.LatLng(lat / len, lng / len);
+}
+
+function Lat(p) {
+    return isFunc(p.lat) ? p.lat() : p.lat;
+}
+
+function Lng(p) {
+    return isFunc(p.lng) ? p.lng() : p.lng;
+}
+
 function Distance(p1, p2) {  // generally used geo measurement function
 
-    let lat1 = isFunc(p1.lat) ? p1.lat() : p1.lat;
-    let lng1 = isFunc(p1.lng) ? p1.lng() : p1.lng;
-    let lat2 = isFunc(p2.lat) ? p2.lat() : p2.lat;
-    let lng2 = isFunc(p2.lng) ? p2.lng() : p2.lng;
+    let lat1 = Lat(p1);
+    let lng1 = Lng(p1);
+    let lat2 = Lat(p2);
+    let lng2 = Lng(p2);
 
     var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
     var dLon = lng2 * Math.PI / 180 - lng1 * Math.PI / 180;
@@ -716,14 +760,13 @@ function ToRouteData(db_routes, travelMode) {
     }
     return null;
 }
-/*
+
 function GetOverviewPath(routes) {
     let result = [];
     for (let i in routes.routes)
         result = result.concat(routes.routes[i].overview_path);
     return result;
 }
-*/
 
 function GetPath(routes, startPlace, finishPlace) {
 
