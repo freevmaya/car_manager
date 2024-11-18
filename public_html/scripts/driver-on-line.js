@@ -13,11 +13,38 @@ class MarkerOrderManager extends MarkerManager {
         let list = e.value;
         for (let i in list) {
             let item = list[i];
-            if (item.content_type == "orderCreated") 
+            if (item.content_type == "orderCreated") {
                 this.AddOrder(item.content, true);
+            }
             else if (item.content_type == "orderCancelled") {
                 this.CancelOrder(item.content_id);
             }
+            else if (item.content_type == "acceptedOffer") {
+                this.acceptedOffer(item.content_id);
+            }
+        }
+    }
+
+    Shake(market) {
+
+        let e = $(market.content);
+        if (e.hasClass('animShake')) {
+            e.removeClass('animShake');
+            setTimeout(()=>{
+                e.addClass('animShake');
+            }, 200);
+        } else e.addClass('animShake');
+    }
+
+    acceptedOffer(order_id) {
+        let idx = this.IndexOfByOrder(order_id);
+        if (idx > -1) {
+            let m = this.markers.users[idx];
+            this.Shake(m);
+            $(m.content).removeClass('user-marker')
+                .addClass('user-current');
+
+            m.order.driver_id = user.asDriver;
         }
     }
 
@@ -26,13 +53,7 @@ class MarkerOrderManager extends MarkerManager {
         if (idx > -1) {
             let market = this.markers.users[idx];
             this.ctrl.map.setCenter(market.position);
-            let e = $(market.content);
-            if (e.hasClass('animShake')) {
-                e.removeClass('animShake');
-                setTimeout(()=>{
-                    e.addClass('animShake');
-                }, 200);
-            } else e.addClass('animShake');
+            this.Shake(this.markers.users[idx]);
 
             if (order)
                 this.#showInfoOrder(market, order);
@@ -41,7 +62,7 @@ class MarkerOrderManager extends MarkerManager {
 
     IndexOfByOrder(order_id) {
         for (let i in this.markers.users)
-            if (order_id == this.markers.users[i].order_id)
+            if (order_id == this.markers.users[i].order.id)
                 return i;
 
         return -1;
@@ -106,35 +127,27 @@ class MarkerOrderManager extends MarkerManager {
         }).bind(this), 
                 (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 
                 (anim ? ' anim' : ''));
-        m.order_id = order.id;
+        m.order = order;
     }
 
-    #showInfoOrder(marker, data) {
+    #showInfoOrder(marker, order) {
 
         this.showOrderMarker = marker;
         function showPathAndInfo() {
 
-            this.ctrl.getRoutes(data.start, data.finish, travelMode, (function(result) {
+            this.ctrl.getRoutes(order.start, order.finish, travelMode, (function(result) {
                 if (this.selectPath) this.selectPath.setMap(null);
                 this.selectPath = this.ctrl.DrawPath(result);
                 this.showOrderMarker.setMap(null);
             }).bind(this));
 
-            this.selectPathView = viewManager.Create({
-                title: "Order",
-                bottomAlign: true,
-                content: [
-                    {
-                        label: "InfoPath",
-                        content: $(DataView.getOrderInfo(data, true)),
-                        class: HtmlField
-                    }
-                ],
-                actions: {
+            let actions = null;
+            if (order.driver_id != user.asDriver) 
+                actions = {
                     'Offer to perform': (() => {
                         Ajax({
                             action: 'offerToPerform',
-                            data: JSON.stringify({id: data.id})
+                            data: JSON.stringify({id: order.id})
                         }).then(((response)=>{
                             if (response.result == 'ok')
                                 this.selectPathView.Close();
@@ -142,6 +155,18 @@ class MarkerOrderManager extends MarkerManager {
                         }).bind(this));
                     }).bind(this)
                 }
+
+            this.selectPathView = viewManager.Create({
+                title: "Order",
+                bottomAlign: true,
+                content: [
+                    {
+                        label: "InfoPath",
+                        content: $(DataView.getOrderInfo(order, true)),
+                        class: HtmlField
+                    }
+                ],
+                actions: actions
             }, BottomView, (()=>{
 
                 this.selectPath.setMap(null);
@@ -151,7 +176,7 @@ class MarkerOrderManager extends MarkerManager {
                 if (this.showOrderMarker) this.showOrderMarker.setMap(this.ctrl.map);
             }).bind(this));
 
-            this.selectPathView.order = data;
+            this.selectPathView.order = order;
         }
 
         if (this.selectPathView)

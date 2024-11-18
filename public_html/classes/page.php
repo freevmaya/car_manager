@@ -67,8 +67,13 @@ class Page {
 
 		if (isset($_GET['username']))
 			$this->setUser($_GET);
-		else if (Page::getSession('user'))
+		else if (Page::getSession('user')) {
 			$user = Page::getSession('user');
+			if (!is_array($db_user = (new UserModel())->getItem($user['id']))) {
+				$this->setUser($user);
+				//trace($user['id']);
+			}
+		}
 		else if (DEVUSER) 
 			$this->setUser(json_decode(DEVUSER, true));
 

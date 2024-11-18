@@ -22,18 +22,20 @@ class NotificationModel extends BaseModel {
 		$count = count($notificationList);
 
 		if ($count > 0) {
+
 			$orderModel = new OrderModel();
+
 			for ($i=0;$i<$count;$i++) {
+
 				$ct = $notificationList[$i]['content_type'];
 				if (($ct == 'orderCreated') || ($ct == 'orderCancelled'))
 					$notificationList[$i]['content'] = $orderModel->getItem($notificationList[$i]['content_id']);
 			}
-				
-			$result['notificationList'] = $notificationList;
+			
 		}
 
 
-		return $dbp->asArray($query);
+		return $notificationList;
 	}
 
 	public function getOffers($user_id, $notify_id=false) {

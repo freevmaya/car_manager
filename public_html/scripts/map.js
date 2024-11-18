@@ -139,6 +139,7 @@ class VMap {
 			//clickableIcons: false,
 			//mapId: "MAIN_MAP_ID",
 			mapId: "319511f83a6febb1",
+			language: user.language_code,
 			zoomControl: true,
 			scaleControl: true
 		});

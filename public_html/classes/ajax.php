@@ -115,7 +115,6 @@ class Ajax extends Page {
 		if (!isset($data['route_id']))
 			$data['route_id'] = (new RouteModel())->Update($data['path']);
 
-		trace($data['route_id']);
 		if ($data['route_id'] && 
 			($order_id = (new OrderModel())->AddOrder($data))) {
 
@@ -126,7 +125,7 @@ class Ajax extends Page {
 				$this->NotifyOrderToDrivers($drivers, $order_id);
 
 			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $user['id'], Lang("OrderToProcess")." ({$countDriver})");
-		}
+		} else $order_id = 'An error was caused by update route';
 
 		return ["result"=>$order_id];
 	}
