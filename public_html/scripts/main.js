@@ -465,7 +465,7 @@ function renderList(nameData, toContainer = null) {
 function templateClone(tmpl, data) {
     let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, field) => {
         let v;
-        let fg = field.match(/([\w\s\d.\-_]+)\([\w\s\d.\-_]*\)/);
+        let fg = field.match(/([\w\s\d.\-_]+)\([\'\"\w\s\d.\-_]*\)/);
         if (!isEmpty(fg)) {
             eval('v = ' + field);
         } else {

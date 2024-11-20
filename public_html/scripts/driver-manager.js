@@ -56,13 +56,15 @@ class DriverManager {
 				updateOnLine(m, parseInt(drivers[carIdx].online) == 1);
 				drivers.splice(carIdx, 1);
 
-			} else
-				v_map.MarkerManager.RemoveDriver(this.#markers[i].id);
+			} else {
+				v_map.MarkerManager.RemoveCar(this.#markers[i].id);
+				this.#markers.splice(i, 1);
+			}
 		}
 
 		for (let i=0; i<drivers.length; i++) {
 			let driver = drivers[i];
-			let m = v_map.MarkerManager.CreateDriver( driver.id, toLatLng(driver), driver.username );
+			let m = v_map.MarkerManager.CreateCar( driver.id, toLatLng(driver), driver.username );
 
 			m.car = new FollowCar(m, toLatLng(driver), driver.angle);
 			this.#markers.push(m);

@@ -80,7 +80,11 @@ class ViewTarget extends ViewPath {
     }
 
     GetPath() {
-        return GetPath(this.getRoutes(), this.options.startPlace, this.options.finishPlace);
+        let result = GetPath(this.getRoutes(), this.options.startPlace, this.options.finishPlace);
+        let id = this.getOrderId();
+        if (id)
+            result = $.extend(result, {id: id});
+        return result;
     }
 
     Go() {
@@ -218,14 +222,20 @@ class TracerView extends ViewPath {
         }
     }
 
-    Close() {
+    prepareToClose(afterPrepare) {
         app.showQuestion('Do you want to cancel your order?', (()=>{
-            super.Close();
+
             if (this.getOrderId())
                 Ajax({
                     action: 'SetState',
-                    data: JSON.stringify({id: this.getOrderId(), state: 'finished'})
-                });
+                    data: JSON.stringify({id: this.getOrderId(), state: 'cancel'})
+                }).then(((data)=>{
+
+                    if (data.result == 'ok')
+                        super.prepareToClose(afterPrepare);
+                    else console.error(data);
+
+                }).bind(this));
         }).bind(this));
     }
 
@@ -234,7 +244,9 @@ class TracerView extends ViewPath {
     }
 
     destroy() {
-        this.#marker.setMap(null);
+        if (this.#marker)
+            this.#marker.setMap(null);
+        
         this.#tracer.destroy();
         this.enableGeo(false);
         this.closePath();
@@ -250,20 +262,32 @@ function Mechanics() {
     var tracerDialog;
 
     function BeginTracer(order) {
-        tracerDialog = viewManager.Create({
-            title: toLang('Route'),
-            content: [{
-                text: order.route_id,
-                class: TextInfoField
-            }]
-        }, TracerView, ()=>{
-            tracerDialog = null;
-        });
+        if (order.id) {
 
-        tracerDialog.setOrderId(order.id);
-        tracerDialog.travelMode = order.travelMode;
+            Ajax({
+                action: 'getOrderProcess',
+                data: {id: order.id}
+            }).then((d)=>{
 
-        tracerDialog.showPath(order.start, order.finish);
+                let elem = $(d.result);
+                if (isEmpty(elem))
+                    console.error(d.result);
+                else {
+                    tracerDialog = viewManager.Create({
+                        title: toLang('Order'),
+                        content: elem
+                    }, TracerView, ()=>{
+                        tracerDialog = null;
+                    });
+
+                    new OrderProcess(elem);
+                    tracerDialog.setOrderId(order.id);
+                    tracerDialog.travelMode = order.travelMode;
+
+                    tracerDialog.showPath(order.start, order.finish);
+                }
+            });
+        }
     }
 
     function SelectPlace(place) {

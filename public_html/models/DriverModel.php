@@ -21,7 +21,9 @@ class DriverModel extends BaseModel {
 			if ($active)
 				$timeBlock = ',`activationTime` = NOW(), `expiredTime` = NOW() + '.$this->expiredInterval;
 
-			$dbp->bquery("UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock} WHERE `user_id`= ?", 
+			$query = "UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock} WHERE `user_id`= ?";
+
+			$dbp->bquery($query , 
 				'iii', 
 				[$car_id, $active, $values['user_id']]);
 		} else {
@@ -40,7 +42,7 @@ class DriverModel extends BaseModel {
 			$user_id = $data;
 		else $user_id = @$data['user_id'];
 
-		$query = "SELECT d.id, d.active, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, d.car_id, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
+		$query = "SELECT d.id, (d.active AND `expiredTime` >= NOW()) AS active, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, d.car_id, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
 
 			"FROM {$this->getTable()} d ".
 				"INNER JOIN users u ON d.user_id = u.id ".
@@ -51,6 +53,7 @@ class DriverModel extends BaseModel {
 		if ($user_id) {
 
 			$query .= "WHERE u.id = {$user_id}";
+
 			return $dbp->line($query);
 		} else if (isset($data['driver_id'])) {
 

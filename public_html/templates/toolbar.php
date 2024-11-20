@@ -40,6 +40,16 @@
 			</div>
 		</div>', 'orderCancelled');
 
+	html::addTemplate('<div class="option notifyItem {content_type}" data-id="{id}">
+			<div>
+				<div class="header">
+					<span>{time}</span>{text}
+				</div>
+				<div class="container"></div>
+			</div>
+			<div class="trash"></div>
+		</div>', 'notifyItem');
+
 	/*
 	html::AddJsCode('
 		templateClone($(".templates .orderCancelled"), {id: 123});

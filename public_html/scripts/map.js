@@ -27,12 +27,28 @@ class MarkerManager {
 		return marker;
 	}
 
-	CreateDriver(id, position, title, onClick = null, markerClass='marker auto') {
+	CreateCar(id, position, title, onClick = null, markerClass='marker auto') {
 		let result = this.CreateMarker(position, title, markerClass, onClick);
 		result.id = id;
 		this.markers.cars.push(result);
 		return result;
 	}
+
+    RemoveCar(id) {
+        let idx = this.IndexOfByDriver(id);
+        if (idx > -1) {
+            this.markers.cars[idx].setMap(null);
+            this.markers.cars.splice(idx, 1);
+        }
+    }
+
+    IndexOfByDriver(id) {
+        for (let i in this.markers.cars)
+            if (id == this.markers.cars[i].id)
+                return i;
+
+        return -1;
+    }
 
 	CreateUserMarker(position, title, onClick = null, markerClass='user-marker') {
 		let result = this.CreateMarker(position, title, markerClass, onClick);
@@ -201,8 +217,6 @@ class VMap {
         }
 
         if (!isEmpty(request.origin) && !isEmpty(request.destination)) {
-	        console.log(request);
-
 	        this.DirectionsService.route(request, function(result, status) {
 	            if (status == 'OK')
 	            	callback(result);

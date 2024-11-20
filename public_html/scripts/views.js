@@ -99,10 +99,10 @@ class View extends BaseParentView {
         this.windows = $('#' + windowsLayerId);
         this.windows.append(this.view);
 
-        this.closeBtn.click(this.beforeClose.bind(this));
+        this.closeBtn.click(this.onCloseBtnClick.bind(this));
     }
 
-    beforeClose() {
+    onCloseBtnClick() {
         this.prepareToClose(this.Close.bind(this));
     }
 

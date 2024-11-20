@@ -68,14 +68,6 @@ class MarkerOrderManager extends MarkerManager {
         return -1;
     }
 
-    IndexOfByDriver(id) {
-        for (let i in this.markers.cars)
-            if (id == this.markers.cars[i].id)
-                return i;
-
-        return -1;
-    }
-
     CancelOrder(order_id) {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1) {
@@ -92,15 +84,13 @@ class MarkerOrderManager extends MarkerManager {
         }
     }
 
-    RemoveDriver(id) {
+    RemoveCar(id) {
         let idx = this.IndexOfByDriver(id);
         if (idx > -1) {
-            this.markers.cars[idx].setMap(null);
-            this.markers.cars.splice(idx, 1);
-            
             if (this.selectPathView && (this.selectPathView.order.id == order_id))
                 this.selectPathView.Close();
         }
+        super.RemoveCar(id);
     }
 
     AddOrder(order, anim) {

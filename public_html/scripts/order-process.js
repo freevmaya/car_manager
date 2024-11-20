@@ -28,8 +28,9 @@ class OrderProcess {
 			let driver = JSON.parse(notify.text);
 			let infoBlock = this.field.find('.driver-info');
 
-			infoBlock.empty()
-					.append(templateClone($('.templates .driver'), driver));
+			infoBlock.empty();
+			
+			new DataView(infoBlock, $('.templates .driver'), driver);
 			this.refreshColor();
 
 			Ajax({

@@ -292,3 +292,20 @@ select.time {
     color: #0000009e;
     
 }
+
+.items .notifyItem .trash {
+    background-image: url(images/trash-black.png);
+}
+
+.data .block {
+    border: 1px solid #ffffff12;
+    box-shadow: 2px 2px 1em #00000059;
+}
+
+.trips .data .block h3 {
+    background: #2b2427;
+}
+
+.view .data .block h3 {
+    background: #333;
+}

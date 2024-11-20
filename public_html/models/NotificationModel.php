@@ -65,6 +65,7 @@ class NotificationModel extends BaseModel {
 
 		$query = "SELECT user_id FROM {$this->getTable()} WHERE `content_id`={$content_id} AND content_type='{$content_type}'";
 
+		trace($query);
 		return $dbp->asArray($query);
 
 	}

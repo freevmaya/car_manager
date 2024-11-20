@@ -44,6 +44,8 @@ if ($this->asDriver()) {
 	    </div>
         '.html::RenderField(['type'=>'map', 'id'=>"map-{field_number}"], 'map').'
 	</div>', 'trip-item');
+
+	html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
 ?>
 <div class="pageContent trips">
 	<?if ($currentTripCount == 0) {?>

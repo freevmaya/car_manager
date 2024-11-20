@@ -72,11 +72,13 @@ class ToolbarUser {
 			let item = this.#notifyList[i];
 			let time = $.format.date(Date.parse(item.time), dateTinyFormat);
 
-			let option = $('<div class="option ' + item.content_type + '" data-id="' + item.id + '">');
-			option.append($('<div class="header">')
-				.html('<span>' + time + '</span>' + toLang(item.text)));
+			let option = templateClone($('.templates .notifyItem'), 
+				$.extend(item, {time: time})
+			);
+
+			option.find('.trash').click(this.trashClick.bind(this));
 			
-			DataView.Create(option, item);
+			DataView.Create(option.find('.container'), item);
 
 			content.append(option);
 		}
@@ -88,14 +90,14 @@ class ToolbarUser {
 						content: content}, View, (()=>{
 							this.#listView = null;
 						}).bind(this));
-		this.notifyOptionHeaderList().click(this.onClickItem.bind(this));
 	}
 
 	notifyOptionHeaderList() {
 		return this.#listView.contentElement.find('.option .header');
 	}
 
-	onClickItem(e) {
+	trashClick(e) {
+		
 		let option = $(e.currentTarget).closest('.option');
 		let nid = option.data('id');
 		transport.SendStatusNotify({id: nid}, 'read');

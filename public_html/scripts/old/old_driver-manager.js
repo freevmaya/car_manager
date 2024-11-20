@@ -6,7 +6,7 @@ class DriverManager {
 
 	CreateRouteCar(resultroutes) {
 		let result = new RouteCar(this.map, resultroutes, "Driver", 
-				v_map.MarkerManager.CreateDriver(getRoutePoint(resultroutes), 'driver'));
+				v_map.MarkerManager.CreateCar(getRoutePoint(resultroutes), 'driver'));
 		result.Start(40, 100);
 		return result;
 	}

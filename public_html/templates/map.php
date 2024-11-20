@@ -3,7 +3,7 @@
 	include_once(TEMPLATES_PATH.'/toolbar.php');
 	include_once(TEMPLATES_PATH.'/map/map-index.php');
 
-	html::AddScriptFile("select-target.js");
+	html::AddScriptFiles(["select-target.js", "order-process.js"]);
 		
 	$orders = (new OrderModel())->getItems(['state'=>['wait', 'accepted'], 'o.user_id'=>$user['id']]);//, 'routes'=>true]);
 
@@ -16,6 +16,8 @@
             <span>{name}</span>
         </div>
     </div>', 'car');
+
+	html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
     
 	html::AddJsCode("new VMap($('#map'), Mechanics);");
 ?>

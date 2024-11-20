@@ -890,8 +890,24 @@ input:focus, select:focus {
 .items .option {
     padding: 0.5em;
     width: 100%;
-    /*display: flex;*/
     cursor: pointer;
+}
+
+.items .notifyItem {
+    display: flex;
+}
+
+.items .notifyItem .trash {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;    
+    width: 16px;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.items .notifyItem .trash:hover {
+    opacity: 1;
 }
 
 .notifications .items .option {
@@ -1038,18 +1054,26 @@ input:focus, select:focus {
 /*--------------------ORDER----------------*/
 
 .data .block {
-    margin: 2em 0.5em;
     text-align: left;
-    border: 1px solid #ffffff12;
     border-radius: 1em;
     padding: 1em;
-    box-shadow: 2px 2px 1em #00000059;
 }
 
-.data .block  h3 {
-    /* margin: 1em; */
+.trips .data .block {
+    margin: 2em 0.5em;
+}
+
+.view .data .block {
+    margin: 1em 0.5em 0 0.5em;
+}
+
+.view .data {
+    display: flex;
+
+}
+
+.data .block h3 {
     margin-top: -1.5em;
-    background: #2b2427;
     margin: -2em 2em 0 2em;
     width: fit-content;
     padding: 0 1em;

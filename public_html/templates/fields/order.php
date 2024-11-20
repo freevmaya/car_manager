@@ -4,7 +4,7 @@
 
 	html::AddScriptFile('select-place.js');
 	html::AddScriptFile('color.js');
-	html::AddScriptFile('order.js');
+	html::AddScriptFile('order-process.js');
 
     $data_block = html::toData($value, ['start', 'finish', 'meters', 'order_id', 'pickUpTime']);
 ?>
@@ -38,22 +38,6 @@
 			</div>
 			<?
 			} else {
-
-				html::AddTemplate('
-					<div class="driver">
-					<div class="name">{username}</div>
-					<div class="param"><span>'.lang('Number').'</span><span>{number}</span></div>
-					<div class="param"><span>'.lang('Comfort').'</span><span>{comfort}</span></div>
-					<div class="param"><span>'.lang('Seating').'</span><span>{seating}</span></div>
-					<div class="param"><span>'.lang('Carbody').'</span><span>{car_body}</span></div>
-					<div class="param"><span>'.lang('Car color').'</span><span>{car_colorName}</span></div>
-					<div class="param">
-						<div class="item-image" style="background-image: url('.BASEURL.'/css/images/{car_body}.png)" data-color="{car_color}">
-						</div>
-					</div>
-					<div>
-				', 'driver');
-
 			?>
 				<div class="name wait">
 					<div><?=lang('Please wait, we are selecting a driver')?></div>

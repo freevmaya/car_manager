@@ -170,6 +170,20 @@ class Ajax extends Page {
 			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE `state`='wait'");
 	}
 
+	protected function getOrderProcess($data) {
+		GLOBAL $user;
+
+		$result = 'Order not found';
+		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted'], 'limit'=>1]);
+		if (count($orders) > 0) {
+			$orders = BaseModel::FullItems($orders, ['route_id'=>new RouteModel()]);
+			$result = html::RenderField(['type'=>'order'], 
+							array_merge($orders[0], $orders[0]['route']));
+		}
+
+		return ['result' => $result];
+	}
+
 	public function checkUnique($data) {
 		$model = new $data['model']();
 		return $model->checkUnique($data['value']);
