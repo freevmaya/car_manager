@@ -72,7 +72,7 @@ class Ajax extends Page {
 	}
 
 	protected function StateNotification($data) {
-		return ['result'=> (new NotificationModel())->SetState($data['id'], $data['state'])];
+		return ['result'=> (new NotificationModel())->SetState($data)];
 	}
 
 	protected function offerToPerform($data) {
@@ -143,13 +143,24 @@ class Ajax extends Page {
 
 	protected function SetState($data) {
 		$result = (new OrderModel())->SetState($data['id'], $data['state'], @$data['driver_id']);
+
+		$notificationModel = new NotificationModel();
 		if ($result) {
 			if ($data['state'] == 'accepted') {
 				$driver = (new DriverModel())->getItem($data);
-				$result = $result && (new NotificationModel())->AddNotify($data['id'], 'acceptedOffer', $driver['user_id'], Lang('The offer has been accepted'));
+				$result = $result && $notificationModel->AddNotify($data['id'], 'acceptedOffer', $driver['user_id'], Lang('The offer has been accepted'));
 			}
-			else if ($data['state'] == 'cancel')
-				$result = $result && $this->NotifyOrderToDrivers((new NotificationModel())->NotifiedDrivers($data['id'], 'orderCreated'), $data['id'], 'orderCancelled', 'Order cancelled');
+			else if ($data['state'] == 'cancel') {
+
+				$oldList = $notificationModel->NotifiedDrivers($data['id'], 'orderCreated');
+				if (count($oldList) > 0) {
+
+					$notificationModel->SetState(['content_type'=>'offerToPerform', 
+						'state'=>'rejected', 'content_id'=>BaseModel::getListValues($oldList, 'content_id')]);
+
+					$result = $result && $this->NotifyOrderToDrivers($oldList, $data['id'], 'orderCancelled', 'Order cancelled');
+				}
+			}
 		}
 
 		return ["result"=>$result ? 'ok' : false];

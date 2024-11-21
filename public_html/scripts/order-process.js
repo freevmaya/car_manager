@@ -1,4 +1,4 @@
-var WAITOFFERS = 30000; // 30 сек
+var WAITOFFERS = 5000; // 30 сек
 
 class OrderProcess {
 
@@ -7,7 +7,7 @@ class OrderProcess {
 	#listenerId;
 	constructor(field) {
 		this.field = field;
-
+		this.allowOffers = true;
 		this.field.closest('.view').on('destroy', this.onDestroy.bind(this));
 
 		this.order_id = field.data('order_id');
@@ -24,8 +24,7 @@ class OrderProcess {
 		this.#offers = [];
 	}
 
-	onNotificationList(e) {
-
+	offersProcess() {
 		let list = e.value;
         for (let i in list) {
             let notify = list[i];
@@ -36,16 +35,45 @@ class OrderProcess {
         }
 
         let time_count = Date.now() - this.#time;
-        if (time_count > WAITOFFERS) {
+        if ((time_count > WAITOFFERS) && (this.#offers.length > 0)) {
+
+        	this.#time = Date.now();
+
+        	console.log('END WAIT');
+	        let nearIx = 0;
+	        let bestDistance = Number.MAX_VALUE;
+	        let start = this.field.data('start');
+
+        	if (this.#offers.length > 1) {
+	        	for (let i=0; i<this.#offers.length; i++) {
+	        		let offer = this.#offers[i];
+
+	        		let distance = Distance(offer.driver, start);
+	        		if (distance < bestDistance) {
+	        			bestDistance = distance;
+	        			nearIx = i;
+	        		}
+	        		//transport.SendStatusNotify(offer);
+	        	}
+	        } else {
+	        	bestDistance = Distance(this.#offers[nearIx].driver, start);
+	        }
+
+	        let bestOffer = this.#offers[nearIx];
+	        bestOffer.distance = bestDistance;
+
+        	this.#offers.splice(nearIx, 1);
         	for (let i=0; i<this.#offers.length; i++) {
-        		let offer = this.#offers[i];
-        		transport.SendStatusNotify(offer);
+        		transport.SendStatusNotify(this.#offers[i]);
         	}
+        	this.#offers = [];
+        	this.takeOffer(bestOffer);
+        	this.allowOffers = false;
         }
 	}
 
-	onDestroy(e) {
-		this.destroy();
+	onNotificationList(e) {
+		if (this.allowOffers) this.offersProcess();
 	}
 
 	offerIndexOf(notify_id) {
@@ -56,28 +84,25 @@ class OrderProcess {
 	}
 
 	addOfferNotify(notify) {
+		notify.driver = JSON.parse(notify.text);
         this.#offers.push(notify);
         this.field.find('#offer-count').text(this.#offers.length);
 	}
 
 	takeOffer(notify) {
-		if (notify.content_id == this.order_id) {
+		let infoBlock = this.field.find('.driver-info');
 
-			let driver = JSON.parse(notify.text);
-			let infoBlock = this.field.find('.driver-info');
+		infoBlock.empty();
+		
+		new DataView(infoBlock, $('.templates .driver'), notify.driver);
+		this.refreshColor();
 
-			infoBlock.empty();
-			
-			new DataView(infoBlock, $('.templates .driver'), driver);
-			this.refreshColor();
-
-			Ajax({
-				action: 'SetState',
-				data: {id: this.order_id, driver_id: driver.id, state: 'accepted' }
-			}).then(() => {
-				transport.SendStatusNotify(notify);
-			});
-		}
+		Ajax({
+			action: 'SetState',
+			data: {id: this.order_id, driver_id: notify.driver.id, state: 'accepted' }
+		}).then(() => {
+			transport.SendStatusNotify(notify);
+		});
 	}
 
 	onCancelClick(e) {
@@ -99,6 +124,10 @@ class OrderProcess {
 		    const result = solver.solve();
 		    elem.attr("style", elem.attr("style") + ";" + result.filter);
 		});
+	}
+
+	onDestroy(e) {
+		this.destroy();
 	}
 
 	destroy() {

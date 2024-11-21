@@ -30,6 +30,15 @@ abstract class BaseModel {
 		return $result;
 	}
 
+	public static function getListValues($items, $field) {
+		$result = [];
+
+		foreach ($items as $item)
+			$result[] = $item[$field];
+
+		return array_unique($result);
+	}
+
 	public static function FullItems($items, $models) {
 
 		foreach ($models as $key=>$model) {

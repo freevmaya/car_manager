@@ -5,9 +5,16 @@ class NotificationModel extends BaseModel {
 		return 'notifications';
 	}
 
-	public function SetState($notify_id, $state) {
+	public function SetState($options) {
 		GLOBAL $dbp;
-		return $dbp->query("UPDATE notifications SET state = '{$state}' WHERE id = {$notify_id}");
+
+		$where = BaseModel::AddWhere(BaseModel::AddWhere(BaseModel::AddWhere([], 
+					$options, 'content_type'),
+					$options, 'content_id'),
+					$options, 'id');
+
+		$whereStr = implode(" AND ", $where);
+		return $dbp->query("UPDATE notifications SET state = '{$options['state']}' WHERE $whereStr");
 	}
 
 	public function getItems($options) {
@@ -75,7 +82,7 @@ class NotificationModel extends BaseModel {
 	public function NotifiedDrivers($content_id, $content_type) {
 		GLOBAL $dbp;
 
-		$query = "SELECT user_id FROM {$this->getTable()} WHERE `content_id`={$content_id} AND content_type='{$content_type}'";
+		$query = "SELECT user_id, content_id FROM {$this->getTable()} WHERE `content_id`={$content_id} AND content_type='{$content_type}'";
 		return $dbp->asArray($query);
 
 	}
