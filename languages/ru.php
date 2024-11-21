@@ -36,6 +36,7 @@ $lang = [
 	'BeginPageDescription'=> 'Вы можете начать поездку, используя шаблон прошлых поездок',
 	'Trip'=>'Поездка',
 	'Car color'=>'Цвет авто',
-	'Please wait, we are selecting a driver'=>'Ожидайте, мы подбираем водителя'
+	'Please wait, we are selecting a driver'=>'Ожидайте, мы подбираем водителя',
+	'Offer count'=> 'Количество предложений'
 ];
 ?>

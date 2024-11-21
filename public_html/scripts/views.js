@@ -183,6 +183,7 @@ class View extends BaseParentView {
     }
 
     destroy() {
+        this.view.trigger('destroy');
         this.view.remove();
         $(window).off('resize', this.onResize.bind(this));
         this.afterDestroy();

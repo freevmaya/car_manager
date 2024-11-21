@@ -41,11 +41,12 @@
 			?>
 				<div class="name wait">
 					<div><?=lang('Please wait, we are selecting a driver')?></div>
+					<div><span><?=lang('Offer count')?></span>: <span id="offer-count"><span></div>
 				</div>
 				<?=html::RenderField(['type'=>'loader']);?>
 			<?}?>
 			</div>
-			<div>
+			<div class="buttons">
 				<button class="button center"><?=lang("Cancel")?></button>
 			</div>
 		</div>

@@ -5,6 +5,11 @@ class NotificationModel extends BaseModel {
 		return 'notifications';
 	}
 
+	public function SetState($notify_id, $state) {
+		GLOBAL $dbp;
+		return $dbp->query("UPDATE notifications SET state = '{$state}' WHERE id = {$notify_id}");
+	}
+
 	public function getItems($options) {
 		GLOBAL $dbp, $user;
 
@@ -40,12 +45,19 @@ class NotificationModel extends BaseModel {
 
 	public function getOffers($user_id, $notify_id=false) {
 		GLOBAL $dbp;
-		$whereStr = "n.`content_type` = 'offerToPerform' AND n.`state` IN ('active', 'receive', 'read') AND d.active = 1";
+		$whereStr = "o.state = 'wait' AND n.`content_type` = 'offerToPerform' AND n.`state` IN ('active', 'receive', 'read') AND d.active = 1";
 		if ($notify_id)
 			$whereStr .= ' AND n.id = '.$notify_id;
 		else $whereStr .= " AND n.`user_id`={$user_id}";
 
-		$query = "SELECT n.*, d.*, u.first_name, u.last_name, u.username, c.*, cb.symbol, cc.* FROM {$this->getTable()} n INNER JOIN `driverOnTheLine` d ON n.offered_driver_id = d.id INNER JOIN `users` u ON d.user_id = u.id INNER JOIN `car` c ON c.id = d.car_id INNER JOIN `car_bodies` cb ON c.car_body_id=cb.id INNER JOIN `car_color` cc ON c.color_id=cc.id WHERE $whereStr";
+		$query = "SELECT n.*, d.*, u.first_name, u.last_name, u.username, c.*, cb.symbol, cc.* ".
+				"FROM {$this->getTable()} n ".
+				"INNER JOIN `orders` o ON o.id = n.content_id ".
+				"INNER JOIN `driverOnTheLine` d ON n.offered_driver_id = d.id ".
+				"INNER JOIN `users` u ON d.user_id = u.id ".
+				"INNER JOIN `car` c ON c.id = d.car_id ".
+				"INNER JOIN `car_bodies` cb ON c.car_body_id=cb.id ".
+				"INNER JOIN `car_color` cc ON c.color_id=cc.id WHERE $whereStr";
 
 		return $dbp->asArray($query);
 	}
@@ -64,8 +76,6 @@ class NotificationModel extends BaseModel {
 		GLOBAL $dbp;
 
 		$query = "SELECT user_id FROM {$this->getTable()} WHERE `content_id`={$content_id} AND content_type='{$content_type}'";
-
-		trace($query);
 		return $dbp->asArray($query);
 
 	}

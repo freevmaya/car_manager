@@ -1,7 +1,15 @@
+var WAITOFFERS = 30000; // 30 сек
+
 class OrderProcess {
 
+	#time;
+	#offers;
+	#listenerId;
 	constructor(field) {
 		this.field = field;
+
+		this.field.closest('.view').on('destroy', this.onDestroy.bind(this));
+
 		this.order_id = field.data('order_id');
 
 		this.btn = this.field.find('button')
@@ -9,17 +17,47 @@ class OrderProcess {
 
 		this.refreshColor();
 
-		transport.AddListener('notificationList', 
+		this.#listenerId = transport.AddListener('notificationList', 
         	this.onNotificationList.bind(this));
+
+		this.#time = Date.now();
+		this.#offers = [];
 	}
 
 	onNotificationList(e) {
+
 		let list = e.value;
         for (let i in list) {
-            let item = list[i];
-            if (item.content_type == "offerToPerform") 
-                this.takeOffer(item);
+            let notify = list[i];
+            if (notify.content_type == "offerToPerform") {
+            	if (this.offerIndexOf(notify.id) == -1)
+                	this.addOfferNotify(notify);
+            }
         }
+
+        let time_count = Date.now() - this.#time;
+        if (time_count > WAITOFFERS) {
+        	for (let i=0; i<this.#offers.length; i++) {
+        		let offer = this.#offers[i];
+        		transport.SendStatusNotify(offer);
+        	}
+        }
+	}
+
+	onDestroy(e) {
+		this.destroy();
+	}
+
+	offerIndexOf(notify_id) {
+		for (let i=0; i<this.#offers.length; i++)
+			if (this.#offers[i].id == notify_id)
+				return i;
+		return -1;
+	}
+
+	addOfferNotify(notify) {
+        this.#offers.push(notify);
+        this.field.find('#offer-count').text(this.#offers.length);
 	}
 
 	takeOffer(notify) {
@@ -61,6 +99,11 @@ class OrderProcess {
 		    const result = solver.solve();
 		    elem.attr("style", elem.attr("style") + ";" + result.filter);
 		});
+	}
+
+	destroy() {
+		transport.RemoveListener('notificationList', this.#listenerId);
+		delete this;
 	}
 }
 

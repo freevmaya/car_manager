@@ -72,9 +72,7 @@ class Ajax extends Page {
 	}
 
 	protected function StateNotification($data) {
-		GLOBAL $dbp;
-		$result = $dbp->query("UPDATE notifications SET state = '{$data['state']}' WHERE id = {$data['id']}");
-		return ['result'=> $result];
+		return ['result'=> (new NotificationModel())->SetState($data['id'], $data['state'])];
 	}
 
 	protected function offerToPerform($data) {

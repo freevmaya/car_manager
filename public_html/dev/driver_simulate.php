@@ -13,6 +13,8 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 	$driverModel = new DriverModel();
 	$routeModel = new RouteModel();
 	$userModel = new UserModel();
+	$nModel = new NotificationModel();
+	$orderModel = new OrderModel();
 
 
 	$tracers = [];
@@ -36,6 +38,22 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				$tracer->Update();
 
 				$userModel->UpdatePosition($driver['user_id'], $tracer->routePos, $tracer->routeAngle);
+			}
+
+			$items = $nModel->getItems(['user_id'=>$driver['user_id'], 'content_type'=>['orderCreated', 'acceptedOffer', 'orderCancelled'], 'state'=>'active']);
+
+			foreach ($items as $notify) {
+
+				$nModel->SetState($notify['id'], 'read');
+
+				if ($notify['content_type'] == 'orderCreated') {
+					$order = $orderModel->getItem($notify['content_id']);
+					if ($order && ($order['state'] == 'wait')) {
+						$driverDetail = $driverModel->getItem(['user_id'=>$driver['user_id']]);
+						$nModel->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driverDetail), $driver['id']);
+					}
+				} else if ($notify['content_type'] == 'orderCreated') {
+				}
 			}
 
 			usleep(100000);
