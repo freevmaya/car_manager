@@ -1,6 +1,6 @@
 <?
 GLOBAL $devUser, $user;
-$anti_cache = '?_=27';
+$anti_cache = '?_=28';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
 html::AddJsData(json_encode(
