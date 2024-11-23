@@ -1082,11 +1082,18 @@ input:focus, select:focus {
     font-size: 0.9em;
 }
 
-.data .block a.trip {
-    display: block;
+.data .block .trip {
+    display: flex;
+    flex-direction: column;
 }
 
-.data .block .name {padding: 0.5em 0;color: #ffffffab;}
+.data .block .trip span {
+    margin: 3px 0px;
+}
+
+.data .block .name {
+    padding: 0.5em 0;
+}
 
 .data .block  .param {
     display: flex;
@@ -1198,8 +1205,6 @@ input:focus, select:focus {
         -webkit-animation-delay:1.2s;
         -moz-animation-delay:1.2s;
 }
-
-
 
 @keyframes bounce_fountainG{
     0%{

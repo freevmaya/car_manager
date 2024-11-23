@@ -1,6 +1,21 @@
+class BaseOrderField {
+    constructor(field) {
+        this.field = field;
+        this.field.closest('.view').on('destroy', this.onDestroy.bind(this));
+        this.order_id = field.data('order_id');
+    }
+
+    onDestroy(e) {
+        this.destroy();
+    }
+
+    destroy() {
+        delete this;
+    }
+}
+
 class ViewPath extends BottomView {
     #routes;
-    #order_id = 0;
     rpath;
 
     setRoutes(routes) {
@@ -26,14 +41,6 @@ class ViewPath extends BottomView {
         else setRoutes.bind(this)(routes);
     }
 
-    setOrderId(v) {
-        this.#order_id = v;
-    }
-
-    getOrderId() {
-        return this.#order_id;
-    }
-
     closePath() {
         if (this.rpath) {
             this.rpath.setMap(null);
@@ -42,7 +49,37 @@ class ViewPath extends BottomView {
     }
 }
 
-class ViewTarget extends ViewPath {
+
+class OrderView extends ViewPath {
+    #order_id = 0;
+
+    prepareToClose(afterPrepare) {
+        app.showQuestion('Do you want to cancel your order?', (()=>{
+
+            if (this.getOrderId())
+                Ajax({
+                    action: 'SetState',
+                    data: JSON.stringify({id: this.getOrderId(), state: 'cancel'})
+                }).then(((data)=>{
+
+                    if (data.result == 'ok')
+                        super.prepareToClose(afterPrepare);
+                    else console.error(data);
+
+                }).bind(this));
+        }).bind(this));
+    }
+
+    setOrderId(v) {
+        this.#order_id = v;
+    }
+
+    getOrderId() {
+        return this.#order_id;
+    }
+}
+
+class SelectPathView extends OrderView {
 
     listenerId;
     offers = {};
@@ -171,8 +208,24 @@ class ViewTarget extends ViewPath {
         this.closePath();
         super.destroy();
     }
+}
 
 
+class OrderWaitView extends OrderView {
+
+    initContent() {
+        super.initContent();
+        $(".field.order").each((i, field)=>{ new DriverFieldWait($(field)); });
+    }
+}
+
+
+class OrderAccepedView extends OrderView {
+
+    initContent() {
+        super.initContent();
+        $(".field.order").each((i, field)=>{ new DriverFieldAccepted($(field)); });
+    }
 }
 
 
@@ -190,8 +243,6 @@ class TracerView extends ViewPath {
     setRoutes(routes) {
         super.setRoutes(routes);
         this.enableGeo(true);
-
-        //this.#marker = v_map.MarkerManager.CreateMarker(routes.routes[0].overview_path[0], 'driver', 'marker auto');
 
         this.#tracer = new Tracer(routes.routes, this.#setMainPoint.bind(this), 100);
 
@@ -222,23 +273,6 @@ class TracerView extends ViewPath {
         }
     }
 
-    prepareToClose(afterPrepare) {
-        app.showQuestion('Do you want to cancel your order?', (()=>{
-
-            if (this.getOrderId())
-                Ajax({
-                    action: 'SetState',
-                    data: JSON.stringify({id: this.getOrderId(), state: 'cancel'})
-                }).then(((data)=>{
-
-                    if (data.result == 'ok')
-                        super.prepareToClose(afterPrepare);
-                    else console.error(data);
-
-                }).bind(this));
-        }).bind(this));
-    }
-
     onFinish() {
         //this.Close();
     }
@@ -258,80 +292,105 @@ var currentOrder;
 
 function Mechanics() {
 
-    var routeDialog;
-    var tracerDialog;
-
-    function BeginTracer(order) {
-        if (order.id) {
+    function BeginAcceptedOrder() {
+        if (currentOrder.id) {
 
             Ajax({
                 action: 'getOrderProcess',
-                data: {id: order.id}
+                data: {id: currentOrder.id}
             }).then((d)=>{
 
                 let elem = $(d.result);
                 if (isEmpty(elem))
                     console.error(d.result);
                 else {
-                    tracerDialog = viewManager.Create({
+
+                    let dialog = viewManager.Create({
                         title: toLang('Order'),
                         content: elem
-                    }, TracerView, ()=>{
-                        tracerDialog = null;
-                    });
+                    }, OrderAccepedView);
 
-                    new OrderProcess(elem);
-                    tracerDialog.setOrderId(order.id);
-                    tracerDialog.travelMode = order.travelMode;
-
-                    tracerDialog.showPath(order.start, order.finish);
+                    dialog.setOrderId(currentOrder.id);
+                    dialog.travelMode = currentOrder.travelMode;
+                    dialog.showPath(currentOrder.start, currentOrder.finish);
                 }
             });
         }
     }
 
-    function SelectPlace(place) {
+    function BeginWaitdOrder() {
 
-        app.SendEvent('SelectPlace', place);
+         Ajax({
+            action: 'getOrderProcess',
+            data: {id: currentOrder.id}
+        }).then((d)=>{
 
-        if (!routeDialog) {
-            v_map.setMainPosition(place.latLng);
+            let elem = $(d.result);
+            if (isEmpty(elem))
+                console.error(d.result);
+            else {
 
-            routeDialog = new ViewTarget({
-                startPlace: place
-            }, () => {
-                if (routeDialog.getOrderId()) {
-                    BeginTracer(routeDialog.GetPath());
-                }
-                routeDialog = null;
-            });
-        } else routeDialog.SelectPlace(place);
+                let dialog = viewManager.Create({
+                    title: toLang('Order'),
+                    content: elem
+                }, OrderWaitView);
+
+                dialog.setOrderId(currentOrder.id);
+                dialog.travelMode = currentOrder.travelMode;
+                dialog.showPath(currentOrder.start, currentOrder.finish);
+            }
+        });
     }
 
 
     v_map.driverManagerOn(true);
-    v_map.map.addListener("click", (e) => {
-        if (routeDialog && routeDialog.options.id)
-            return;
-
-        if (tracerDialog) {
-            tracerDialog.setTracerPoint(e.latLng);
-            return StopPropagation(e);
-        }
-
-        if (e.placeId) {
-            v_map.getPlaceDetails(e.placeId).then((place)=>{
-                place = $.extend(place, e);
-                SelectPlace(place);
-            });
-        } else SelectPlace(e);
-        
-        return StopPropagation(e);
-    });
 
     if (typeof currentOrder == 'object') {
         currentOrder.start = JSON.parse(currentOrder.start);
         currentOrder.finish = JSON.parse(currentOrder.finish);
-        BeginTracer(currentOrder);
+
+        if (currentOrder.state == 'wait') 
+            BeginWaitdOrder(currentOrder.route);
+        else if (currentOrder.state == 'accepted') 
+            BeginAcceptedOrder();
+
+        //BeginTracer(currentOrder);
+    } else {
+
+        var routeDialog;
+
+        function SelectPlace(place) {
+
+            app.SendEvent('SelectPlace', place);
+
+            if (!routeDialog) {
+                v_map.setMainPosition(place.latLng);
+
+                routeDialog = new SelectPathView({
+                    startPlace: place
+                }, () => {
+                    if (routeDialog.getOrderId()) {
+                        currentOrder = routeDialog.GetPath();
+                        BeginWaitdOrder();
+                    }
+
+                    routeDialog = null;
+                });
+            } else routeDialog.SelectPlace(place);
+        }
+
+        v_map.map.addListener("click", (e) => {
+            if (routeDialog && routeDialog.options.id)
+                return;
+
+            if (e.placeId) {
+                v_map.getPlaceDetails(e.placeId).then((place)=>{
+                    place = $.extend(place, e);
+                    SelectPlace(place);
+                });
+            } else SelectPlace(e);
+            
+            return StopPropagation(e);
+        });
     }
 }

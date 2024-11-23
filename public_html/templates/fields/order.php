@@ -4,7 +4,7 @@
 
 	html::AddScriptFile('select-place.js');
 	html::AddScriptFile('color.js');
-	html::AddScriptFile('order-process.js');
+	html::AddScriptFile('passenger/driver-field.js');
 
     $data_block = html::toData($value, ['start', 'finish', 'meters', 'order_id', 'pickUpTime']);
 ?>
@@ -13,11 +13,10 @@
 		<div class="block">
 			<h3><?=lang('Route')?></h3>
 			<div class="name">
-			<a class="value trip"<?=$data_block?>>
-	    		<?=$value['startPlace']?>
-	    		>
-	    		<?=$value['finishPlace']?>
-	    	</a>
+			<div class="value trip">
+	    		<span class="start-place"><?=$value['startPlace']?></span>
+	    		<span class="finish-place"><?=$value['finishPlace']?></span>
+	    	</div>
 	    	</div>
 			<div class="param"><span><?=lang('Distance')?></span><span><?=roundv($value['meters'] / 1000, 1).lang('km.')?></span></div>
     	</div>
@@ -26,16 +25,16 @@
 			<div class="driver-info">
 
     		<?if ($value['driverName']) {?>
-			<div class="name"><?=$value['driverName']?></div>
-			<div class="param"><span><?=lang('Number')?></span><span><?=$value['number']?></span></div>
-			<div class="param"><span><?=lang('Comfort')?></span><span><?=$value['comfort']?></span></div>
-			<div class="param"><span><?=lang('Seating')?></span><span><?=$value['seating']?></span></div>
-			<div class="param"><span><?=lang('Carbody')?></span><span><?=$value['car_body']?></span></div>
-			<div class="param"><span><?=lang('Car color')?></span><span><?=$value['car_colorName']?></span></div>
-			<div class="param">
-				<div class="item-image" style="background-image: url(<?=BASEURL?>/css/images/<?=$value['car_body']?>.png)" data-color="<?=$value['car_color']?>">
+				<div class="name"><?=$value['driverName']?></div>
+				<div class="param"><span><?=lang('Number')?></span><span><?=$value['number']?></span></div>
+				<div class="param"><span><?=lang('Comfort')?></span><span><?=$value['comfort']?></span></div>
+				<div class="param"><span><?=lang('Seating')?></span><span><?=$value['seating']?></span></div>
+				<div class="param"><span><?=lang('Carbody')?></span><span><?=$value['car_body']?></span></div>
+				<div class="param"><span><?=lang('Car color')?></span><span><?=$value['car_colorName']?></span></div>
+				<div class="param">
+					<div class="item-image" style="background-image: url(<?=BASEURL?>/css/images/<?=$value['car_body']?>.png)" data-color="<?=$value['car_color']?>">
+					</div>
 				</div>
-			</div>
 			<?
 			} else {
 			?>
@@ -45,9 +44,6 @@
 				</div>
 				<?=html::RenderField(['type'=>'loader']);?>
 			<?}?>
-			</div>
-			<div class="buttons">
-				<button class="button center"><?=lang("Cancel")?></button>
 			</div>
 		</div>
 	</div>

@@ -1,21 +1,33 @@
 var WAITOFFERS = 5000; // 30 сек
 
-class OrderProcess {
+class DriverFieldAccepted extends BaseOrderField {
+	#listenerId;
+	constructor(field) {
+		super(field);
+		this.refreshColor();
+	}
+
+	refreshColor() {
+		this.field.find(".param .item-image").each((i, elem)=>{
+			elem = $(elem);
+
+			const color = new Color(hexToRgb(elem.data("color")));
+		    const solver = new Solver(color);
+		    const result = solver.solve();
+		    elem.attr("style", elem.attr("style") + ";" + result.filter);
+		});
+	}
+}
+
+class DriverFieldWait extends DriverFieldAccepted {
 
 	#time;
 	#offers;
 	#listenerId;
 	constructor(field) {
-		this.field = field;
+
+		super(field);
 		this.allowOffers = true;
-		this.field.closest('.view').on('destroy', this.onDestroy.bind(this));
-
-		this.order_id = field.data('order_id');
-
-		this.btn = this.field.find('button')
-						.click(this.onCancelClick.bind(this));
-
-		this.refreshColor();
 
 		this.#listenerId = transport.AddListener('notificationList', 
         	this.onNotificationList.bind(this));
@@ -24,7 +36,7 @@ class OrderProcess {
 		this.#offers = [];
 	}
 
-	offersProcess() {
+	offersProcess(e) {
 		let list = e.value;
         for (let i in list) {
             let notify = list[i];
@@ -73,7 +85,7 @@ class OrderProcess {
 	}
 
 	onNotificationList(e) {
-		if (this.allowOffers) this.offersProcess();
+		if (this.allowOffers) this.offersProcess(e);
 	}
 
 	offerIndexOf(notify_id) {
@@ -105,39 +117,8 @@ class OrderProcess {
 		});
 	}
 
-	onCancelClick(e) {
-		Ajax({
-			action: "SetState", 
-			data: {id: this.order_id, state: "cancel"}
-		}).then((e)=>{
-			if (e.result = "ok")
-				window.location.reload();
-		});
-	}
-
-	refreshColor() {
-		this.field.find(".param .item-image").each((i, elem)=>{
-			elem = $(elem);
-
-			const color = new Color(hexToRgb(elem.data("color")));
-		    const solver = new Solver(color);
-		    const result = solver.solve();
-		    elem.attr("style", elem.attr("style") + ";" + result.filter);
-		});
-	}
-
-	onDestroy(e) {
-		this.destroy();
-	}
-
 	destroy() {
 		transport.RemoveListener('notificationList', this.#listenerId);
-		delete this;
+		super.destroy();
 	}
 }
-
-$(window).ready(()=>{
-	$(".field.order").each((i, field)=>{
-		new OrderProcess($(field));
-	});
-});

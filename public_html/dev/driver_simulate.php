@@ -44,7 +44,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 			foreach ($items as $notify) {
 
-				$nModel->SetState($notify['id'], 'read');
+				$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
 
 				if ($notify['content_type'] == 'orderCreated') {
 					$order = $orderModel->getItem($notify['content_id']);

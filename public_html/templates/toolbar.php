@@ -15,7 +15,7 @@
 		],
 		lang('Services')=> [
 			($this->asDriver()) ?
-				[ Page::link(['map','driver']), lang('Give a ride') ] :
+				[ Page::link(['map']), lang('Give a ride') ] :
 			[ Page::link('map'), lang('Trip on the map') ]
 		],
 		lang('Settings')=> [

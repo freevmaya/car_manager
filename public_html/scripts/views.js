@@ -5,12 +5,13 @@ class ViewManager {
 
     Create(options, classView = View, afterDestroy = null) {
         let idx = options.name ? options.name : JSON.stringify(options.content);
-        if (!this.openedViews[idx])
-        //if (!this.CurrentView())
-            return this.openedViews[idx] = new classView(options, ()=>{
-                if (afterDestroy) afterDestroy();
-                delete this.openedViews[idx];
-            });
+
+        //if (!this.openedViews[idx])
+
+        return this.openedViews[idx] = new classView(options, ()=>{
+            if (afterDestroy) afterDestroy();
+            delete this.openedViews[idx];
+        });
     }
 
     CurrentView() {
@@ -118,6 +119,10 @@ class View extends BaseParentView {
         $(window).on('resize', this.onResize.bind(this));
     }
 
+    initContent() {
+        ViewManager.setContent(this, this.options.content, this.options.clone);
+    }
+
     setOptions(options) {
         this.options = $.extend({content: [], actions: []}, options);
 
@@ -139,7 +144,7 @@ class View extends BaseParentView {
             this.footerElement.append(btn);
         }
 
-        ViewManager.setContent(this, this.options.content, this.options.clone);
+        this.initContent();
         
         if (this.options.curtain) this.blockBackground(true);
         

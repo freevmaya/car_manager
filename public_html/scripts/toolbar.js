@@ -157,9 +157,10 @@ class ToolbarUser {
 	}
 }
 
-
-$('body').click((e)=>{
-	let tm = $('#toolbarMenu');
-	if (($(e.target).parents('#toolbarMenu').length == 0) && (tm.hasClass('open')))
-		tm.removeClass('open');
+$(window).ready(()=>{
+	$('body').click((e)=>{
+		let tm = $('#toolbarMenu');
+		if (($(e.target).parents('#toolbarMenu').length == 0) && (tm.hasClass('open')))
+			tm.removeClass('open');
+	});
 });

@@ -309,3 +309,7 @@ select.time {
 .view .data .block h3 {
     background: #333;
 }
+
+.data .block .name {
+    color: #ffffffab;
+}
