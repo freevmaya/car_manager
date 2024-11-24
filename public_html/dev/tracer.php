@@ -4,6 +4,7 @@ class Tracer {
 	public $routePos;
 	public $routeAngle;
     public $distance;
+    public $finished;
 
     protected $speed;
 	protected $routes;
@@ -27,11 +28,17 @@ class Tracer {
     	$this->pathIndex = 0;
 	}
 
+    public function remindDistance() {
+        return $this->totalLength - $this->distance;
+    }
+
     public function Update() {
     	$currentTime = microtime(true);
 
-		$step = ($currentTime - $this->lastTime) * $this->speed / 3.6;
-		$this->setDistance($this->distance + $step);
+        if (!$this->finished) {
+    		$step = ($currentTime - $this->lastTime) * $this->speed / 3.6;
+    		$this->setDistance($this->distance + $step);
+        }
 
     	$this->lastTime = $currentTime;
     }
@@ -48,8 +55,10 @@ class Tracer {
 
     protected function setDistance($distance) {
 
-    	if ($distance > $this->totalLength)
+    	if ($distance > $this->totalLength) {
     		$distance = $distance - $this->totalLength;
+            $this->finished = true;
+        }
 
     	$this->distance = $distance;
         $idx = 0;

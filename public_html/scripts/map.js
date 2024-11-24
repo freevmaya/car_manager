@@ -22,7 +22,9 @@ class MarkerManager {
 		});
 
 		if (onClick != null)
-			marker.addListener("click", onClick);
+			marker.addListener("click", (e) => {
+				onClick(marker);
+			});
 
 		return marker;
 	}
@@ -93,6 +95,7 @@ class VMap {
 	#directionsService;
 	#mainMarker;
 	#options;
+    #listenerId;
 
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
@@ -121,6 +124,7 @@ class VMap {
 				this.initMap(pos).then(callback);
 			}).bind(this));
 		}
+        this.#listenerId = transport.AddListener('notificationList', this.onNotificationList.bind(this));
 	}
 
 	get DirectionsService() {
@@ -238,6 +242,23 @@ class VMap {
 	DrawPath(data, options) {
 		return DrawPath(this.map, data, options);
 	}
+
+    onNotificationList(e) {
+
+    	function getPath(request) {
+    		console.log(request);
+
+    	}
+
+        for (let i in e.value) {
+        	let notify = e.value[i];
+			if (notify.content_type == 'requestData') {
+                let request = JSON.parse(notify.text);
+                eval("let result = " + request.action + "(" + notify.text + ");");
+                transport.SendStatusNotify(notify, 'read');
+            }
+        }
+    }
 
 	destroy() {
 		this.#view.empty();

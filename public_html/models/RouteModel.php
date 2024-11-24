@@ -5,6 +5,12 @@ class RouteModel extends BaseModel {
 		return 'route';
 	}
 
+	public function getItems($options) {
+		GLOBAL $dbp;
+
+		return $dbp->asArray("SELECT * FROM {$this->getTable()} WHERE routes IS NOT NULL");
+	}
+
 	public function getItem($id) {
 		GLOBAL $dbp, $user;
 

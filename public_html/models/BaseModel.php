@@ -39,18 +39,23 @@ abstract class BaseModel {
 		return array_unique($result);
 	}
 
-	public static function FullItems($items, $models) {
+	public static function FullItem($item, $models) {
 
 		foreach ($models as $key=>$model) {
 			$idpos = strpos($key, '_id');
 			if ($idpos > -1) {
 				$outfield = substr($key, 0, $idpos);
-
-				for ($i=0; $i<count($items); $i++) {
-					$items[$i][$outfield] = $model->getItem($items[$i][$key]);
-				}
+				if (@$item[$key])
+					$item[$outfield] = $model->getItem($item[$key]);
 			}
 		}
+
+		return $item;
+	}
+
+	public static function FullItems($items, $models) {
+		for ($i=0; $i<count($items); $i++)
+			$items[$i] = BaseModel::FullItem($items[$i], $models);
 
 		return $items;
 	}

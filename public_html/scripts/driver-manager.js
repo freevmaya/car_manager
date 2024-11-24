@@ -64,11 +64,16 @@ class DriverManager {
 
 		for (let i=0; i<drivers.length; i++) {
 			let driver = drivers[i];
-			let m = v_map.MarkerManager.CreateCar( driver.id, toLatLng(driver), driver.username );
+			let m = v_map.MarkerManager.CreateCar( driver.id, toLatLng(driver), driver.username, this.onCarClick.bind(this) );
 
+			m.driver = driver;
 			m.car = new FollowCar(m, toLatLng(driver), driver.angle);
 			this.#markers.push(m);
 		}
+	}
+
+	onCarClick(m) {
+		console.log(m.driver);
 	}
 
 	onUpdate() {

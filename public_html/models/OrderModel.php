@@ -19,8 +19,23 @@ class OrderModel extends BaseModel {
 	}
 
 	public function haveActiveOrder($user_id) {
+		return $this->getActiveOrder($user_id) != null;
+	}
+
+	public function getActiveOrder($options) {
 		GLOBAL $dbp;
-		return $dbp->line("SELECT id FROM {$this->getTable()} WHERE user_id={$user_id} AND `state` IN ('wait', 'accepted')");
+		$where = ["`state` IN ('wait', 'accepted')"];
+
+		if (is_array($options)) {
+			$where = BaseModel::AddWhere(
+					BaseModel::AddWhere($where, $options, 'driver_id'), 
+				$options, 'user_id');
+		} else $where[] = "user_id={$options}";
+		
+		$whereStr = implode(" AND ", $where);
+
+		$query = "SELECT * FROM {$this->getTable()} WHERE {$whereStr}";
+		return $dbp->line($query);
 	}
 
 	public function getItems($options) {

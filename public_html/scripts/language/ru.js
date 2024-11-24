@@ -57,5 +57,6 @@ lang = {
 	'Are you sure you want to end the trip?': 'Вы уверены, что хотите завершить поездку?',
 	'Offer sent': 'Предложение отправлено',
 	'Distance to start': 'Расстояние до отправной точки',
+	'Distance': 'Расстояние',
 	'Offer count': 'Количество предложений'
 };

@@ -1,6 +1,11 @@
 <?
 class NotificationModel extends BaseModel {
 
+	private $callbacks;
+	public function __construct() {
+		$this->callbacks = [];
+	}
+
 	protected function getTable() {
 		return 'notifications';
 	}
@@ -17,14 +22,18 @@ class NotificationModel extends BaseModel {
 		return $dbp->query("UPDATE notifications SET state = '{$options['state']}' WHERE $whereStr");
 	}
 
+	public function getActiveOffers($user_id) {
+		GLOBAL $dbp;
+		return $this->getItems(['user_id'=>$user_id, 'content_type'=>'offerToPerform', 'state'=>'active']);
+	}
+
 	public function getItems($options) {
 		GLOBAL $dbp, $user;
 
-		$where = BaseModel::AddWhere(
-					BaseModel::AddWhere(
-						BaseModel::AddWhere([], $options, 'content_type')
-					, $options, 'state'), 
-				$options, 'user_id');
+		$where = BaseModel::AddWhere(BaseModel::AddWhere(BaseModel::AddWhere([],
+						$options, 'content_type'),
+						$options, 'state'), 
+						$options, 'user_id');
 		
 		$whereStr = implode(" AND ", $where);
 
@@ -98,5 +107,32 @@ class NotificationModel extends BaseModel {
 			$result = $dbp->bquery($query, 'isis', [$content_id, $content_type, $user_id, $text]);
 		}
 		return $result;
+	}
+
+	public function checkReply($user_id) {
+
+		$replyList = $this->getItems(['content_type'=>'replyData', 'state'=>'active', 'user_id'=>$user_id]);
+
+		for ($i=0; $i<count($replyList); $i++) {
+
+			$reply 	= $replyList[$i];
+			$id 	= $reply['id'];
+
+			if (isset($this->callbacks[$id])) {
+				$this->callbacks[$id](json_decode($reply['text']));
+				unset($this->callbacks[$id]);
+			}
+
+			$this->SetState(['id'=>$id, 'state'=>'read']);
+		}
+	}
+
+	public function getData($content_id, $user_id, $request, $callback) {
+		GLOBAL $dbp;
+
+		if (count($this->getItems(['content_type'=>'requestData', 'state'=>'active', 'user_id'=>$user_id])) == 0) {
+			$this->AddNotify($content_id, 'requestData', $user_id, is_array($request) ? json_encode($request) : $request);
+			$this->callbacks[$dbp->lastID()] = $callback;
+		}
 	}
 }

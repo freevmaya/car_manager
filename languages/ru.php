@@ -17,7 +17,7 @@ $lang = [
 	'Car'=>'Авто',
 	'User'=>'Пользователь',
 	'Driver'=>'Водитель',
-	'Driver/auto'=>'Водитель/авто',
+	'Driver/auto'=>'Водитель, авто',
 	'UserModel'=>'Данные пользователя',
 	'DriverModel'=>'Данные водителя',
 	'Give a ride'=>'Подвезти',
@@ -37,6 +37,7 @@ $lang = [
 	'Trip'=>'Поездка',
 	'Car color'=>'Цвет авто',
 	'Please wait, we are selecting a driver'=>'Ожидайте, мы подбираем водителя',
-	'Offer count'=> 'Количество предложений'
+	'Offer count'=> 'Количество предложений',
+	'Distance'=> 'Расстояние'
 ];
 ?>

@@ -52,7 +52,10 @@ class ToolbarUser {
 		if (!isEmpty(data)) {
 			for (let i in data) {
 	            if (!isEmpty(data[i].text) && (data[i].text[0] != '{')) {
-					transport.SendStatusNotify(data[i], 'receive');
+	            	if (data[i].state == 'active')
+						transport.SendStatusNotify(data[i], 'receive');
+
+					data[i].time = $.format.date(Date.parse(data[i].time), dateTinyFormat);
 					this.#notifyList.push(data[i]);
 	            }
 	        }
@@ -70,11 +73,8 @@ class ToolbarUser {
 
 		for (let i in this.#notifyList) {
 			let item = this.#notifyList[i];
-			let time = $.format.date(Date.parse(item.time), dateTinyFormat);
 
-			let option = templateClone($('.templates .notifyItem'), 
-				$.extend(item, {time: time})
-			);
+			let option = templateClone($('.templates .notifyItem'), item);
 
 			option.find('.trash').click(this.trashClick.bind(this));
 			

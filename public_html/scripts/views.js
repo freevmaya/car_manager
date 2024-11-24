@@ -6,8 +6,6 @@ class ViewManager {
     Create(options, classView = View, afterDestroy = null) {
         let idx = options.name ? options.name : JSON.stringify(options.content);
 
-        //if (!this.openedViews[idx])
-
         return this.openedViews[idx] = new classView(options, ()=>{
             if (afterDestroy) afterDestroy();
             delete this.openedViews[idx];

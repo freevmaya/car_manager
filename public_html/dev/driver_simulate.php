@@ -19,6 +19,10 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 	$tracers = [];
 
+	function replyPath($reply) {
+
+	}
+
 	do {
 
 		$drivers = BaseModel::FullItems($simulateModel->getItems(), ['route_id'=>$routeModel]);
@@ -26,7 +30,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 		foreach ($drivers as $driver) {
 			$driverModel->Update($driver);
 
-			$routes = json_decode($driver['route']['routes'], true);
+			$routes = @$driver['route'] ? json_decode($driver['route']['routes'], true) : null;
 
 			if ($routes) {
 
@@ -37,7 +41,39 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				$tracer = $tracers[$driver['id']];
 				$tracer->Update();
 
+				if ($tracer->finished) {
+					// Закончили рейс, идем отдыхать! 
+
+
+					unset($tracers[$driver['id']]);
+					$simulateModel->Stop($driver['user_id']);
+				}
+
 				$userModel->UpdatePosition($driver['user_id'], $tracer->routePos, $tracer->routeAngle);
+			} else {
+				//Если есть активная заявка.
+				$order = $orderModel->getActiveOrder(['driver_id' => $driver['driver_id']]);
+				if ($order) {
+					// Здесь отправляем на место начала поездки по заявке
+
+					$order = BaseModel::FullItem($order, ['route_id'=>$routeModel]);
+					$start = json_decode($order['route']['start'], true);
+					$coord = ['lat'=>$start['lat'], 'lng'=>$start['lng']];
+
+					$nModel->getData($order['id'], $order['user_id'], json_encode(['action'=>'getPath', 'finish'=>$coord]), 'replyPath');
+
+				} else if (strtotime($driver['waitUntil']) < strtotime('now')) {
+					// Отдохнули, начинаем новый рейс!
+
+					$routes = $routeModel->getItems([]);
+					$count = count($routes);
+					if ($count > 0) {
+						$rndRoute = $routes[rand(0, $count - 1)];
+						$simulateModel->Start($driver['user_id'], $rndRoute['id']);
+					}
+
+				}
+				$userModel->OnLine($driver['user_id']);
 			}
 
 			$items = $nModel->getItems(['user_id'=>$driver['user_id'], 'content_type'=>['orderCreated', 'acceptedOffer', 'orderCancelled'], 'state'=>'active']);
@@ -50,6 +86,13 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 					$order = $orderModel->getItem($notify['content_id']);
 					if ($order && ($order['state'] == 'wait')) {
 						$driverDetail = $driverModel->getItem(['user_id'=>$driver['user_id']]);
+
+						if (isset($tracers[$driver['id']])) {
+							$tracer = $tracers[$driver['id']];
+							$driverDetail['route_id'] = $driver['route_id'];
+							$driverDetail['remindDistance'] = $tracer->remindDistance();
+						}
+
 						$nModel->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driverDetail), $driver['id']);
 					}
 				} else if ($notify['content_type'] == 'orderCreated') {

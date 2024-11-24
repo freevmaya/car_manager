@@ -61,6 +61,9 @@ class DriverFieldWait extends DriverFieldAccepted {
 	        		let offer = this.#offers[i];
 
 	        		let distance = Distance(offer.driver, start);
+	        		if (offer.remindDistance)
+	        			distance += offer.remindDistance;
+
 	        		if (distance < bestDistance) {
 	        			bestDistance = distance;
 	        			nearIx = i;

@@ -70,19 +70,23 @@ class dataBaseProvider {
 		} else return $this->dbOne($query);
 	}
 
-	public function asArray($query, $cached=false) {
+	public function asArray($query, $cached=false, $trace = false) {
 		if ($cached) {
-			if (!($cacheData = $this->getCache($query, $key)))
+			if (!($cacheData = $this->getCache($query, $key))) {
+				if ($trace) trace($query);
 				$this->setCache($query, $cacheData = $this->dbAsArray($query));
+			}
 
 			return $cacheData;
 		} else return $this->dbAsArray($query);
 	}
 
-	public function line($query, $cached=false) {
+	public function line($query, $cached=false, $trace = false) {
 		if ($cached) {
-			if (!($cacheData = $this->getCache($query, $key)))
+			if (!($cacheData = $this->getCache($query, $key))) {
+				if ($trace) trace($query);
 				$this->setCache($query, $cacheData = $this->dbLine($query));
+			}
 
 			return $cacheData;
 		} else return $this->dbLine($query);
