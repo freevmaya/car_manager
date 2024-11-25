@@ -243,18 +243,19 @@ class VMap {
 		return DrawPath(this.map, data, options);
 	}
 
+	getPath(notifyId, request) {
+		this.getRoutes(JSON.vparse(request.start), JSON.vparse(request.finish), travelMode, (result)=>{
+			transport.Reply(notifyId, result);
+		});
+	}
+
     onNotificationList(e) {
-
-    	function getPath(request) {
-    		console.log(request);
-
-    	}
 
         for (let i in e.value) {
         	let notify = e.value[i];
 			if (notify.content_type == 'requestData') {
                 let request = JSON.parse(notify.text);
-                eval("let result = " + request.action + "(" + notify.text + ");");
+                eval("let result = this." + request.action + "(" + notify.id + ", " + notify.text + ");");
                 transport.SendStatusNotify(notify, 'read');
             }
         }

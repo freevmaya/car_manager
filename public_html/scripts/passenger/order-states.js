@@ -71,7 +71,8 @@ class OrderView extends ViewPath {
     SetOrder(order) {
         if (order) {
             this.setOrderId(order.id);
-            this.travelMode = order.travelMode;
+            if (order.travelMode)
+                this.travelMode = order.travelMode;
             this.showPath(order.start, order.finish);
         } else {
             this.setOrderId(null);
@@ -90,8 +91,10 @@ class OrderView extends ViewPath {
                         data: JSON.stringify({id: this.getOrderId(), state: 'cancel'})
                     }).then(((data)=>{
 
-                        if (data.result == 'ok')
+                        if (data.result == 'ok') {
                             super.prepareToClose(afterPrepare);
+                            BeginSelectPath();
+                        }
                         else console.error(data);
 
                     }).bind(this));
@@ -200,11 +203,36 @@ class OrderWaitView extends OrderView {
 
 class OrderAccepedView extends OrderView {
 
+    #listenerId;
+    #pathToStart;
+
+    constructor(options = {actions: {}}, afterDestroy = null) {
+        super(options, afterDestroy);
+
+        this.#listenerId = transport.AddListener('notificationList', ((e)=>{
+            this.appendReceiveNotifyList(e.value);
+        }).bind(this));
+
+        this.appendReceiveNotifyList(jsdata.notificationList);
+    }
+
     initContent() {
         super.initContent();
         $(".field.order").each((i, field)=>{ new DriverFieldAccepted($(field)); });
+    }
 
-        console.log(this.options.order);
+    appendReceiveNotifyList(list) {
+        for (let i in list)
+            if (list[i].content_type == 'pathToStart') {
+                let path = JSON.parse(list[i].text);
+                //this.#pathToStart = v_map.DrawPath(path);
+                console.log(path);
+            }
+    }
+
+    destroy() {
+        transport.RemoveListener(this.#listenerId);
+        super.destroy();
     }
 }
 
@@ -270,34 +298,41 @@ class TracerView extends ViewPath {
 
 var currentOrder;
 
-function Mechanics() {
+function BeginSelectPath() {
+    var selectPathDialog;
 
-    function BeginAcceptedOrder() {
-        if (currentOrder.id) {
+    function SelectPlace(place) {
 
-            Ajax({
-                action: 'getOrderProcess',
-                data: {id: currentOrder.id}
-            }).then((d)=>{
+        if (!selectPathDialog) {
+            v_map.setMainPosition(place.latLng);
 
-                let elem = $(d.result);
-                if (isEmpty(elem))
-                    console.error(d.result);
-                else {
+            selectPathDialog = viewManager.Create({
+                startPlace: place
+            }, SelectPathView, () => {
+                if (selectPathDialog.getOrderId())
+                    BeginWaitdOrder(currentOrder = selectPathDialog.GetOrder());
 
-                    let dialog = viewManager.Create({
-                        order: currentOrder,
-                        title: toLang('Order'),
-                        content: elem
-                    }, OrderAccepedView);
-                }
+                selectPathDialog = null;
             });
-        }
+        } else selectPathDialog.SelectPlace(place);
     }
 
-    function BeginWaitdOrder(order) {
+    v_map.map.addListener("click", (e) => {
+        if (e.placeId) {
+            v_map.getPlaceDetails(e.placeId).then((place)=>{
+                place = $.extend(place, e);
+                SelectPlace(place);
+            });
+        } else SelectPlace(e);
+        
+        return StopPropagation(e);
+    });
+}
 
-         Ajax({
+function BeginAcceptedOrder() {
+    if (currentOrder.id) {
+
+        Ajax({
             action: 'getOrderProcess',
             data: {id: currentOrder.id}
         }).then((d)=>{
@@ -308,13 +343,37 @@ function Mechanics() {
             else {
 
                 let dialog = viewManager.Create({
-                    order: order,
+                    order: currentOrder,
                     title: toLang('Order'),
                     content: elem
-                }, OrderWaitView);
+                }, OrderAccepedView);
             }
         });
     }
+}
+
+function BeginWaitdOrder(order) {
+
+     Ajax({
+        action: 'getOrderProcess',
+        data: {id: currentOrder.id}
+    }).then((d)=>{
+
+        let elem = $(d.result);
+        if (isEmpty(elem))
+            console.error(d.result);
+        else {
+
+            let dialog = viewManager.Create({
+                order: order,
+                title: toLang('Order'),
+                content: elem
+            }, OrderWaitView);
+        }
+    });
+}
+
+function Mechanics() {
 
 
     v_map.driverManagerOn(true);
@@ -329,35 +388,5 @@ function Mechanics() {
             BeginAcceptedOrder();
 
         //BeginTracer(currentOrder);
-    } else {
-
-        var selectPathDialog;
-
-        function SelectPlace(place) {
-
-            if (!selectPathDialog) {
-                v_map.setMainPosition(place.latLng);
-
-                selectPathDialog = viewManager.Create({
-                    startPlace: place
-                }, SelectPathView, () => {
-                    if (selectPathDialog.getOrderId())
-                        BeginWaitdOrder(currentOrder = selectPathDialog.GetOrder());
-
-                    selectPathDialog = null;
-                });
-            } else selectPathDialog.SelectPlace(place);
-        }
-
-        v_map.map.addListener("click", (e) => {
-            if (e.placeId) {
-                v_map.getPlaceDetails(e.placeId).then((place)=>{
-                    place = $.extend(place, e);
-                    SelectPlace(place);
-                });
-            } else SelectPlace(e);
-            
-            return StopPropagation(e);
-        });
-    }
+    } else BeginSelectPath();
 }

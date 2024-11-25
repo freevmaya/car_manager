@@ -8,6 +8,7 @@ define("MAINDOMAIN", 'test-taxi.com');
 define("CHARSET", "utf-8");
 define('BASEURL', '//'.MAINDOMAIN);//'https://'.MAINDOMAIN.((MAINDOMAIN == "test-taxi.com") ? '' : '/parashop/car_manager/taxi'));
 define('SCRIPTURL', BASEURL.'/scripts');
+define("APIKEY", "AIzaSyBzErLfg0nBPSCmP2LcYq0Y5A-C0GIuBMM");
 
 define('_dbhost', 'localhost');
 define('_dbname_default', 'taxi');

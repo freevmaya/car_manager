@@ -36,7 +36,7 @@ html::AddJsData(json_encode(
         var app = new App();
         var lang = {};
         var fieldIdx = <?=html::fieldIdx()?>;
-        var travelMode = 'WALKING';
+        var travelMode = 'DRIVING';
 
         function watchPosition(action) {
             <?if (DEV) {

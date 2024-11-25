@@ -1,11 +1,6 @@
 <?
 class NotificationModel extends BaseModel {
 
-	private $callbacks;
-	public function __construct() {
-		$this->callbacks = [];
-	}
-
 	protected function getTable() {
 		return 'notifications';
 	}
@@ -25,6 +20,11 @@ class NotificationModel extends BaseModel {
 	public function getActiveOffers($user_id) {
 		GLOBAL $dbp;
 		return $this->getItems(['user_id'=>$user_id, 'content_type'=>'offerToPerform', 'state'=>'active']);
+	}
+
+	public function getItem($id) {
+		GLOBAL $dbp;
+		return $dbp->line("SELECT * FROM {$this->getTable()} WHERE id={$id}");
 	}
 
 	public function getItems($options) {
@@ -109,6 +109,7 @@ class NotificationModel extends BaseModel {
 		return $result;
 	}
 
+	/*
 	public function checkReply($user_id) {
 
 		$replyList = $this->getItems(['content_type'=>'replyData', 'state'=>'active', 'user_id'=>$user_id]);
@@ -126,13 +127,23 @@ class NotificationModel extends BaseModel {
 			$this->SetState(['id'=>$id, 'state'=>'read']);
 		}
 	}
+	*/
 
-	public function getData($content_id, $user_id, $request, $callback) {
+	public function getData($from_user_id, $to_user_id, $request, $callback, $params) {
 		GLOBAL $dbp;
 
-		if (count($this->getItems(['content_type'=>'requestData', 'state'=>'active', 'user_id'=>$user_id])) == 0) {
-			$this->AddNotify($content_id, 'requestData', $user_id, is_array($request) ? json_encode($request) : $request);
-			$this->callbacks[$dbp->lastID()] = $callback;
+		$requestList = $this->getItems(['content_type'=>'requestData', 'state'=>['active', 'read'], 'user_id'=>$to_user_id]);
+		if (count($requestList) == 0) {
+			$this->AddNotify($from_user_id, 'requestData', $to_user_id, is_array($request) ? json_encode($request) : $request);
+		} else {
+			$replyList = $this->getItems(['content_type'=>'replyData', 'state'=>'active', 'user_id'=>$from_user_id]);
+			if (count($replyList) > 0) {
+				$reply = $replyList[0];
+				$callback(json_decode($reply['text'], true), $params);
+
+				$this->SetState(['id'=>$requestList[0]['id'], 'state'=>'accepted']);
+				$this->SetState(['id'=>$reply['id'], 'state'=>'read']);
+			}
 		}
 	}
 }

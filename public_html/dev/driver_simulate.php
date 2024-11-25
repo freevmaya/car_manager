@@ -5,6 +5,14 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 	include("engine.php");
 
+	/*
+	$directions = new Directions();
+
+	$path = $directions->getPath(['placeId'=>'ChIJbxInKtyTxUMRB6IjYt3JRC8'], ['lat'=>55.1934509, 'lng'=>61.3193359]);
+
+	print_r($path);
+	*/
+
 
 	$user = json_decode(DEVUSER, true);
 	$dbp = new mySQLProvider('localhost', _dbname_default, _dbuser, _dbpassword);
@@ -19,8 +27,18 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 	$tracers = [];
 
-	function replyPath($reply) {
+	function replyPath($path, $data) {
+		GLOBAL $simulateModel, $routeModel, $nModel;
 
+		$driver = $data['driver'];
+		$order = $data['order'];
+
+		$path['user_id'] = $driver['user_id'];
+
+		$route_id = $routeModel->Update($path);
+		$simulateModel->Start($driver['user_id'], $route_id);
+
+		$nModel->AddNotify($order['id'], 'pathToStart', $order['user_id'], json_encode($path));
 	}
 
 	do {
@@ -55,12 +73,13 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				$order = $orderModel->getActiveOrder(['driver_id' => $driver['driver_id']]);
 				if ($order) {
 					// Здесь отправляем на место начала поездки по заявке
+					// если не найдет еще путь к точке сбора
+					if (count($nModel->getItems(['user_id'=>$order['user_id'], 'content_type'=>'pathToStart', 'state'=>'active'])) == 0) {
 
-					$order = BaseModel::FullItem($order, ['route_id'=>$routeModel]);
-					$start = json_decode($order['route']['start'], true);
-					$coord = ['lat'=>$start['lat'], 'lng'=>$start['lng']];
-
-					$nModel->getData($order['id'], $order['user_id'], json_encode(['action'=>'getPath', 'finish'=>$coord]), 'replyPath');
+						$order = BaseModel::FullItem($order, ['route_id'=>$routeModel]);
+						$nModel->getData($driver['user_id'], $order['user_id'], json_encode(['action'=>'getPath', 'start'=>$driver, 'finish'=>$order['route']['start']]), 'replyPath', 
+							['driver'=>$driver, 'order'=>$order]);
+					}
 
 				} else if (strtotime($driver['waitUntil']) < strtotime('now')) {
 					// Отдохнули, начинаем новый рейс!

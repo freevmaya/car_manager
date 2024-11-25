@@ -73,6 +73,9 @@ class DriverManager {
 	}
 
 	onCarClick(m) {
+		v_map.infoWindow.close();
+	    v_map.infoWindow.setContent('<h3>' + m.driver.username + '</h3>');
+	    v_map.infoWindow.open(v_map.map, m);
 		console.log(m.driver);
 	}
 

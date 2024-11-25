@@ -235,6 +235,13 @@ class AjaxTransport extends EventProvider {
             data: { id: data.id, state: a_status }
         });
     }
+
+    Reply(notifyId, data) {
+        Ajax({
+            action: 'Reply',
+            data: $.extend({ id: notifyId }, data)
+        });
+    }
 }
 
 class DateTime {
@@ -376,6 +383,12 @@ function PlaceId(place) {
                 (place.placeId ? place.placeId : place));
     
     return null;
+}
+
+JSON.vparse = function(v) {
+    if (isStr(v))
+        return JSON.parse(v);
+    return v;
 }
 
 JSON.parsePlace = function(placeStr) {

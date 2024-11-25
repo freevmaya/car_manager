@@ -93,6 +93,7 @@ class Tracer {
                 $this->routeAngle = CalcAngle($this->route[0], $this->route[1]);
             }
         } else {
+            $this->finished = true;
         	$this->distance = $this->totalLength;
             $idx = count($this->route) - 1;
             $this->routeAngle = CalcAngle($this->route[$idx - 1], $this->route[$idx]);

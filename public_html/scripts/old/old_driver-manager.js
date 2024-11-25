@@ -15,7 +15,7 @@ class DriverManager {
 		let request = {
 		    origin: origin,
 		    destination: destination,
-		    travelMode: 'DRIVING'
+		    travelMode: travelMode
 		};
 		v_map.DirectionsService.route(request, (function(result, status) {
 			if (status == 'OK') {

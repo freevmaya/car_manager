@@ -39,7 +39,8 @@ class RouteModel extends BaseModel {
 		$start = $value['start'];
 		$finish = $value['finish'];
 
-		$value['user_id'] = Page::$current->getUser()['id'];
+		if (!isset($value['user_id']))
+			$value['user_id'] = Page::$current->getUser()['id'];
 
 		if (is_string($start))
 			$start = json_decode($start, true);

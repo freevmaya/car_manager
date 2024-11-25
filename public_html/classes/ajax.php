@@ -49,6 +49,8 @@ class Ajax extends Page {
 		$notificationList = (new NotificationModel())->getItems(
 			['user_id'=>$user['id'], 'state'=>'active']
 		);
+
+		//trace($notificationList);
 		//$dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$user['id']}");
 		$count = count($notificationList);
 
@@ -171,6 +173,19 @@ class Ajax extends Page {
 			(new NotificationModel())->AddNotify($content_id, $content_type, $driver['user_id'], Lang($text));
 
 		return true;
+	}
+
+	protected function Reply($data) {
+		GLOBAL $user;
+
+		$result = false;
+
+		$notiyModule = new NotificationModel();
+		if ($notify = $notiyModule->getItem($data['id'])) {
+			$result = $notiyModule->AddNotify($user['id'], 'replyData', $notify['content_id'], json_encode($data, true));
+		}
+
+		return ['result' => $result];
 	}
 
 	protected function getOrders($data) {
