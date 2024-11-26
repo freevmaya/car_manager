@@ -33,9 +33,15 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 		$driver = $data['driver'];
 		$order = $data['order'];
 
-		$path['user_id'] = $driver['user_id'];
+		$pathToDb = [
+			'start'=>$path['request']['origin'],
+			'finish'=>$path['request']['destination'],
+			'travelMode'=>$path['request']['travelMode'],
+			'routes'=>$path['routes'][0]['overview_path'],
+			'user_id'=>$driver['user_id']
+		];
 
-		$route_id = $routeModel->Update($path);
+		$route_id = $routeModel->Update($pathToDb);
 		$simulateModel->Start($driver['user_id'], $route_id);
 
 		$nModel->AddNotify($order['id'], 'pathToStart', $order['user_id'], json_encode($path));

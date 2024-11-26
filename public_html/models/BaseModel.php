@@ -19,6 +19,14 @@ abstract class BaseModel {
 		return $whereList;
 	}
 
+	public static  function GetConditions($values, $paramsName, $operand = '=') {
+		$list = [];
+		foreach ($paramsName as $key=>$param)
+			$list = BaseModel::AddWhere($list, $values, $param, $operand);
+
+		return $list;
+	}
+
 	public static function getValues($values, $fields, $defaults) {
 		$result = [];
 		foreach ($fields as $i=>$field) {

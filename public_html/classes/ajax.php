@@ -67,6 +67,13 @@ class Ajax extends Page {
 
 			if (isset($data['requireDrivers']))
 				$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng']);
+			/*
+			if (isset($data['order_id'])) {
+				$order = (new OrderModel())->getItem($data['order_id']);
+				if ($order && $order['driver_id']) {
+					$result['driver'] = (new DriverModel())->getItem(['driver_id'=>$order['driver_id']]);
+				}
+			}*/
 
 		}
 		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");

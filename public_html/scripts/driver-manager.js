@@ -21,6 +21,10 @@ class DriverManager {
         clearInterval(this.#timerId);
 	}
 
+	toLatLng(driver) {
+		return new google.maps.LatLng(driver.lat, driver.lng);
+	}
+
 	onReceive(e) {
 
 		let drivers = e.value.slice();
@@ -31,29 +35,11 @@ class DriverManager {
 			return -1;
 		}
 
-		function toLatLng(driver) {
-			return new google.maps.LatLng(driver.lat, driver.lng);
-		}
-
-		function updateOnLine(marker, online) {
-			let cnt = $(marker.content);
-
-			if (online) {
-				if (cnt.hasClass('offline'))
-					cnt.removeClass('offline');
-			} else {
-				if (!cnt.hasClass('offline'))
-					cnt.addClass('offline');
-			}
-		}
-
 		for (let i=0; i<this.#markers.length; i++) {
 			let m = this.#markers[i];
 			let carIdx = indexOfById(this.#markers[i].id);
 			if (carIdx > -1) {
-				m.car.setPos(toLatLng(drivers[carIdx]), drivers[carIdx].angle);
-
-				updateOnLine(m, parseInt(drivers[carIdx].online) == 1);
+				m.car.setPos(this.toLatLng(drivers[carIdx]), drivers[carIdx].angle, parseInt(drivers[carIdx].online) == 1);
 				drivers.splice(carIdx, 1);
 
 			} else {
@@ -62,12 +48,16 @@ class DriverManager {
 			}
 		}
 
-		for (let i=0; i<drivers.length; i++) {
-			let driver = drivers[i];
-			let m = v_map.MarkerManager.CreateCar( driver.id, toLatLng(driver), driver.username, this.onCarClick.bind(this) );
+		for (let i=0; i<drivers.length; i++)
+			this.CreateCar(drivers[i]);
+	}
+
+	CreateCar(driver) {
+		if (driver.lat) {
+			let m = v_map.MarkerManager.CreateCar( driver.id, this.toLatLng(driver), driver.username, this.onCarClick.bind(this) );
 
 			m.driver = driver;
-			m.car = new FollowCar(m, toLatLng(driver), driver.angle);
+			m.car = new FollowCar(m, this.toLatLng(driver), driver.angle);
 			this.#markers.push(m);
 		}
 	}
@@ -109,7 +99,19 @@ class FollowCar {
 		MarkerManager.setPos(this.#marker, this.#latLng = latLng, this.#angle = angle);
 	}
 
-	setPos(latLng, angle) {
+	updateOnLine(online) {
+		let cnt = $(this.#marker.content);
+
+		if (online) {
+			if (cnt.hasClass('offline'))
+				cnt.removeClass('offline');
+		} else {
+			if (!cnt.hasClass('offline'))
+				cnt.addClass('offline');
+		}
+	}
+
+	setPos(latLng, angle, online) {
 
 		let old = this.#latLng;
 		let currentTime = Date.now();
@@ -127,6 +129,8 @@ class FollowCar {
         }
 
 		this.#lastTime = currentTime;
+
+		this.updateOnLine(online);
 	}
 
 	#setPosMarker(pos, angle) {

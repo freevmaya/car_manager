@@ -204,16 +204,19 @@ class OrderWaitView extends OrderView {
 class OrderAccepedView extends OrderView {
 
     #listenerId;
+    #driverLID;
     #pathToStart;
+    #driverCar;
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
 
         this.#listenerId = transport.AddListener('notificationList', ((e)=>{
-            this.appendReceiveNotifyList(e.value);
+            //transport.addRequestData({order_id: this.getOrderId()});
+            this.onReceiveNotifyList(e.value);
         }).bind(this));
 
-        this.appendReceiveNotifyList(jsdata.notificationList);
+        this.onReceiveNotifyList(jsdata.notificationList);
     }
 
     initContent() {
@@ -221,16 +224,25 @@ class OrderAccepedView extends OrderView {
         $(".field.order").each((i, field)=>{ new DriverFieldAccepted($(field)); });
     }
 
-    appendReceiveNotifyList(list) {
+    onReceiveNotifyList(list) {
         for (let i in list)
             if (list[i].content_type == 'pathToStart') {
                 let path = JSON.parse(list[i].text);
-                //this.#pathToStart = v_map.DrawPath(path);
-                console.log(path);
+                if (!this.#pathToStart)
+                    this.#pathToStart = v_map.DrawPath(path, {
+                        preserveViewport: false,
+                        suppressMarkers: true,
+                        polylineOptions: {
+                            strokeColor: '#AA0'
+                        }
+                    });
             }
     }
 
     destroy() {
+        if (this.#pathToStart)
+            this.#pathToStart.setMap(null);
+
         transport.RemoveListener(this.#listenerId);
         super.destroy();
     }

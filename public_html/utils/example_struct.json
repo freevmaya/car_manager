@@ -1,0 +1,422 @@
+{
+  "user_id": 1573356581,
+  "path": {
+    "start": {
+      "lat": 55.191230000000004,
+      "lng": 61.281420000000004
+    },
+    "finish": {
+      "lat": 55.18759000000001,
+      "lng": 61.29431
+    },
+    "startName": "ТК Ёлки",
+    "finishName": "Школа № 41",
+    "startAddress": "ул. 40-летия Победы, 1, Челябинск, Челябинская обл., Россия, 454021",
+    "finishAddress": "ул. 40-летия Победы, 14А, Челябинск, Челябинская обл., Россия, 454100",
+    "meters": 1268,
+    "travelMode": "WALKING"
+  }
+}
+
+
+
+
+
+
+{
+    "id": 42,
+    "geocoded_waypoints": [
+        {
+            "geocoder_status": "OK",
+            "place_id": "ChIJaWVGCQmTxUMRL-I0AxiYchw",
+            "types": [
+                "premise"
+            ]
+        },
+        {
+            "geocoder_status": "OK",
+            "place_id": "ChIJ3YgF0hKTxUMReuRuUrymHSM",
+            "types": [
+                "book_store",
+                "establishment",
+                "point_of_interest",
+                "shopping_mall",
+                "store"
+            ]
+        }
+    ],
+    "routes": [
+        {
+            "bounds": {
+                "south": 55.181020000000004,
+                "west": 61.286440000000006,
+                "north": 55.191990000000004,
+                "east": 61.302440000000004
+            },
+            "copyrights": "Map data ©2024 Google",
+            "legs": [
+                {
+                    "distance": {
+                        "text": "2,2 км",
+                        "value": 2176
+                    },
+                    "duration": {
+                        "text": "6 мин.",
+                        "value": 335
+                    },
+                    "end_address": "ТРЦ \"Фокус\", Молдавская ул., 16, Челябинск, Челябинская обл., Россия, 454021",
+                    "end_location": {
+                        "lat": 55.1911977,
+                        "lng": 61.30243649999999
+                    },
+                    "start_address": "ул. Чичерина, 23, Челябинск, Челябинская обл., Россия, 454128",
+                    "start_location": {
+                        "lat": 55.1810199,
+                        "lng": 61.29441920000001
+                    },
+                    "steps": [
+                        {
+                            "distance": {
+                                "text": "0,8 км",
+                                "value": 828
+                            },
+                            "duration": {
+                                "text": "2 мин.",
+                                "value": 140
+                            },
+                            "end_location": {
+                                "lat": 55.1869096,
+                                "lng": 61.2864434
+                            },
+                            "polyline": {
+                                "points": "kpxoIcqbuJuArB]f@m@|@k@z@i@x@_A|AMTCDMLGJk@`Ak@x@CDk@x@_@f@sCfEW^g@x@m@|@UZKNKPw@dAg@t@W^}@rA}BbDe@r@GL"
+                            },
+                            "start_location": {
+                                "lat": 55.1810199,
+                                "lng": 61.29441920000001
+                            },
+                            "travel_mode": "DRIVING",
+                            "encoded_lat_lngs": "kpxoIcqbuJuArB]f@m@|@k@z@i@x@_A|AMTCDMLGJk@`Ak@x@CDk@x@_@f@sCfEW^g@x@m@|@UZKNKPw@dAg@t@W^}@rA}BbDe@r@GL",
+                            "path": [
+                                {
+                                    "lat": 55.181020000000004,
+                                    "lng": 61.29442
+                                }
+                            ],
+                            "lat_lngs": [
+                                {
+                                    "lat": 55.181020000000004,
+                                    "lng": 61.29442
+                                }
+                            ],
+                            "instructions": "Направляйтесь на <b>северо-запад</b> по <b>ул. Чичерина</b> в сторону <b>просп. Победы</b>",
+                            "maneuver": "",
+                            "start_point": {
+                                "lat": 55.1810199,
+                                "lng": 61.29441920000001
+                            },
+                            "end_point": {
+                                "lat": 55.1869096,
+                                "lng": 61.2864434
+                            }
+                        },
+                        {
+                            "distance": {
+                                "text": "0,9 км",
+                                "value": 915
+                            },
+                            "duration": {
+                                "text": "2 мин.",
+                                "value": 116
+                            },
+                            "end_location": {
+                                "lat": 55.1919866,
+                                "lng": 61.297786
+                            },
+                            "maneuver": "turn-right",
+                            "polyline": {
+                                "points": "euyoIg_auJcBqEm@_Bu@{Ba@gAOc@{AsESm@a@oA{@iCuDaKuBoG[_AgFuO"
+                            },
+                            "start_location": {
+                                "lat": 55.1869096,
+                                "lng": 61.2864434
+                            },
+                            "travel_mode": "DRIVING",
+                            "encoded_lat_lngs": "euyoIg_auJcBqEm@_Bu@{Ba@gAOc@{AsESm@a@oA{@iCuDaKuBoG[_AgFuO",
+                            "path": [
+                                {
+                                    "lat": 55.186910000000005,
+                                    "lng": 61.286440000000006
+                                }
+                            ],
+                            "lat_lngs": [
+                                {
+                                    "lat": 55.186910000000005,
+                                    "lng": 61.286440000000006
+                                }
+                            ],
+                            "instructions": "Поверните <b>направо</b> на <b>Комсомольский пр-т.</b>",
+                            "start_point": {
+                                "lat": 55.1869096,
+                                "lng": 61.2864434
+                            },
+                            "end_point": {
+                                "lat": 55.1919866,
+                                "lng": 61.297786
+                            }
+                        },
+                        {
+                            "distance": {
+                                "text": "0,3 км",
+                                "value": 254
+                            },
+                            "duration": {
+                                "text": "1 мин.",
+                                "value": 37
+                            },
+                            "end_location": {
+                                "lat": 55.19018459999999,
+                                "lng": 61.3002358
+                            },
+                            "maneuver": "turn-right",
+                            "polyline": {
+                                "points": "}tzoIefcuJNUFKPUdAkA\\g@Za@T]rA}BtA_C"
+                            },
+                            "start_location": {
+                                "lat": 55.1919866,
+                                "lng": 61.297786
+                            },
+                            "travel_mode": "DRIVING",
+                            "encoded_lat_lngs": "}tzoIefcuJNUFKPUdAkA\\g@Za@T]rA}BtA_C",
+                            "path": [
+                                {
+                                    "lat": 55.191990000000004,
+                                    "lng": 61.297790000000006
+                                }
+                            ],
+                            "lat_lngs": [
+                                {
+                                    "lat": 55.191990000000004,
+                                    "lng": 61.297790000000006
+                                }
+                            ],
+                            "instructions": "Поверните <b>направо</b> на <b>Комсомольский пр-т.</b>/<wbr/><b>ул. Жилая</b>",
+                            "start_point": {
+                                "lat": 55.1919866,
+                                "lng": 61.297786
+                            },
+                            "end_point": {
+                                "lat": 55.19018459999999,
+                                "lng": 61.3002358
+                            }
+                        },
+                        {
+                            "distance": {
+                                "text": "0,2 км",
+                                "value": 179
+                            },
+                            "duration": {
+                                "text": "1 мин.",
+                                "value": 42
+                            },
+                            "end_location": {
+                                "lat": 55.1911977,
+                                "lng": 61.30243649999999
+                            },
+                            "maneuver": "turn-left",
+                            "polyline": {
+                                "points": "sizoIoucuJsAoDc@mAUu@}@cC"
+                            },
+                            "start_location": {
+                                "lat": 55.19018459999999,
+                                "lng": 61.3002358
+                            },
+                            "travel_mode": "DRIVING",
+                            "encoded_lat_lngs": "sizoIoucuJsAoDc@mAUu@}@cC",
+                            "path": [
+                                {
+                                    "lat": 55.190180000000005,
+                                    "lng": 61.30024
+                                },
+                                {
+                                    "lat": 55.1906,
+                                    "lng": 61.301120000000004
+                                },
+                                {
+                                    "lat": 55.190780000000004,
+                                    "lng": 61.30151000000001
+                                },
+                                {
+                                    "lat": 55.19089,
+                                    "lng": 61.30178000000001
+                                },
+                                {
+                                    "lat": 55.1912,
+                                    "lng": 61.302440000000004
+                                }
+                            ],
+                            "lat_lngs": [
+                                {
+                                    "lat": 55.190180000000005,
+                                    "lng": 61.30024
+                                },
+                                {
+                                    "lat": 55.1906,
+                                    "lng": 61.301120000000004
+                                },
+                                {
+                                    "lat": 55.190780000000004,
+                                    "lng": 61.30151000000001
+                                },
+                                {
+                                    "lat": 55.19089,
+                                    "lng": 61.30178000000001
+                                },
+                                {
+                                    "lat": 55.1912,
+                                    "lng": 61.302440000000004
+                                }
+                            ],
+                            "instructions": "Поверните <b>налево</b><div style=\"font-size:0.9em\">Пункт назначения будет справа</div>",
+                            "start_point": {
+                                "lat": 55.19018459999999,
+                                "lng": 61.3002358
+                            },
+                            "end_point": {
+                                "lat": 55.1911977,
+                                "lng": 61.30243649999999
+                            }
+                        }
+                    ],
+                    "traffic_speed_entry": [],
+                    "via_waypoint": [],
+                    "via_waypoints": []
+                }
+            ],
+            "overview_polyline": "kpxoIcqbuJmEtG{BrDUXwAzBcFnHcCrDwB|CuArBcDvEGLcBqEcB{EaDmJ}AyEuDaKuBoGcGuQVa@vAaBx@iAhB{CtA_CsAoDy@cC}@cC",
+            "summary": "ул. Чичерина и Комсомольский пр-т.",
+            "warnings": [],
+            "waypoint_order": [],
+            "overview_path": [
+                {
+                    "lat": 55.181020000000004,
+                    "lng": 61.29442
+                },
+                {
+                    "lat": 55.182050000000004,
+                    "lng": 61.29303
+                },
+                {
+                    "lat": 55.18267,
+                    "lng": 61.29213000000001
+                },
+                {
+                    "lat": 55.18278,
+                    "lng": 61.292
+                },
+                {
+                    "lat": 55.183220000000006,
+                    "lng": 61.291380000000004
+                },
+                {
+                    "lat": 55.184360000000005,
+                    "lng": 61.289860000000004
+                },
+                {
+                    "lat": 55.18502,
+                    "lng": 61.28896
+                },
+                {
+                    "lat": 55.18562000000001,
+                    "lng": 61.28817000000001
+                },
+                {
+                    "lat": 55.18605,
+                    "lng": 61.28759
+                },
+                {
+                    "lat": 55.186870000000006,
+                    "lng": 61.28651000000001
+                },
+                {
+                    "lat": 55.186910000000005,
+                    "lng": 61.286440000000006
+                },
+                {
+                    "lat": 55.18741000000001,
+                    "lng": 61.287490000000005
+                },
+                {
+                    "lat": 55.18791,
+                    "lng": 61.288590000000006
+                },
+                {
+                    "lat": 55.18872,
+                    "lng": 61.290420000000005
+                },
+                {
+                    "lat": 55.18919,
+                    "lng": 61.29151
+                },
+                {
+                    "lat": 55.1901,
+                    "lng": 61.293440000000004
+                },
+                {
+                    "lat": 55.190690000000004,
+                    "lng": 61.2948
+                },
+                {
+                    "lat": 55.191990000000004,
+                    "lng": 61.297790000000006
+                },
+                {
+                    "lat": 55.19187,
+                    "lng": 61.29796
+                },
+                {
+                    "lat": 55.191430000000004,
+                    "lng": 61.29845
+                },
+                {
+                    "lat": 55.191140000000004,
+                    "lng": 61.298820000000006
+                },
+                {
+                    "lat": 55.19061000000001,
+                    "lng": 61.299600000000005
+                },
+                {
+                    "lat": 55.190180000000005,
+                    "lng": 61.30024
+                },
+                {
+                    "lat": 55.1906,
+                    "lng": 61.301120000000004
+                },
+                {
+                    "lat": 55.19089,
+                    "lng": 61.30178000000001
+                },
+                {
+                    "lat": 55.1912,
+                    "lng": 61.302440000000004
+                }
+            ]
+        }
+    ],
+    "status": "OK",
+    "request": {
+        "origin": {
+            "location": {
+                "lat": 55.181022,
+                "lng": 61.294424
+            }
+        },
+        "destination": {
+            "placeId": "ChIJ3YgF0hKTxUMReuRuUrymHSM"
+        },
+        "travelMode": "DRIVING"
+    },
+    "user_id": "1573351001"
+}

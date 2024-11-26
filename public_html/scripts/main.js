@@ -168,14 +168,20 @@ class AjaxTransport extends EventProvider {
     #geoId;
     #getPosition;
     requireDrivers;
+    requestData;
 
     constructor(periodTime) {
         super();
         this.intervalID = setInterval(this.update.bind(this), periodTime);
         this.requireDrivers = false;
+        this.requestData = {};
 
         if (!isEmpty(jsdata) && !isEmpty(jsdata.notificationList))
             this.onRecive(jsdata.notificationList);
+    }
+
+    addRequestData(data) {
+        $.extend(this.requestData, data);
     }
 
     update() {
@@ -184,7 +190,7 @@ class AjaxTransport extends EventProvider {
         if (user.sendCoordinates || this.requireDrivers) {
             this.enableGeo(true);
         
-            let data = {};
+            let data = $.extend({}, this.requestData);
             if (this.requireDrivers)
                 data.requireDrivers = true;
 
@@ -225,6 +231,7 @@ class AjaxTransport extends EventProvider {
     }
 
     onRecive(value) {
+        this.requestData = {};
         for (let n in value)
             this.SendEvent(n, value[n]);
     }
