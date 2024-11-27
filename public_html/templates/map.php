@@ -4,12 +4,6 @@
 	include_once(TEMPLATES_PATH.'/map/map-index.php');
 
 	$orderModel = new OrderModel();
-			
-	$orders = $orderModel->getItems(['state'=>['wait', 'accepted'], 'o.user_id'=>$user['id']]);//, 'routes'=>true]);
-
-	$order = false;
-	if (count($orders) > 0)
-		$order = $orders[0];
 
 	if ($this->asDriver) {
 //------------------------------DRIVER---------------------------------------------
@@ -17,10 +11,8 @@
 		html::AddScriptFile("driver/driver-on-line.js");
 
 		html::AddJsData(
-			array_merge(
-				$orderModel->getItems(['state'=>'wait']),
-				$orderModel->getItems(['state'=>'accepted', 'user_id'=>$user['id']])
-			), 'orders');
+				$orderModel->getItems(['state'=>['wait', 'accepted', 'wait_meeting', 'execution']])
+			, 'orders');
 
 		html::AddJsCode("
 			new VMap($('#map'), DriverMechanics, {markerManagerClass: MarkerOrderManager});
@@ -31,9 +23,10 @@
 
 		html::AddScriptFile("passenger/order-states.js"); 
 		html::AddScriptFile("passenger/driver-field.js");
-
-		if ($order)
-			html::AddJsCode("currentOrder = ".json_encode($order).';');
+		
+		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted', 'execution', 'wait_meeting'], 'limit'=>1]);
+		if (count($orders) > 0)
+			html::AddJsCode("currentOrder = ".json_encode($orders[0]).';');
 
 		html::AddTemplate('<div class="car">
 	        <div class="car-image-box">

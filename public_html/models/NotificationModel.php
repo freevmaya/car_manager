@@ -30,10 +30,7 @@ class NotificationModel extends BaseModel {
 	public function getItems($options) {
 		GLOBAL $dbp, $user;
 
-		$where = BaseModel::AddWhere(BaseModel::AddWhere(BaseModel::AddWhere([],
-						$options, 'content_type'),
-						$options, 'state'), 
-						$options, 'user_id');
+		$where = BaseModel::GetConditions($options, ['content_id', 'content_type', 'state', 'user_id']);
 		
 		$whereStr = implode(" AND ", $where);
 
@@ -96,9 +93,16 @@ class NotificationModel extends BaseModel {
 
 	}
 
-	public function AddNotify($content_id, $content_type, $user_id, $text='', $offered_driver_id=null) {
+	public function AddNotify($content_id, $content_type, $user_id, $text='', $offered_driver_id=null, $checkExists = false) {
 		GLOBAL $dbp;
 		$result = false;
+
+		if ($checkExists) {
+			if ($dbp->line("SELECT id {$this->getTable()} WHERE `content_id`={$content_id} AND `content_type`={$content_type} AND `user_id`={$user_id} AND `state`='active'"))
+				return false;
+		}
+
+
 		if ($offered_driver_id) {
 			$query = "INSERT INTO {$this->getTable()} (`content_id`, `content_type`, `user_id`, `text`, `offered_driver_id`) VALUES (?, ?, ?, ?, ?)";
 			$result = $dbp->bquery($query, 'isisi', [$content_id, $content_type, $user_id, $text, $offered_driver_id]);

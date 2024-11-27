@@ -55,7 +55,7 @@ abstract class BaseModel {
 				$outfield = substr($key, 0, $idpos);
 				if (@$item[$key])
 					$item[$outfield] = $model->getItem($item[$key]);
-			}
+			} else trace_error('Field '.$idpos.' not found');
 		}
 
 		return $item;

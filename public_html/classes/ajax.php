@@ -167,6 +167,9 @@ class Ajax extends Page {
 					$notificationModel->SetState(['content_type'=>'offerToPerform', 
 						'state'=>'rejected', 'content_id'=>BaseModel::getListValues($oldList, 'content_id')]);
 
+					$notificationModel->SetState(['content_type'=>'pathToStart', 
+						'state'=>'rejected', 'content_id'=>$data['id']]);
+
 					$result = $result && $this->NotifyOrderToDrivers($oldList, $data['id'], 'orderCancelled', 'Order cancelled');
 				}
 			}
@@ -205,7 +208,7 @@ class Ajax extends Page {
 		GLOBAL $user;
 
 		$result = 'Order not found';
-		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted'], 'limit'=>1]);
+		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted', 'execution', 'finished'], 'limit'=>1]);
 		if (count($orders) > 0) {
 			$orders = BaseModel::FullItems($orders, ['route_id'=>new RouteModel()]);
 			$result = html::RenderField(['type'=>'order'], 

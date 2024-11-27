@@ -24,12 +24,10 @@ class OrderModel extends BaseModel {
 
 	public function getActiveOrder($options) {
 		GLOBAL $dbp;
-		$where = ["`state` IN ('wait', 'accepted')"];
+		$where = ["`state` IN ('wait', 'accepted', 'wait_meeting', 'execution')"];
 
 		if (is_array($options)) {
-			$where = BaseModel::AddWhere(
-					BaseModel::AddWhere($where, $options, 'driver_id'), 
-				$options, 'user_id');
+			$where = array_merge(BaseModel::GetConditions($options, ['driver_id', 'user_id', 'id']), $where);
 		} else $where[] = "user_id={$options}";
 		
 		$whereStr = implode(" AND ", $where);
@@ -71,7 +69,7 @@ class OrderModel extends BaseModel {
 		return $dbp->lastID();
 	}
 
-	public function SetState($id, $state, $driver_id = false) {
+	public function SetState($id, $state, $driver_id = false, $sendNotify = false) {
 		GLOBAL $dbp;
 
 		$result = false;
@@ -79,6 +77,11 @@ class OrderModel extends BaseModel {
 			$result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=?, `driver_id`=? WHERE id=?", 
 				'sii', [$state, $driver_id, $id]);
 		else $result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=? WHERE id=?", 'si', [$state, $id]);
+
+		if ($sendNotify) {
+			$order = $this->getItem($id);
+			(new NotificationModel())->AddNotify($order['id'], 'changeOrder', $order['user_id'], json_encode($order), null, true);
+		}
 		
 		return $result;
 	}

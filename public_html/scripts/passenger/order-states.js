@@ -58,6 +58,7 @@ class ViewPath extends BottomView {
 
 class OrderView extends ViewPath {
     #order_id = 0;
+    #listenerId;
 
     get Order() { return this.options.order; }
 
@@ -66,6 +67,32 @@ class OrderView extends ViewPath {
 
         if (options.order) 
             this.SetOrder(options.order);
+
+        this.#listenerId = transport.AddListener('notificationList', ((e)=>{
+            this.onReceiveNotifyList(e.value);
+        }).bind(this));
+
+        this.onReceiveNotifyList(jsdata.notificationList);
+    }
+
+    onReceiveNotifyList(list) {
+        for (let i in list)
+            if (list[i].content_type == 'changeOrder') {
+                if (list[i].content_id == this.getOrderId()) {
+                    let order = JSON.parse(list[i].text);
+                    this.changeOrder(order);
+                }
+                transport.SendStatusNotify(list[i]);
+            }
+    }
+
+    changeOrder(order) {
+        if (!this.options.order || (order.state != this.options.order.state)) {
+            console.log(order);
+            this.Close().then(()=>{
+                CreateViewFromState(order);
+            });
+        }
     }
 
     SetOrder(order) {
@@ -108,6 +135,11 @@ class OrderView extends ViewPath {
 
     getOrderId() {
         return this.#order_id;
+    }
+
+    destroy() {
+        transport.RemoveListener(this.#listenerId);
+        super.destroy();
     }
 }
 
@@ -202,21 +234,10 @@ class OrderWaitView extends OrderView {
 
 
 class OrderAccepedView extends OrderView {
-
-    #listenerId;
-    #driverLID;
-    #pathToStart;
-    #driverCar;
+    pathToStart;
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
-
-        this.#listenerId = transport.AddListener('notificationList', ((e)=>{
-            //transport.addRequestData({order_id: this.getOrderId()});
-            this.onReceiveNotifyList(e.value);
-        }).bind(this));
-
-        this.onReceiveNotifyList(jsdata.notificationList);
     }
 
     initContent() {
@@ -225,11 +246,12 @@ class OrderAccepedView extends OrderView {
     }
 
     onReceiveNotifyList(list) {
+        super.onReceiveNotifyList();
         for (let i in list)
             if (list[i].content_type == 'pathToStart') {
                 let path = JSON.parse(list[i].text);
-                if (!this.#pathToStart)
-                    this.#pathToStart = v_map.DrawPath(path, {
+                if (!this.pathToStart)
+                    this.pathToStart = v_map.DrawPath(path, {
                         preserveViewport: false,
                         suppressMarkers: true,
                         polylineOptions: {
@@ -240,10 +262,8 @@ class OrderAccepedView extends OrderView {
     }
 
     destroy() {
-        if (this.#pathToStart)
-            this.#pathToStart.setMap(null);
-
-        transport.RemoveListener(this.#listenerId);
+        if (this.pathToStart)
+            this.pathToStart.setMap(null);
         super.destroy();
     }
 }
@@ -322,7 +342,7 @@ function BeginSelectPath() {
                 startPlace: place
             }, SelectPathView, () => {
                 if (selectPathDialog.getOrderId())
-                    BeginWaitdOrder(currentOrder = selectPathDialog.GetOrder());
+                    BeginWaitOrder(currentOrder = selectPathDialog.GetOrder());
 
                 selectPathDialog = null;
             });
@@ -341,32 +361,28 @@ function BeginSelectPath() {
     });
 }
 
-function BeginAcceptedOrder() {
-    if (currentOrder.id) {
+function BeginAcceptedOrder(order) {
+    Ajax({
+        action: 'getOrderProcess',
+        data: {id: order.id}
+    }).then((d)=>{
 
-        Ajax({
-            action: 'getOrderProcess',
-            data: {id: currentOrder.id}
-        }).then((d)=>{
+        let elem = $(d.result);
+        if (isEmpty(elem))
+            console.error(d.result);
+        else {
 
-            let elem = $(d.result);
-            if (isEmpty(elem))
-                console.error(d.result);
-            else {
-
-                let dialog = viewManager.Create({
-                    order: currentOrder,
-                    title: toLang('Order'),
-                    content: elem
-                }, OrderAccepedView);
-            }
-        });
-    }
+            let dialog = viewManager.Create({
+                order: order,
+                title: toLang('Order'),
+                content: elem
+            }, OrderAccepedView);
+        }
+    });
 }
 
-function BeginWaitdOrder(order) {
-
-     Ajax({
+function BeginWaitOrder(order) {
+    Ajax({
         action: 'getOrderProcess',
         data: {id: currentOrder.id}
     }).then((d)=>{
@@ -385,20 +401,19 @@ function BeginWaitdOrder(order) {
     });
 }
 
-function Mechanics() {
-
-
-    v_map.driverManagerOn(true);
-
+function CreateViewFromState(order) {
     if (typeof currentOrder == 'object') {
-        currentOrder.start = JSON.parse(currentOrder.start);
-        currentOrder.finish = JSON.parse(currentOrder.finish);
-
-        if (currentOrder.state == 'wait') 
-            BeginWaitdOrder(currentOrder);
-        else if (currentOrder.state == 'accepted') 
-            BeginAcceptedOrder();
-
-        //BeginTracer(currentOrder);
+        if (order.state == 'wait') 
+            BeginWaitOrder(order);
+        else if ((order.state == 'accepted') ||
+                 (order.state == 'wait_meeting') ||
+                 (order.state == 'execution'))
+            BeginAcceptedOrder(order);
+        else BeginSelectPath();
     } else BeginSelectPath();
+}
+
+function Mechanics() {
+    v_map.driverManagerOn(true);
+    CreateViewFromState(typeof currentOrder == 'object' ? currentOrder : null);
 }

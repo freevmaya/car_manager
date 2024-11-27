@@ -13,16 +13,22 @@ class fdbg {
         $targetFile = $type == ERROR_TYPE ? $FDBGErrorsFile : $FDBGLogFile;
         
         $stack = fdbg::GetStack();
-        if (!is_string($str)) $str = print_r($str, true);
-                                                                                                                                
-        $str = str_replace("'", '`', $str);
-        $notify = [
-            'time'=> date('d.m.y H.i'),
-            'file'=> $stack[$topCalled]['file'],
-            'line'=> $stack[$topCalled]['line'],
-            'message'=>$str
-        ];
-        $notifyStr = json_encode($notify);
+
+        $i = $topCalled;
+        $stackStr = '';
+
+        while ($i < $topCalled + 5) {
+            $stackStr .= $stack[$i]['file'].':'.$stack[$i]['line']."\n";
+            $i++;
+        }
+
+        if (!is_string($str)) $str = json_encode($str, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $notifyStr = 
+            'time: '.date('d.m.y H.i')."\n".
+            "stack: \n".$stackStr.
+            "message: \n".$str."\n\n";
+
 
         if (file_exists($targetFile)) {
             $notifyStr = ",\n".$notifyStr;
@@ -52,6 +58,12 @@ class fdbg {
         }
         return $stack;
     }
+}
+
+
+
+function trace_error($value) {
+    trace($value, 'file', 2, true);
 }
 
 function trace($value, $to='file', $callDepth=2, $asError = false) {
