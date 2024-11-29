@@ -5,17 +5,11 @@ class OrderModel extends BaseModel {
 		return 'orders';
 	}
 
-	public function getItem($options) {
-		GLOBAL $dbp;
-		if (is_array($options))
-			$where = implode(" AND ", BaseModel::GetConditions($options, ['o.state', 'user_id', 'driver_id']));
-		else $where = "o.id = {$options}";
-		
-		$query = "SELECT o.*, u.username, u.first_name, u.last_name, r.meters, r.start, r.finish, r.routes ".
-			"FROM {$this->getTable()} o LEFT JOIN users u ON u.id = o.user_id ".
-			"LEFT JOIN route r ON o.route_id=r.id ".
-			"WHERE {$where}";
-		return $where ? $dbp->line($query) : null;
+	public function getItem($id) {
+		$items = $this->getItems(['limit' => 1, 'o.id' => $id]);
+		if (count($items) > 0)
+			return $items[0];
+		return null;
 	}
 
 	public function haveActiveOrder($user_id) {
@@ -39,13 +33,11 @@ class OrderModel extends BaseModel {
 	public function getItems($options) {
 		GLOBAL $dbp;
 
-		$where = BaseModel::AddWhere(
-					BaseModel::AddWhere([], $options, 'state'), 
-				$options, 'o.user_id');
+		$where = BaseModel::GetConditions($options, ['state', 'o.user_id', 'driver_id', 'o.id']);
 		
 		$whereStr = implode(" AND ", $where);
 
-		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters ".(isset($options['routes'])?', r.routes':'').", driver.id AS driverId, driver.username AS driverName, c.number, c.comfort, c.seating, cb.symbol AS car_body, cc.rgb AS car_color, cc.name AS car_colorName ".
+		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters, ROUND(r.meters / 1000, 1) AS distance ".(isset($options['routes'])?', r.routes':'').", driver.id AS driverId, driver.username AS driverName, c.number, c.comfort, c.seating, cb.symbol AS car_body, cc.rgb AS car_color, cc.name AS car_colorName ".
 			"FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id ".
 			"LEFT JOIN driverOnTheLine ON driverOnTheLine.id=o.driver_id ".
 			"LEFT JOIN users driver ON driver.id=driverOnTheLine.user_id ".
@@ -79,7 +71,7 @@ class OrderModel extends BaseModel {
 		else $result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=? WHERE id=?", 'si', [$state, $id]);
 
 		if ($sendNotify) {
-			$order = $this->getItem($id);
+			$order = $this->getItems(['o.id' => $id])[0];
 			(new NotificationModel())->AddNotify($order['id'], 'changeOrder', $order['user_id'], json_encode($order), null, true);
 		}
 		

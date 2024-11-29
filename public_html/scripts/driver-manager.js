@@ -3,8 +3,17 @@ class DriverManager {
 	#listenerId;
 	#timerId;
 	#markers;
+	#driverPath;
+
 	constructor() {
 		this.begin();
+	}
+
+	initInfoWindow() {
+		if (!this.infoWindow) {
+			this.infoWindow = new v_map.Classes.InfoWindow();
+			this.infoWindow.addListener('closeclick', this.onCloseWindow.bind(this));
+		}
 	}
 
 	begin() {
@@ -62,11 +71,46 @@ class DriverManager {
 		}
 	}
 
+	onCloseWindow() {
+		this.hidePath();
+	}
+
+	hidePath() {
+		if (this.#driverPath) {
+			this.#driverPath.setMap(null);
+			this.#driverPath = null;
+		}
+	}
+
 	onCarClick(m) {
-		v_map.infoWindow.close();
-	    v_map.infoWindow.setContent('<h3>' + m.driver.username + '</h3>');
-	    v_map.infoWindow.open(v_map.map, m);
-		console.log(m.driver);
+		this.initInfoWindow();
+
+		Ajax({
+			action: 'GetOrderRoute',
+			data: { driver_id: m.driver.id }
+		}).then((r)=>{
+			let content = '';
+			if (r) {
+				content += 'Busy';
+
+				r.start = JSON.parse(r.start);
+				r.finish = JSON.parse(r.finish);
+
+				v_map.getRoutes(r.start, r.finish, r.travelMode, ((result)=>{
+					this.#driverPath = v_map.DrawPath(result, {polylineOptions: {
+								            strokeColor: '#663'
+								        }});
+				}).bind(this));
+
+			} else content += 'Free'
+
+			this.hidePath();
+			this.infoWindow.close();
+		    this.infoWindow.setContent(
+		    	templateClone($('.templates .driver-window'), $.extend({content: content}, m.driver))[0].outerHTML
+		    );
+		    this.infoWindow.open(v_map.map, m);
+		});
 	}
 
 	onUpdate() {

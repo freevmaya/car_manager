@@ -19,7 +19,7 @@ class Tracer {
 
 		$this->Reset();
 		$this->CalcPathLength();
-		$this->setDistance(rand(0, (int)$this->totalLength));
+		$this->setDistance(0);//rand(0, (int)$this->totalLength));
 	}
 
 	public function Reset() {
@@ -56,7 +56,7 @@ class Tracer {
     protected function setDistance($distance) {
 
     	if ($distance > $this->totalLength) {
-    		$distance = $distance - $this->totalLength;
+    		$distance = $this->totalLength;
             $this->finished = true;
         }
 

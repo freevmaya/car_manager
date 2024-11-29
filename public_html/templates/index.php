@@ -1,5 +1,5 @@
 <?
-GLOBAL $devUser, $user;
+GLOBAL $devUser, $user, $lang;
 $anti_cache = '?_=28';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
@@ -9,7 +9,7 @@ html::AddJsData(json_encode(
 
 ?>
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="<?=$user['language_code']?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,10 +31,10 @@ html::AddJsData(json_encode(
         });
 
         var BASEURL = '<?=BASEURL?>';
+        var lang = <?=json_encode($lang, JSON_PRETTY_PRINT)?>;
         var ajaxRequestId = '<?=$this->createRequestId(get_class($this))?>';
         var transport = new AjaxTransport(1000);
         var app = new App();
-        var lang = {};
         var fieldIdx = <?=html::fieldIdx()?>;
         var travelMode = 'DRIVING';
 
@@ -85,12 +85,10 @@ html::AddJsData(json_encode(
         var user = <?=json_encode($user)?>;
         <?=$this->asDriver() ? "user.asDriver = {$this->asDriver()};\n" : ''?>
         <?=$this->sendCoordinates() ? "user.sendCoordinates = true;\n" : ''?>
-        $.getScript('<?=SCRIPTURL?>/language/' + user.language_code + '.js');
 
     <?} else if (DEV) {?>
 
         var user = <?=$devUser?>;
-        $.getScript('<?=SCRIPTURL?>/language/en.js');
 
     <?}?>
     <?=html::RenderJSData()?>

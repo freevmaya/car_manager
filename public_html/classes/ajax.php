@@ -104,9 +104,28 @@ class Ajax extends Page {
 		return $result;
 	}
 
+	protected function GetOrderRoute($data)
+	{
+		if ($order = (new OrderModel())->getActiveOrder($data))
+			return (new RouteModel())->getItem($order['route_id']);
+
+		if (isset($data['driver_id']))
+			$data['d.id'] = $data['driver_id'];
+
+		if ($simulate = (new SimulateModel())->getItem($data))
+			return (new RouteModel())->getItem($simulate['route_id']);
+
+		return null;
+	}
+
 	protected function GetRoute($data)
 	{
-		return (new RouteModel())->getItem($data);
+		$routeModel = new RouteModel();
+		if (isset($data['order_id'])) {
+			return BaseModel::FullItem((new OrderModel())->getItem($data['order_id']), ['route_id'=>$routeModel]);
+		}
+
+		return $routeModel->getItem($data);
 	}
 
 	protected function AddOrder($data) {
@@ -199,9 +218,7 @@ class Ajax extends Page {
 	}
 
 	protected function getOrders($data) {
-		GLOBAL $dbp;
-		return $dbp->asArray("SELECT *, u.first_name, u.last_name, u.username ".
-			"FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE `state`='wait'");
+		return (new OrderModel())->getItems($data);
 	}
 
 	protected function getOrderProcess($data) {

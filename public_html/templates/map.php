@@ -22,11 +22,13 @@
 //------------------------------PASSENGER---------------------------------------------
 
 		html::AddScriptFile("passenger/order-states.js"); 
-		html::AddScriptFile("passenger/driver-field.js");
+		//html::AddScriptFile("passenger/driver-field.js");
 		
 		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted', 'execution', 'wait_meeting'], 'limit'=>1]);
-		if (count($orders) > 0)
-			html::AddJsCode("currentOrder = ".json_encode($orders[0]).';');
+
+		$order = count($orders) > 0 ? $orders[0] : null;
+		if ($order)
+			html::AddJsCode("currentOrder = ".json_encode($order).';');
 
 		html::AddTemplate('<div class="car">
 	        <div class="car-image-box">
@@ -35,7 +37,9 @@
 	        </div>
 	    </div>', 'car');
 
-		html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
+	    html::AddTemplate(html::RenderField(['type'=>'order'], $order), 'order');
+
+		//html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
 	    
 		html::AddJsCode("new VMap($('#map'), Mechanics);");
 	}

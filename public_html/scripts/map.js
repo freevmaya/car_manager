@@ -207,7 +207,7 @@ class VMap {
 
 	getRoutes(startPlace, finishPlace, a_travelMode, callback) {
 		function preparePlace(p) {
-			let result = p.location ? { placeId: p.id } : 
+			let result = p.location ? (p.id ? { placeId: p.id } : p.location) : 
 						(p.placeId ? { placeId: p.placeId } : (p.latLng ? latLngToString(p.latLng) :  
 								(p.lat ? latLngToString(p) : p)));
 
@@ -224,6 +224,7 @@ class VMap {
 	        this.DirectionsService.route(request, function(result, status) {
 	            if (status == 'OK')
 	            	callback(result);
+	            else console.log(request);
 	        });
 	    }
 	}

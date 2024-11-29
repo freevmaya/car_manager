@@ -105,7 +105,7 @@ class DriverFieldWait extends DriverFieldAccepted {
 	}
 
 	takeOffer(notify) {
-		let infoBlock = this.field.find('.driver-info');
+		let infoBlock = this.orderLayer.find('.driver-info');
 
 		infoBlock.empty();
 		

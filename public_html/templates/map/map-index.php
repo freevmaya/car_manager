@@ -10,6 +10,12 @@ html::AddScriptFiles([
 ]);
 
 html::AddStyleFile('https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css');
+
+html::AddTemplate('<div class="driver-window">
+	<h3>{username}</h3>
+	<div class="content">{content}</div>
+</div>', 'driver-window');
+
 ?>
 
 <div id="windows"></div>

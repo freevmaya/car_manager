@@ -1053,6 +1053,22 @@ input:focus, select:focus {
 
 /*--------------------ORDER----------------*/
 
+.order.wait .driver-info {
+    display: none;
+}
+
+.order.wait .driver .wait {
+    display: block;
+}
+
+.order.finished {
+    opacity: 0.5;
+}
+
+.order .driver .wait {
+    display: none;
+}
+
 .data .block {
     text-align: left;
     border-radius: 1em;
@@ -1109,6 +1125,15 @@ input:focus, select:focus {
     justify-content: center;
     font-size: 1.5em;
     color: #ffffff12;
+}
+
+.gm-style-iw-c {
+    min-width: 10em !important;
+}
+
+.driver-window {
+    margin: 0.8em;
+
 }
 
 /*-----------------Загрузка----------------*/

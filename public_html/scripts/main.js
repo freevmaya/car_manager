@@ -360,7 +360,14 @@ function toLang(v) {
     return !lang[v] ? v : lang[v];
 }
 
+function toPlace(place) {
+    if (isStr(place))
+            place = JSON.parse(place);
+    return place;
+}
+
 function PlaceLatLng(place) {
+    place = toPlace(place);
     return place.latLng ? place.latLng : place;
 }
 
@@ -374,6 +381,8 @@ function latLngToString(latLng) {
 function PlaceName(place) {
 
     if (place) {
+        place = toPlace(place);
+
         if (place.displayName)
             return place.displayName;
         if (place.latLng)
@@ -385,7 +394,7 @@ function PlaceName(place) {
 }
 
 function PlaceId(place) {
-    if (place)
+    if (place) 
         return isStr(place) ? place : (place.id ? place.id : 
                 (place.placeId ? place.placeId : place));
     
@@ -485,7 +494,7 @@ function renderList(nameData, toContainer = null) {
 function templateClone(tmpl, data) {
     let html = tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, field) => {
         let v;
-        let fg = field.match(/([\w\s\d.\-_]+)\([\'\"\w\s\d.\-_]*\)/);
+        let fg = field.match(/([\w\s\d\[\]'.\-_]+)\([\'\"\w\s\d\[\]'.\-_]*\)/);
         if (!isEmpty(fg)) {
             eval('v = ' + field);
         } else {

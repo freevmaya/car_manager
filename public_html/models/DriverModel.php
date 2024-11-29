@@ -50,19 +50,20 @@ class DriverModel extends BaseModel {
 				"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
 				"INNER JOIN car_color cc ON cc.id = c.color_id ";
 
+		$driver = null;
 		if ($user_id) {
 
 			$query .= "WHERE u.id = {$user_id}";
 
-			return $dbp->line($query);
+			$driver = $dbp->line($query);
 		} else if (isset($data['driver_id'])) {
 
 			$query .= "WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.id={$data['driver_id']}";
 
-			return $dbp->line($query);
+			$driver = $dbp->line($query);
 		}
 
-		return null;
+		return $driver;
 	}
 
 	public function OrderDrivers($order_id) {
@@ -84,16 +85,19 @@ class DriverModel extends BaseModel {
 
 		$drivers = [];
 		if ($lat) {
-			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat ".
+			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number ".
 
-			"FROM {$this->getTable()} d INNER JOIN users u ON d.user_id = u.id INNER JOIN car c ON d.car_id = c.id INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
+			"FROM {$this->getTable()} d ".
+			"INNER JOIN users u ON d.user_id = u.id ".
+			"INNER JOIN car c ON d.car_id = c.id ".
+			"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
 
 			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval}";
 			$list = $dbp->asArray($query);
 
 			foreach ($list as $driver) {
 				$distance =  Distance($driver['lat'], $driver['lng'], $lat, $lng);
-				if (($distance < DriverModel::$maxDistanceToStart) && ($driver['available_seat'] > 0)) {
+				if ($distance < DriverModel::$maxDistanceToStart) {
 					$driver['distanceStart'] = $distance;
 					$drivers[] = $driver;
 				}

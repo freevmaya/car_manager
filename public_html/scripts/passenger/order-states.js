@@ -57,9 +57,11 @@ class ViewPath extends BottomView {
 
 
 class OrderView extends ViewPath {
+    #lastState;
     #order_id = 0;
     #listenerId;
 
+    get LastState() { return this.#lastState; }
     get Order() { return this.options.order; }
 
     constructor(options = {actions: {}}, afterDestroy = null) {
@@ -78,40 +80,50 @@ class OrderView extends ViewPath {
     onReceiveNotifyList(list) {
         for (let i in list)
             if (list[i].content_type == 'changeOrder') {
-                if (list[i].content_id == this.getOrderId()) {
-                    let order = JSON.parse(list[i].text);
-                    this.changeOrder(order);
-                }
+
+                if (list[i].content_id == this.getOrderId())
+                    this.changeOrder(JSON.parse(list[i].text));
+
                 transport.SendStatusNotify(list[i]);
             }
     }
 
     changeOrder(order) {
-        if (!this.options.order || (order.state != this.options.order.state)) {
-            console.log(order);
-            this.Close().then(()=>{
-                CreateViewFromState(order);
-            });
-        }
+        if (this.Order) {
+            this.#lastState = this.Order.state;
+            order = $.extend(this.Order, order);
+        } else this.#lastState = 'wait';
+        this.SetOrder(order);
     }
 
+
+
     SetOrder(order) {
-        if (order) {
+
+        if (this.options.order = order) {
             this.setOrderId(order.id);
-            if (order.travelMode)
-                this.travelMode = order.travelMode;
-            this.showPath(order.start, order.finish);
+
+            if ((order.state != 'finished') && !this.rpath) {
+                if (order.travelMode)
+                    this.travelMode = order.travelMode;
+                
+                order.start = toPlace(order.start);
+                order.finish = toPlace(order.finish);
+
+                this.showPath(order.start, order.finish);
+            }
+
+            if (order.state == 'finished')
+                this.closePath();
         } else {
             this.setOrderId(null);
             this.closePath();
         }
-
-        this.options.order = order;
     }
 
     prepareToClose(afterPrepare) {
 
-        if (this.getOrderId())
+        if (this.getOrderId() && (this.Order.state != 'finished'))
             app.showQuestion('Do you want to cancel your order?', (()=>{
                     Ajax({
                         action: 'SetState',
@@ -223,32 +235,159 @@ class SelectPathView extends OrderView {
     }
 }
 
-
-class OrderWaitView extends OrderView {
-
-    initContent() {
-        super.initContent();
-        $(".field.order").each((i, field)=>{ new DriverFieldWait($(field)); });
-    }
-}
-
-
+var WAITOFFERS = 5000; // 5 сек
 class OrderAccepedView extends OrderView {
+    pathToStartNotify;
     pathToStart;
+    #offers;
+    #time;
+
+    get orderState() { return this.Order.state ? this.Order.state : 'wait'; };
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
+
+        this.#time = Date.now();
+        this.#offers = [];
+        this.allowOffers = this.orderState == 'wait';
     }
 
     initContent() {
         super.initContent();
-        $(".field.order").each((i, field)=>{ new DriverFieldAccepted($(field)); });
+    }
+
+    SetOrder(order) {
+        super.SetOrder(order);
+
+        this.orderLayer = templateClone($('.templates .order'), order)
+                                        .addClass(this.orderState);
+        this.contentElement.empty();
+        this.contentElement.append(this.orderLayer);
+        if (this.Order.car_color)
+                this.refreshColor();
+
+        if ((this.LastState == 'accepted') && (this.pathToStartNotify)) {
+            this.closePathToStart();
+            transport.SendStatusNotify(this.pathToStartNotify);
+        }
+    }
+
+    offersProcess(list) {
+
+        for (let i in list) {
+            let notify = list[i];
+            if (notify.content_type == "offerToPerform") {
+                if (this.offerIndexOf(notify.id) == -1)
+                    this.addOfferNotify(notify);
+            }
+        }
+
+        let time_count = Date.now() - this.#time;
+        if ((time_count > WAITOFFERS) && (this.#offers.length > 0)) {
+
+            this.#time = Date.now();
+
+            console.log('END WAIT');
+            let nearIx = 0;
+            let bestDistance = Number.MAX_VALUE;
+            let start = toPlace(this.Order.start);
+
+            if (this.#offers.length > 1) {
+                for (let i=0; i<this.#offers.length; i++) {
+                    let offer = this.#offers[i];
+                    let driverInfo = JSON.parse(offer.text);
+
+                    let distance = Distance(offer.driver, start);
+                    if (driverInfo.remindDistance)
+                        distance += driverInfo.remindDistance;
+
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        nearIx = i;
+                    }
+                    //transport.SendStatusNotify(offer);
+                }
+            } else {
+                bestDistance = Distance(this.#offers[nearIx].driver, start);
+            }
+
+            let bestOffer = this.#offers[nearIx];
+            bestOffer.distance = bestDistance;
+
+            this.#offers.splice(nearIx, 1);
+            for (let i=0; i<this.#offers.length; i++) {
+                transport.SendStatusNotify(this.#offers[i]);
+            }
+            this.#offers = [];
+            this.takeOffer(bestOffer);
+            this.allowOffers = false;
+        }
+    }
+
+    offerIndexOf(notify_id) {
+        for (let i=0; i<this.#offers.length; i++)
+            if (this.#offers[i].id == notify_id)
+                return i;
+        return -1;
+    }
+
+    addOfferNotify(notify) {
+        notify.driver = JSON.parse(notify.text);
+        this.#offers.push(notify);
+        this.orderLayer.find('#offer-count').text(this.#offers.length);
+    }
+
+    takeOffer(notify) {
+        /*
+        let infoBlock = this.orderLayer.find('.driver-info');
+
+        infoBlock.empty();
+        
+        new DataView(infoBlock, $('.templates .driver'), notify.driver);
+        this.refreshColor();
+        */
+        let d = notify.driver;
+        this.SetOrder($.extend(this.Order, {
+            state: 'accepted',
+            driverId: d.id,
+            driverName: d.username,
+            number: d.number,
+            comfort: d.comfort,
+            seating: d.seating,
+            car_body: d.car_body,
+            car_color: d.car_color,
+            car_colorName: d.car_colorName,
+            available_seat: d.available_seat
+        }));
+
+        Ajax({
+            action: 'SetState',
+            data: {id: this.getOrderId(), driver_id: notify.driver.id, state: 'accepted' }
+        }).then(() => {
+            transport.SendStatusNotify(notify);
+        });
+    }
+
+    refreshColor() {
+        this.orderLayer.find(".param .item-image").each((i, elem)=>{
+            elem = $(elem);
+
+            const color = new Color(hexToRgb(this.Order.car_color));
+            const solver = new Solver(color);
+            const result = solver.solve();
+            elem.attr("style", elem.attr("style") + ";" + result.filter);
+        });
     }
 
     onReceiveNotifyList(list) {
-        super.onReceiveNotifyList();
+
+        super.onReceiveNotifyList(list);
+
+        if (this.allowOffers) this.offersProcess(list);
+
         for (let i in list)
             if (list[i].content_type == 'pathToStart') {
+                this.pathToStartNotify = list[i];
                 let path = JSON.parse(list[i].text);
                 if (!this.pathToStart)
                     this.pathToStart = v_map.DrawPath(path, {
@@ -261,69 +400,15 @@ class OrderAccepedView extends OrderView {
             }
     }
 
-    destroy() {
-        if (this.pathToStart)
+    closePathToStart() {
+        if (this.pathToStart) {
             this.pathToStart.setMap(null);
-        super.destroy();
-    }
-}
-
-
-class TracerView extends ViewPath {
-
-    #tracer;
-    #geoId = false;
-    #marker;
-
-    #setMainPoint(latLng, angle) {
-        if (this.#marker)
-            MarkerManager.setPos(this.#marker, latLng, angle);
-    }
-
-    setRoutes(routes) {
-        super.setRoutes(routes);
-        this.enableGeo(true);
-
-        this.#tracer = new Tracer(routes.routes, this.#setMainPoint.bind(this), 100);
-
-        this.#tracer.AddListener('FINISHPATH', this.onFinish.bind(this));
-    }
-
-    setTracerPoint(latLng) {
-        if (this.#tracer) this.#tracer.ReceivePoint(latLng);
-    }
-
-    #receiveGeo(position) {
-
-        let latLng = new google.maps.LatLng(position.lat, position.lng);
-
-        if (!isNaN(latLng.lat())) {
-
-            this.setTracerPoint(latLng);
-            v_map.setMainPosition(latLng);
+            this.pathToStart = null;
         }
-    }
-
-    enableGeo(enable) {
-        if (enable && !this.#geoId) {
-            this.#geoId = watchPosition(this.#receiveGeo.bind(this));
-        } else if (!enable && this.#geoId > 0) {
-            clearWatchPosition(this.#geoId);
-            this.#geoId = false;
-        }
-    }
-
-    onFinish() {
-        //this.Close();
     }
 
     destroy() {
-        if (this.#marker)
-            this.#marker.setMap(null);
-        
-        this.#tracer.destroy();
-        this.enableGeo(false);
-        this.closePath();
+        this.closePathToStart();
         super.destroy();
     }
 }
@@ -332,6 +417,18 @@ var currentOrder;
 
 function BeginSelectPath() {
     var selectPathDialog;
+    var listener;
+
+    function onClickMap(e) {
+        if (e.placeId) {
+            v_map.getPlaceDetails(e.placeId).then((place)=>{
+                place = $.extend(place, e);
+                SelectPlace(place);
+            });
+        } else SelectPlace(e);
+        
+        return StopPropagation(e);
+    }
 
     function SelectPlace(place) {
 
@@ -341,73 +438,31 @@ function BeginSelectPath() {
             selectPathDialog = viewManager.Create({
                 startPlace: place
             }, SelectPathView, () => {
-                if (selectPathDialog.getOrderId())
-                    BeginWaitOrder(currentOrder = selectPathDialog.GetOrder());
-
+                if (selectPathDialog.getOrderId()) {
+                    BeginAcceptedOrder(currentOrder = selectPathDialog.GetOrder());
+                    listener.remove();
+                }
                 selectPathDialog = null;
             });
         } else selectPathDialog.SelectPlace(place);
     }
 
-    v_map.map.addListener("click", (e) => {
-        if (e.placeId) {
-            v_map.getPlaceDetails(e.placeId).then((place)=>{
-                place = $.extend(place, e);
-                SelectPlace(place);
-            });
-        } else SelectPlace(e);
-        
-        return StopPropagation(e);
-    });
+    listener = v_map.map.addListener("click", onClickMap);
 }
 
 function BeginAcceptedOrder(order) {
-    Ajax({
-        action: 'getOrderProcess',
-        data: {id: order.id}
-    }).then((d)=>{
-
-        let elem = $(d.result);
-        if (isEmpty(elem))
-            console.error(d.result);
-        else {
-
-            let dialog = viewManager.Create({
-                order: order,
-                title: toLang('Order'),
-                content: elem
-            }, OrderAccepedView);
-        }
-    });
-}
-
-function BeginWaitOrder(order) {
-    Ajax({
-        action: 'getOrderProcess',
-        data: {id: currentOrder.id}
-    }).then((d)=>{
-
-        let elem = $(d.result);
-        if (isEmpty(elem))
-            console.error(d.result);
-        else {
-
-            let dialog = viewManager.Create({
-                order: order,
-                title: toLang('Order'),
-                content: elem
-            }, OrderWaitView);
-        }
-    });
+    let dialog = viewManager.Create({
+        order: order,
+        title: toLang('Order')
+    }, OrderAccepedView, BeginSelectPath);
 }
 
 function CreateViewFromState(order) {
     if (typeof currentOrder == 'object') {
-        if (order.state == 'wait') 
-            BeginWaitOrder(order);
-        else if ((order.state == 'accepted') ||
-                 (order.state == 'wait_meeting') ||
-                 (order.state == 'execution'))
+        if ((order.state == 'wait') || 
+            (order.state == 'accepted') ||
+            (order.state == 'wait_meeting') ||
+            (order.state == 'execution'))
             BeginAcceptedOrder(order);
         else BeginSelectPath();
     } else BeginSelectPath();

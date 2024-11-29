@@ -61,6 +61,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 				if (!isset($tracers[$driver['id']])) {
 					$tracers[$driver['id']] = new Tracer($routes, 30); // 5 km/h
+					print_r("Got new course {$driver['user_id']} and began\n");
 				}
 				
 				$tracer = $tracers[$driver['id']];
@@ -120,7 +121,6 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 					$routes = $routeModel->getItems([]);
 					$count = count($routes);
 					if ($count > 0) {
-						print_r("Got new course {$driver['user_id']} and began\n");
 						$rndRoute = $routes[rand(0, $count - 1)];
 						$simulateModel->Start($driver['user_id'], $rndRoute['id']);
 					}
@@ -148,7 +148,16 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 						$nModel->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driverDetail), $driver['id']);
 					}
-				} else if ($notify['content_type'] == 'orderCreated') {
+				} else if ($notify['content_type'] == 'orderCancelled') {
+
+					$order = $orderModel->getItem($notify['content_id']);
+
+					if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
+
+						$simulateModel->Stop($driver['user_id']);
+						if (isset($tracers[$driver['id']]))
+							unset($tracers[$driver['id']]);
+					}
 				}
 			}
 
