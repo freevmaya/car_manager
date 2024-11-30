@@ -1,4 +1,7 @@
 <?
+
+define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution'");
+
 abstract class BaseModel {
 	abstract protected function getTable();
 	public function Update($values) {}

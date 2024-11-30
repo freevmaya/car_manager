@@ -1,4 +1,5 @@
 <?
+
 class OrderModel extends BaseModel {
 
 	protected function getTable() {
@@ -16,9 +17,9 @@ class OrderModel extends BaseModel {
 		return $this->getActiveOrder($user_id) != null;
 	}
 
-	public function getActiveOrder($options) {
+	public function getActiveOrder($options, $states=null) {
 		GLOBAL $dbp;
-		$where = ["`state` IN ('wait', 'accepted', 'wait_meeting', 'execution')"];
+		$where = ["`state` IN (".($states ? $states : ACTIVEORDERLIST).")"];
 
 		if (is_array($options)) {
 			$where = array_merge(BaseModel::GetConditions($options, ['driver_id', 'user_id', 'id']), $where);
@@ -59,6 +60,11 @@ class OrderModel extends BaseModel {
 		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `route_id`) VALUES (?,NOW(),?,?)", 
 			'iss', [$data['user_id'], $pickUpTime, $data['route_id']]);
 		return $dbp->lastID();
+	}
+
+	public function SetRemaindDistance($order_id, $remaindDistance) {
+		GLOBAL $dbp;
+		return $dbp->bquery("UPDATE orders SET remaindDistance=? WHERE id=?", 'di', [$remaindDistance, $order_id]);
 	}
 
 	public function SetState($id, $state, $driver_id = false, $sendNotify = false) {

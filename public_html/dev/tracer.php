@@ -28,7 +28,7 @@ class Tracer {
     	$this->pathIndex = 0;
 	}
 
-    public function remindDistance() {
+    public function remaindDistance() {
         return $this->totalLength - $this->distance;
     }
 

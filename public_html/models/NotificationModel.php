@@ -98,7 +98,7 @@ class NotificationModel extends BaseModel {
 		$result = false;
 
 		if ($checkExists) {
-			if ($dbp->line("SELECT id {$this->getTable()} WHERE `content_id`={$content_id} AND `content_type`={$content_type} AND `user_id`={$user_id} AND `state`='active'"))
+			if ($dbp->line("SELECT id FROM {$this->getTable()} WHERE `content_id`={$content_id} AND `content_type`='{$content_type}' AND `user_id`={$user_id} AND `state`='active'"))
 				return false;
 		}
 

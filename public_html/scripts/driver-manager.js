@@ -2,8 +2,9 @@ class DriverManager {
 
 	#listenerId;
 	#timerId;
-	#markers;
 	#driverPath;
+
+	get cars() { return v_map.MarkerManager.markers.cars; };
 
 	constructor() {
 		this.begin();
@@ -20,7 +21,6 @@ class DriverManager {
 		this.#listenerId = transport.AddListener("SuitableDrivers", this.onReceive.bind(this));
         transport.requireDrivers = true;
         this.#timerId = setInterval(this.onUpdate.bind(this), 1000 / 24);
-        this.#markers = [];
 	}
 
 	stop() {
@@ -44,16 +44,18 @@ class DriverManager {
 			return -1;
 		}
 
-		for (let i=0; i<this.#markers.length; i++) {
-			let m = this.#markers[i];
-			let carIdx = indexOfById(this.#markers[i].id);
+		for (let i=0; i<this.cars.length; i++) {
+			let m = this.cars[i];
+			let carIdx = indexOfById(this.cars[i].id);
 			if (carIdx > -1) {
+
+				//console.log(drivers[carIdx]);
 				m.car.setPos(this.toLatLng(drivers[carIdx]), drivers[carIdx].angle, parseInt(drivers[carIdx].online) == 1);
 				drivers.splice(carIdx, 1);
 
 			} else {
-				v_map.MarkerManager.RemoveCar(this.#markers[i].id);
-				this.#markers.splice(i, 1);
+				//v_map.MarkerManager.RemoveCar(this.#markers[i].id);
+				//this.#markers.splice(i, 1);
 			}
 		}
 
@@ -67,7 +69,6 @@ class DriverManager {
 
 			m.driver = driver;
 			m.car = new FollowCar(m, this.toLatLng(driver), driver.angle);
-			this.#markers.push(m);
 		}
 	}
 
@@ -114,8 +115,8 @@ class DriverManager {
 	}
 
 	onUpdate() {
-		for (let i=0; i<this.#markers.length; i++)
-			this.#markers[i].car.update();
+		for (let i=0; i<this.cars.length; i++)
+			this.cars[i].car.update();
 	}
 
 	destroy() {

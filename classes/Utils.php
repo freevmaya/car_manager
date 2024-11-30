@@ -34,7 +34,9 @@ function roundv($v, $n) {
 }
 
 function CalcAngle($p1, $p2) {
-    return atan2($p2['lng'] - $p1['lng'], ($p2['lat'] - $p1['lat']) * 1.5)  / pi() * 180;
+    if ($p1 && $p2)
+        return atan2($p2['lng'] - $p1['lng'], ($p2['lat'] - $p1['lat']) * 1.5)  / pi() * 180;
+    else return 0;
 }
 
 

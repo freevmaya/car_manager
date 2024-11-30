@@ -56,6 +56,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 			$routes = @$driver['route'] ? json_decode($driver['route']['routes'], true) : null;
 			$tracer = null;
+			$order = $orderModel->getActiveOrder(['driver_id' => $driver['driver_id']]);
 
 			if ($routes) {
 
@@ -68,10 +69,14 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				$tracer->Update();
 
 				$userModel->UpdatePosition($driver['user_id'], $tracer->routePos, $tracer->routeAngle);
+				if ($order) {
+					trace($tracer);
+					$orderModel->SetRemaindDistance($order['id'], $tracer->remaindDistance());
+				}
+
 
 				if ($tracer->finished) {
 					// Закончили рейс, идем отдыхать! 
-
 
 					unset($tracers[$driver['id']]);
 					$simulateModel->Stop($driver['user_id']);
@@ -82,10 +87,11 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 			if (!$tracer || $tracer->finished) {
 				//Если есть активная заявка.
-				$order = $orderModel->getActiveOrder(['driver_id' => $driver['driver_id']]);
 				if ($order) {
 					// Здесь отправляем на место начала поездки по заявке
 					// если не найдет еще путь к точке сбора
+
+					trace($order);
 
 					if ($order['state'] == 'accepted') {
 
@@ -133,8 +139,6 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 			foreach ($items as $notify) {
 
-				$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
-
 				if ($notify['content_type'] == 'orderCreated') {
 					$order = $orderModel->getItem($notify['content_id']);
 					if ($order && ($order['state'] == 'wait')) {
@@ -143,7 +147,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						if (isset($tracers[$driver['id']])) {
 							$tracer = $tracers[$driver['id']];
 							$driverDetail['route_id'] = $driver['route_id'];
-							$driverDetail['remindDistance'] = $tracer->remindDistance();
+							$driverDetail['remaindDistance'] = $tracer->remaindDistance();
 						}
 
 						$nModel->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driverDetail), $driver['id']);
@@ -152,13 +156,15 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 					$order = $orderModel->getItem($notify['content_id']);
 
-					if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
+					if (($order['driver_id'] == $driver['driver_id']) && isset($tracers[$driver['id']])) {
 
 						$simulateModel->Stop($driver['user_id']);
 						if (isset($tracers[$driver['id']]))
 							unset($tracers[$driver['id']]);
 					}
 				}
+
+				$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
 			}
 
 			usleep(100000);

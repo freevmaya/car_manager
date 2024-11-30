@@ -1,4 +1,4 @@
-class BaseOrderField {
+/*class BaseOrderField {
     constructor(field) {
         this.field = field;
         this.field.closest('.view').on('destroy', this.onDestroy.bind(this));
@@ -12,7 +12,7 @@ class BaseOrderField {
     destroy() {
         delete this;
     }
-}
+}*/
 
 class ViewPath extends BottomView {
     #routes;
@@ -32,7 +32,7 @@ class ViewPath extends BottomView {
 
         function setRoutes(result) {
             this.setRoutes(result);
-            this.rpath = DrawPath(v_map.map, result, {preserveViewport: false});
+            this.setPath(DrawPath(v_map.map, result, {preserveViewport: false}));
             if (afterRequest)
                 afterRequest();
         }
@@ -40,6 +40,11 @@ class ViewPath extends BottomView {
         if (isEmpty(routes)) 
             v_map.getRoutes(startPlace, finishPlace, this.travelMode, setRoutes.bind(this));
         else setRoutes.bind(this)(routes);
+    }
+
+    setPath(value) {
+        this.closePath();
+        this.rpath = value;
     }
 
     closePath() {
@@ -64,6 +69,11 @@ class OrderView extends ViewPath {
     get LastState() { return this.#lastState; }
     get Order() { return this.options.order; }
 
+    initView() {
+        super.initView();
+        this.view.addClass('order');
+    }
+
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
 
@@ -72,6 +82,10 @@ class OrderView extends ViewPath {
 
         this.#listenerId = transport.AddListener('notificationList', ((e)=>{
             this.onReceiveNotifyList(e.value);
+        }).bind(this));
+
+        this.#listenerId = transport.AddListener('SuitableDrivers', ((e)=>{
+            this.onSuitableDrivers(e.value);
         }).bind(this));
 
         this.onReceiveNotifyList(jsdata.notificationList);
@@ -86,6 +100,13 @@ class OrderView extends ViewPath {
 
                 transport.SendStatusNotify(list[i]);
             }
+    }
+
+    onSuitableDrivers(drivers) {
+        for (let i in drivers) {
+            if (drivers[i].order_id == this.getOrderId())
+                this.contentElement.find('.remaindDistance').text(DistanceToStr(drivers[i].remaindDistance));
+        }
     }
 
     changeOrder(order) {
@@ -130,10 +151,8 @@ class OrderView extends ViewPath {
                         data: JSON.stringify({id: this.getOrderId(), state: 'cancel'})
                     }).then(((data)=>{
 
-                        if (data.result == 'ok') {
+                        if (data.result == 'ok')
                             super.prepareToClose(afterPrepare);
-                            BeginSelectPath();
-                        }
                         else console.error(data);
 
                     }).bind(this));
@@ -298,8 +317,8 @@ class OrderAccepedView extends OrderView {
                     let driverInfo = JSON.parse(offer.text);
 
                     let distance = Distance(offer.driver, start);
-                    if (driverInfo.remindDistance)
-                        distance += driverInfo.remindDistance;
+                    if (driverInfo.remaindDistance)
+                        distance += driverInfo.remaindDistance;
 
                     if (distance < bestDistance) {
                         bestDistance = distance;
@@ -386,18 +405,19 @@ class OrderAccepedView extends OrderView {
         if (this.allowOffers) this.offersProcess(list);
 
         for (let i in list)
-            if (list[i].content_type == 'pathToStart') {
-                this.pathToStartNotify = list[i];
-                let path = JSON.parse(list[i].text);
-                if (!this.pathToStart)
-                    this.pathToStart = v_map.DrawPath(path, {
-                        preserveViewport: false,
-                        suppressMarkers: true,
-                        polylineOptions: {
-                            strokeColor: '#AA0'
-                        }
-                    });
-            }
+            if (list[i].content_type == 'pathToStart')
+                if (this.Order.state == 'accepted') {
+                    this.pathToStartNotify = list[i];
+                    let path = JSON.parse(list[i].text);
+                    if (!this.pathToStart)
+                        this.pathToStart = v_map.DrawPath(path, {
+                            preserveViewport: false,
+                            suppressMarkers: true,
+                            polylineOptions: {
+                                strokeColor: '#AA0'
+                            }
+                        });
+                } else transport.SendStatusNotify(list[i]);
     }
 
     closePathToStart() {
@@ -439,8 +459,8 @@ function BeginSelectPath() {
                 startPlace: place
             }, SelectPathView, () => {
                 if (selectPathDialog.getOrderId()) {
-                    BeginAcceptedOrder(currentOrder = selectPathDialog.GetOrder());
                     listener.remove();
+                    BeginAcceptedOrder(currentOrder = selectPathDialog.GetOrder());
                 }
                 selectPathDialog = null;
             });

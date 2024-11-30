@@ -6,6 +6,7 @@
 	html::AddScriptFile('color.js');
 ?>
 <div class="field order field-<?=$fieldIdx?>">
+	<div class="param"><span><?=lang('State')?></span>: <span class="state">{toLang(data.state)}</span></div>
 	<div class="data">
 		<div class="block">
 			<h3><?=lang('Route')?></h3>
@@ -16,7 +17,7 @@
 	    	</div>
 	    	</div>
 			<div class="param"><span><?=lang('Distance')?></span><span class="distance">{distance} <?=lang('km.')?></span></div>
-			<div class="param"><span><?=lang('State')?></span><span class="state">{toLang(data.state)}</div>
+			<div class="param"><span><?=lang('Remaining distance')?></span><span class="remaindDistance">{toLang(data.remaindDistance)}</span></div>
     	</div>
 		<div class="block">
 			<h3><?=lang('Driver/auto')?></h3>

@@ -205,7 +205,7 @@ class View extends BaseParentView {
             setTimeout((()=>{
                 this.destroy();
                 resolveOuter();
-            }).bind(this), 500);
+            }).bind(this), 600);
         }).bind(this));
     }
 

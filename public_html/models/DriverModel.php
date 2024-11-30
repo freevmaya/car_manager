@@ -76,35 +76,49 @@ class DriverModel extends BaseModel {
 	}
 
 	public function SuitableDrivers($lat = null, $lng = null) {
-		GLOBAL $dbp;
-		if (!$lat) {
-			$user = Page::getSession('user');
-			$lat = $user['lat'];
-			$lng = $user['lng'];
-		}
+		GLOBAL $dbp, $user;
 
-		$drivers = [];
-		if ($lat) {
-			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number ".
+		if ($order = (new OrderModel())->getActiveOrder($user['id'], "'accepted', 'wait_meeting', 'execution'")) {
 
-			"FROM {$this->getTable()} d ".
-			"INNER JOIN users u ON d.user_id = u.id ".
-			"INNER JOIN car c ON d.car_id = c.id ".
-			"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
+			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number, o.id AS order_id, o.remaindDistance ".
 
-			"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval}";
-			$list = $dbp->asArray($query);
+				"FROM {$this->getTable()} d ".
+				"INNER JOIN users u ON d.user_id = u.id ".
+				"INNER JOIN car c ON d.car_id = c.id ".
+				"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
+				"INNER JOIN orders o ON o.driver_id = d.id ".
 
-			foreach ($list as $driver) {
-				$distance =  Distance($driver['lat'], $driver['lng'], $lat, $lng);
-				if ($distance < DriverModel::$maxDistanceToStart) {
-					$driver['distanceStart'] = $distance;
-					$drivers[] = $driver;
-				}
+				"WHERE o.id={$order['id']}";
+			$drivers = $dbp->asArray($query);
+
+		} else {
+
+			if (!$lat) {
+				$user = Page::getSession('user');
+				$lat = $user['lat'];
+				$lng = $user['lng'];
 			}
 
-			//if (count($drivers) == 0)
-				//trace($query);
+			$drivers = [];
+			if ($lat) {
+				$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number ".
+
+				"FROM {$this->getTable()} d ".
+				"INNER JOIN users u ON d.user_id = u.id ".
+				"INNER JOIN car c ON d.car_id = c.id ".
+				"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
+
+				"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval}";
+				$list = $dbp->asArray($query);
+
+				foreach ($list as $driver) {
+					$distance =  Distance($driver['lat'], $driver['lng'], $lat, $lng);
+					if ($distance < DriverModel::$maxDistanceToStart) {
+						$driver['distanceStart'] = $distance;
+						$drivers[] = $driver;
+					}
+				}
+			}
 		}
 
 		return $drivers;

@@ -1,5 +1,7 @@
 var WAITOFFERS = 5000; // 30 сек
 
+УСТАРЕВШИЙ СКРИПТ
+
 class DriverFieldAccepted extends BaseOrderField {
 	#listenerId;
 	constructor(field) {
@@ -61,8 +63,8 @@ class DriverFieldWait extends DriverFieldAccepted {
 	        		let offer = this.#offers[i];
 
 	        		let distance = Distance(offer.driver, start);
-	        		if (offer.remindDistance)
-	        			distance += offer.remindDistance;
+	        		if (offer.remaindDistance)
+	        			distance += offer.remaindDistance;
 
 	        		if (distance < bestDistance) {
 	        			bestDistance = distance;

@@ -13,11 +13,12 @@ class fdbg {
         $targetFile = $type == ERROR_TYPE ? $FDBGErrorsFile : $FDBGLogFile;
         
         $stack = fdbg::GetStack();
-
+        $stackMax = min($topCalled + 5, count($stack) - 1);
+        
         $i = $topCalled;
         $stackStr = '';
 
-        while ($i < $topCalled + 5) {
+        while ($i < $stackMax) {
             $stackStr .= $stack[$i]['file'].':'.$stack[$i]['line']."\n";
             $i++;
         }
