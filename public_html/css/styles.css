@@ -345,10 +345,6 @@ h1, h2 {
     padding-left: 0.5em;
 }
 
-.view.order .content{
-    margin: 0;
-}
-
 .view .content {
     flex-grow: 1;
     display: flex;
@@ -357,7 +353,6 @@ h1, h2 {
     overflow: hidden;
     margin: 1em;
     transition: 0.5s width;
-    overflow-y: scroll;
 }
 
 .view .content .group {
@@ -1065,10 +1060,6 @@ input:focus, select:focus {
     display: block;
 }
 
-.order.finished {
-    opacity: 0.5;
-}
-
 .order .driver .wait {
     display: none;
 }
@@ -1077,6 +1068,7 @@ input:focus, select:focus {
     text-align: left;
     border-radius: 1em;
     padding: 1em;
+    width: 50%;
 }
 
 .trips .data .block {
@@ -1090,6 +1082,36 @@ input:focus, select:focus {
 .view .data {
     display: flex;
 
+}
+
+.view.order .content{
+    margin: 0;
+}
+
+.view.order .block {
+    transition: width 0.5s, height 0.5s;
+}
+
+.view.finished .driver {
+    display: none;
+}
+
+.view.finished .route {
+    width: 100%;
+}
+
+.execution .close {
+    visibility: hidden !important;
+}
+
+.param.comfort,  
+.param.seating,  
+.param.carbody {
+    display: none !important;
+}
+
+.view.order .stateHead {
+    text-align: center !important;
 }
 
 .data .block h3 {

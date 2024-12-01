@@ -149,8 +149,6 @@ class Ajax extends Page {
 
 			if ($countDriver > 0)
 				$this->NotifyOrderToDrivers($drivers, $order_id);
-
-			(new NotificationModel())->AddNotify($order_id, 'orderReceive', $user['id'], Lang("OrderToProcess")." ({$countDriver})");
 		} else $order_id = 'An error was caused by update route';
 
 		return ["result"=>$order_id];
@@ -180,14 +178,14 @@ class Ajax extends Page {
 			}
 			else if ($data['state'] == 'cancel') {
 
+				$notificationModel->SetState(['content_type'=>'pathToStart', 
+					'state'=>'rejected', 'content_id'=>$data['id']]);
+
 				$oldList = $notificationModel->NotifiedDrivers($data['id'], 'orderCreated');
 				if (count($oldList) > 0) {
 
 					$notificationModel->SetState(['content_type'=>'offerToPerform', 
 						'state'=>'rejected', 'content_id'=>BaseModel::getListValues($oldList, 'content_id')]);
-
-					$notificationModel->SetState(['content_type'=>'pathToStart', 
-						'state'=>'rejected', 'content_id'=>$data['id']]);
 
 					$result = $result && $this->NotifyOrderToDrivers($oldList, $data['id'], 'orderCancelled', 'Order cancelled');
 				}

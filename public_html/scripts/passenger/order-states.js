@@ -1,45 +1,45 @@
-/*class BaseOrderField {
-    constructor(field) {
-        this.field = field;
-        this.field.closest('.view').on('destroy', this.onDestroy.bind(this));
-        this.order_id = field.data('order_id');
-    }
-
-    onDestroy(e) {
-        this.destroy();
-    }
-
-    destroy() {
-        delete this;
-    }
-}*/
-
 class ViewPath extends BottomView {
-    #routes;
+    routes;
     rpath;
     travelMode = travelMode;
 
-    setRoutes(routes) {
-        this.#routes = routes;
+    setOptions(options) {
+        super.setOptions(options);
+        if (options.path)
+            this.setPathData(options.path);
+    }
+
+    #setRoutes(routes) {
+        this.setPath(v_map.DrawPath(this.routes = routes, {preserveViewport: false}));
     }
 
     getRoutes() {
-        return this.#routes;
+        return this.routes;
     }
 
     showPath(startPlace, finishPlace, routes, afterRequest = null) {
         this.closePath();
 
-        function setRoutes(result) {
-            this.setRoutes(result);
-            this.setPath(DrawPath(v_map.map, result, {preserveViewport: false}));
-            if (afterRequest)
-                afterRequest();
+        function afterGetRoutes(result) {
+            this.#setRoutes(result);
+            if (afterRequest) afterRequest();
         }
 
         if (isEmpty(routes)) 
-            v_map.getRoutes(startPlace, finishPlace, this.travelMode, setRoutes.bind(this));
-        else setRoutes.bind(this)(routes);
+            v_map.getRoutes(startPlace, finishPlace, this.travelMode, afterGetRoutes.bind(this));
+        else afterGetRoutes.bind(this)(routes);
+    }
+
+    setPathData(data) {
+        this.rpath = data.rpath;
+        this.routes = data.routes;
+    }
+
+    getPathData() {
+        return {
+            rpath: this.rpath,
+            routes: this.routes
+        }
     }
 
     setPath(value) {
@@ -53,20 +53,16 @@ class ViewPath extends BottomView {
             delete this.rpath;
         }
     }
-
-    destroy() {
-        this.closePath();
-        super.destroy();
-    }
 }
 
 
 class OrderView extends ViewPath {
-    #lastState;
+    #lastState = 'wait';
     #order_id = 0;
     #listenerId;
 
     get LastState() { return this.#lastState; }
+    get orderState() { return this.Order && this.Order.state ? this.Order.state : 'wait'; };
     get Order() { return this.options.order; }
 
     initView() {
@@ -76,6 +72,9 @@ class OrderView extends ViewPath {
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
+
+        if (options.path)
+            this.setPathData(options.path);
 
         if (options.order) 
             this.SetOrder(options.order);
@@ -87,7 +86,10 @@ class OrderView extends ViewPath {
         this.#listenerId = transport.AddListener('SuitableDrivers', ((e)=>{
             this.onSuitableDrivers(e.value);
         }).bind(this));
+    }
 
+    afterConstructor() {
+        super.afterConstructor();
         this.onReceiveNotifyList(jsdata.notificationList);
     }
 
@@ -98,7 +100,7 @@ class OrderView extends ViewPath {
                 if (list[i].content_id == this.getOrderId())
                     this.changeOrder(JSON.parse(list[i].text));
 
-                transport.SendStatusNotify(list[i]);
+                transport.SendStatusNotify(list[i], 'read');
             }
     }
 
@@ -110,35 +112,36 @@ class OrderView extends ViewPath {
     }
 
     changeOrder(order) {
-        if (this.Order) {
-            this.#lastState = this.Order.state;
-            order = $.extend(this.Order, order);
-        } else this.#lastState = 'wait';
+        this.#lastState = this.orderState;
+        if (this.Order) order = $.extend(this.Order, order);
         this.SetOrder(order);
     }
 
 
-
     SetOrder(order) {
 
-        if (this.options.order = order) {
+        if (order) {
             this.setOrderId(order.id);
 
-            if ((order.state != 'finished') && !this.rpath) {
+            if (order.state == 'finished')
+                this.closePath();
+            else {
+
                 if (order.travelMode)
                     this.travelMode = order.travelMode;
                 
                 order.start = toPlace(order.start);
                 order.finish = toPlace(order.finish);
 
-                this.showPath(order.start, order.finish);
+                if (!this.rpath && !this.options.path) 
+                    this.showPath(order.start, order.finish);
             }
 
-            if (order.state == 'finished')
-                this.closePath();
+            this.options.order = order;
         } else {
             this.setOrderId(null);
             this.closePath();
+            this.options.order = null;
         }
     }
 
@@ -247,11 +250,6 @@ class SelectPathView extends OrderView {
 
         }).bind(this));
     }
-
-    destroy() {
-        this.closePath();
-        super.destroy();
-    }
 }
 
 var WAITOFFERS = 5000; // 5 сек
@@ -260,8 +258,6 @@ class OrderAccepedView extends OrderView {
     pathToStart;
     #offers;
     #time;
-
-    get orderState() { return this.Order.state ? this.Order.state : 'wait'; };
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
@@ -275,19 +271,33 @@ class OrderAccepedView extends OrderView {
         super.initContent();
     }
 
+    resetLayer() {
+        this.contentElement.empty();
+        this.orderLayer = templateClone($('.templates .order'), this.Order);
+        this.contentElement
+            .append(this.orderLayer);
+        if (this.Order.car_color) this.refreshColor();
+    }
+
     SetOrder(order) {
         super.SetOrder(order);
 
-        this.orderLayer = templateClone($('.templates .order'), order)
-                                        .addClass(this.orderState);
-        this.contentElement.empty();
-        this.contentElement.append(this.orderLayer);
-        if (this.Order.car_color)
-                this.refreshColor();
+        if (!this.orderLayer || (order.state == 'accepted')) 
+            this.resetLayer();
+
+        this.view
+            .removeClass(this.LastState)
+            .addClass(this.orderState);
+            
+        this.orderLayer
+            .find('.state').text(toLang(this.orderState))
+            .find('.distance').text(DistanceToStr(this.Order.meters));
+
+        this.resizeMap();
 
         if ((this.LastState == 'accepted') && (this.pathToStartNotify)) {
             this.closePathToStart();
-            transport.SendStatusNotify(this.pathToStartNotify);
+            transport.SendStatusNotify(this.pathToStartNotify, 'read');
         }
     }
 
@@ -305,8 +315,6 @@ class OrderAccepedView extends OrderView {
         if ((time_count > WAITOFFERS) && (this.#offers.length > 0)) {
 
             this.#time = Date.now();
-
-            console.log('END WAIT');
             let nearIx = 0;
             let bestDistance = Number.MAX_VALUE;
             let start = toPlace(this.Order.start);
@@ -335,7 +343,7 @@ class OrderAccepedView extends OrderView {
 
             this.#offers.splice(nearIx, 1);
             for (let i=0; i<this.#offers.length; i++) {
-                transport.SendStatusNotify(this.#offers[i]);
+                transport.SendStatusNotify(this.#offers[i], 'read');
             }
             this.#offers = [];
             this.takeOffer(bestOffer);
@@ -383,7 +391,7 @@ class OrderAccepedView extends OrderView {
             action: 'SetState',
             data: {id: this.getOrderId(), driver_id: notify.driver.id, state: 'accepted' }
         }).then(() => {
-            transport.SendStatusNotify(notify);
+            transport.SendStatusNotify(notify, 'read');
         });
     }
 
@@ -405,19 +413,24 @@ class OrderAccepedView extends OrderView {
         if (this.allowOffers) this.offersProcess(list);
 
         for (let i in list)
-            if (list[i].content_type == 'pathToStart')
+            if ((list[i].content_type == 'pathToStart') && (list[i].state == 'active'))
                 if (this.Order.state == 'accepted') {
-                    this.pathToStartNotify = list[i];
-                    let path = JSON.parse(list[i].text);
-                    if (!this.pathToStart)
-                        this.pathToStart = v_map.DrawPath(path, {
-                            preserveViewport: false,
-                            suppressMarkers: true,
-                            polylineOptions: {
-                                strokeColor: '#AA0'
-                            }
-                        });
-                } else transport.SendStatusNotify(list[i]);
+                    if (!this.pathToStartNotify) {
+                        this.pathToStartNotify = list[i];
+                        this.drawPathToStart(list[i].text);
+                    }
+                } else transport.SendStatusNotify(list[i], 'read');
+    }
+
+    drawPathToStart(jsonPath) {
+        this.closePathToStart();
+        this.pathToStart = v_map.DrawPath(JSON.parse(jsonPath), {
+            preserveViewport: false,
+            suppressMarkers: true,
+            polylineOptions: {
+                strokeColor: 'rgba(0.9, 0.9, 0, 0.5)'
+            }
+        });
     }
 
     closePathToStart() {
@@ -428,6 +441,7 @@ class OrderAccepedView extends OrderView {
     }
 
     destroy() {
+        this.closePath();
         this.closePathToStart();
         super.destroy();
     }
@@ -460,8 +474,10 @@ function BeginSelectPath() {
             }, SelectPathView, () => {
                 if (selectPathDialog.getOrderId()) {
                     listener.remove();
-                    BeginAcceptedOrder(currentOrder = selectPathDialog.GetOrder());
-                }
+                    BeginAcceptedOrder(currentOrder = selectPathDialog.GetOrder(), 
+                                        selectPathDialog.getPathData());
+                } else selectPathDialog.closePath();
+
                 selectPathDialog = null;
             });
         } else selectPathDialog.SelectPlace(place);
@@ -470,8 +486,9 @@ function BeginSelectPath() {
     listener = v_map.map.addListener("click", onClickMap);
 }
 
-function BeginAcceptedOrder(order) {
+function BeginAcceptedOrder(order, passedPathData = null) {
     let dialog = viewManager.Create({
+        path: passedPathData,
         order: order,
         title: toLang('Order')
     }, OrderAccepedView, BeginSelectPath);

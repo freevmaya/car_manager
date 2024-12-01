@@ -47,6 +47,16 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 		$nModel->AddNotify($order['id'], 'pathToStart', $order['user_id'], json_encode($path));
 	}
 
+	function isNotAllowRoute($route_id) {
+		GLOBAL $drivers;
+
+		foreach ($drivers as $driver)
+			if ($driver['route_id'] == $route_id)
+				return true;
+
+		return false;
+	}
+
 	do {
 
 		$drivers = BaseModel::FullItems($simulateModel->getItems(), ['route_id'=>$routeModel]);
@@ -91,8 +101,6 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 					// Здесь отправляем на место начала поездки по заявке
 					// если не найдет еще путь к точке сбора
 
-					trace($order);
-
 					if ($order['state'] == 'accepted') {
 
 						$pathToStart = $nModel->getItems(['user_id'=>$order['user_id'], 'content_id'=>$order['id'], 'content_type'=>'pathToStart', 'state'=>'active']);
@@ -111,6 +119,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						}
 					} else if ($order['state'] == 'wait_meeting') {
 						print_r("Wait meeting\n");
+						sleep(1);
 
 						$orderModel->SetState($order['id'], 'execution', false, true);
 						$simulateModel->Start($driver['user_id'], $order['route_id']);
@@ -127,7 +136,10 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 					$routes = $routeModel->getItems([]);
 					$count = count($routes);
 					if ($count > 0) {
-						$rndRoute = $routes[rand(0, $count - 1)];
+						do {
+							$rndRoute = $routes[rand(0, $count - 1)];
+						} while (isNotAllowRoute($rndRoute['id']) || ($count <= count($drivers)));
+						
 						$simulateModel->Start($driver['user_id'], $rndRoute['id']);
 					}
 

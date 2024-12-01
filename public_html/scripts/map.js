@@ -241,6 +241,7 @@ class VMap {
 	}
 
 	DrawPath(data, options) {
+		//console.log(data);
 		return DrawPath(this.map, data, options);
 	}
 

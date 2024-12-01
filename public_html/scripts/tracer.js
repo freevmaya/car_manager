@@ -29,6 +29,8 @@ class Tracer extends EventProvider {
     #intervalId;
     #periodTime;
 
+    get AvgSpeed() { return this.#avgSpeed; };
+
     constructor(routes, callback, periodTime, options) {
 
         super();

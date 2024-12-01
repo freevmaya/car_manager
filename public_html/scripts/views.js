@@ -88,6 +88,11 @@ class View extends BaseParentView {
         this.afterDestroy = afterDestroy;
         this.initView();
         this.setOptions(options);
+        setTimeout(this.afterConstructor.bind(this), 5);
+    }
+
+    afterConstructor() {
+
     }
 
     initMainView() {
@@ -153,6 +158,14 @@ class View extends BaseParentView {
     afterResize() {
     }
 
+    resizeMap() {
+        if (v_map)
+            setTimeout((()=>{
+                let space = (this.view.outerHeight() - this.view.height()) / 2;
+                v_map.View.css('bottom', this.view.outerHeight() - space);
+            }).bind(this), 500); 
+    }
+
     toAlign() {
         let size = { x: $(window).width(), y: $(window).height() };
         if (!this.options.topAlign) {
@@ -161,12 +174,7 @@ class View extends BaseParentView {
                     .addClass('bottom')
                     .addClass('radiusTop');
 
-                setTimeout((()=>{
-                    let space = (this.view.outerHeight() - this.view.height()) / 2;
-                    v_map.View.css('bottom', this.view.outerHeight() - space);
-
-                }).bind(this), 1000);
-
+                this.resizeMap();
                 this.afterResize();
             }
             //else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);

@@ -102,6 +102,6 @@ $lang = [
 	'Distance'=>'Расстояние',
 	'Offer count'=>'Количество предложений',
 	'State'=>'Состояние',
-	'Remaining distance'=>'Оставшееся расстояние'
+	'Remaining distance'=>'Ост. расстояние'
 ];
 ?>
