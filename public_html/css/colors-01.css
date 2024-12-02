@@ -313,3 +313,11 @@ select.time {
 .data .block .name {
     color: #ffffffab;
 }
+
+.order.finished .stateHead .state {
+    color: cyan;
+}
+
+.order.wait_meeting .stateHead .state {
+    color: coral;
+}

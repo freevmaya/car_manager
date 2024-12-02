@@ -279,6 +279,11 @@ class OrderAccepedView extends OrderView {
         if (this.Order.car_color) this.refreshColor();
     }
 
+    changeOrder(order) {
+        super.changeOrder(order);
+        v_map.visMainMarker(this.orderState != 'execution');
+    }
+
     SetOrder(order) {
         super.SetOrder(order);
 

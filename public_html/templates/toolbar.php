@@ -1,6 +1,6 @@
 <?
 	GLOBAL $user;
-	html::AddScriptFiles(['views.js', 'data-view.js', 'jquery-dateformat.min.js']);
+	html::AddScriptFiles(['views.js', 'jquery-dateformat.min.js']);
 
 	$notifyModel = new NotificationModel();
 	$driverModel = new DriverModel();

@@ -40,7 +40,8 @@ class SimulateModel extends BaseModel {
 
 	public function Stop($user_id) {
 		GLOBAL $dbp;
-		return $dbp->query("UPDATE {$this->getTable()} SET route_id=NULL, waitUntil=NOW() + INTERVAL 5 MINUTE WHERE user_id={$user_id}");
+		$minutes = rand(2, 6);
+		return $dbp->query("UPDATE {$this->getTable()} SET route_id=NULL, waitUntil=NOW() + INTERVAL {$minutes} MINUTE WHERE user_id={$user_id}");
 	}
 }
 

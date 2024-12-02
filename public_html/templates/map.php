@@ -21,8 +21,9 @@
 	} else {
 //------------------------------PASSENGER---------------------------------------------
 
-		html::AddScriptFile("passenger/order-states.js"); 
-		//html::AddScriptFile("passenger/driver-field.js");
+		html::AddScriptFile("passenger/order-states.js");
+		if (DEV)
+			html::AddScriptFile("passenger/dev.js");
 		
 		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted', 'execution', 'wait_meeting'], 'limit'=>1]);
 

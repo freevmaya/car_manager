@@ -107,7 +107,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 						if (count($pathToStart) == 0) {
 
-							print_r("Get path to start\n");
+							print_r("Get path to start {$order['user_id']}\n");
 							$order = BaseModel::FullItem($order, ['route_id'=>$routeModel]);
 							$nModel->getData($driver['user_id'], $order['user_id'], json_encode(['action'=>'getPath', 'start'=>$driver, 'finish'=>$order['route']['start']]), 'replyPath', 
 								['driver'=>$driver, 'order'=>$order]);
@@ -116,13 +116,23 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 							print_r("Finished path to start\n");
 							$nModel->SetState(['id'=>$pathToStart[0]['id'], 'state'=>'read']);
 							$orderModel->SetState($order['id'], 'wait_meeting', false, true);
+							print_r("Wait meeting\n");
 						}
 					} else if ($order['state'] == 'wait_meeting') {
-						print_r("Wait meeting\n");
-						sleep(1);
 
-						$orderModel->SetState($order['id'], 'execution', false, true);
-						$simulateModel->Start($driver['user_id'], $order['route_id']);
+						$user = $userModel->getItem($order['user_id']);
+
+						$distance = Distance($user['lat'], $user['lng'], $driver['lat'], $driver['lng']);
+						if ($distance < 10) { // Если заказчик на растоянии меньше 10 метров
+							sleep(1);
+
+							$orderModel->SetState($order['id'], 'execution', false, true);
+							$simulateModel->Start($driver['user_id'], $order['route_id']);
+						}
+
+						print_r("Distance to user: ".$distance."\n");
+
+
 					} else if ($order['state'] == 'execution') {
 						print_r("Finished order\n");
 
