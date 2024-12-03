@@ -3,6 +3,7 @@ html::AddScriptFiles([
 	"jquery-dateformat.min.js",
 	"color.js",
 	"map.js",
+	"data-view.js",
 	"views.js",
 	"tracer.js",
 	'driver-manager.js',

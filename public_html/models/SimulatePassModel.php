@@ -1,0 +1,76 @@
+<?
+class SimulatePassModel extends BaseModel {
+
+	protected function getTable() {
+		return 'simulate_pass';
+	}
+
+	public function getItem($options) {
+		GLOBAL $dbp;
+
+		if (is_array($options)) {
+			$where = BaseModel::GetConditions($options, ['s.user_id']);
+			$whereStr = implode(" AND ", $where);
+		} else $whereStr = "o.user_id={$options}";
+
+		$query = "SELECT s.*, u.*, o.id AS order_id FROM {$this->getTable()} s ".
+					"INNER JOIN users u ON u.id = s.user_id ".
+					"LEFT JOIN orders o ON s.user_id = o.user_id AND o.`state` IN (".ACTIVEORDERLIST.") ".
+					"WHERE $whereStr";
+		return $dbp->line($query);
+	}
+
+	public function getItems($options=null) {
+		GLOBAL $dbp;
+
+		$query = "SELECT s.*, u.*, o.id AS order_id FROM {$this->getTable()} s ".
+					"INNER JOIN users u ON u.id = s.user_id ".
+					"LEFT JOIN orders o ON s.user_id = o.user_id AND o.`state` IN (".ACTIVEORDERLIST.") ".
+					"WHERE `waitUntil` <= NOW() OR `waitUntil` IS NULL";
+
+		return $dbp->asArray($query);
+	}
+
+	protected function NotifyOrderToDrivers($drivers, $content_id, $content_type='orderCreated', $text="Order сreated") {
+		foreach ($drivers as $driver)
+			(new NotificationModel())->AddNotify($content_id, $content_type, $driver['user_id'], Lang($text));
+
+		return true;
+	}
+
+	public function Start($user_id, $route) {
+		GLOBAL $dbp;
+
+
+		if ($order_id = (new OrderModel())->AddOrder(['user_id'=>$user_id, 'route_id'=>$route['id']])) {
+
+			$userModel = new UserModel();
+
+			$user = $userModel->getItem($user_id);
+			$start = json_decode($route['start'], true);
+
+			$drivers = (new DriverModel())->SuitableDrivers($start['lat'], $start['lng'], $user);
+			$countDriver = count($drivers);
+
+			$user['lat'] = $start['lat'];
+			$user['lng'] = $start['lng'];
+			
+			$userModel->Update($user);
+
+			if ($countDriver > 0)
+				$this->NotifyOrderToDrivers($drivers, $order_id);
+
+			return $dbp->query("UPDATE {$this->getTable()} SET `waitUntil` = NULL WHERE user_id={$user_id}");
+		}
+
+		return null;
+	}
+
+	public function Stop($user_id) {
+		GLOBAL $dbp;
+		$minutes = rand(2, 6);
+		return $dbp->query("UPDATE {$this->getTable()} SET waitUntil=NOW() + INTERVAL {$minutes} MINUTE WHERE user_id={$user_id}");
+	}
+}
+
+?>

@@ -65,17 +65,27 @@ class Page {
 
 		//trace($_SERVER['HTTP_USER_AGENT']);
 
-		if (isset($_GET['username']))
-			$this->setUser($_GET);
-		else if (Page::getSession('user')) {
-			$user = Page::getSession('user');
-			if (!is_array($db_user = (new UserModel())->getItem($user['id']))) {
+		if (DEV) {
+			$user = json_decode(DEVUSER, true);
+			if (!Page::getSession('user'))
 				$this->setUser($user);
-				//trace($user['id']);
+		} else {
+			if (isset($_GET['username']))
+				$this->setUser($_GET);
+			else if (Page::getSession('user')) {
+				$user = Page::getSession('user');
+				if (!isset($user['id'])) {
+					if (DEVUSER)
+						$this->setUser($user = array_merge(json_decode(DEVUSER, true), $user));
+				}
+				if (!is_array($db_user = (new UserModel())->getItem($user['id']))) {
+					$this->setUser($user);
+					//trace($user['id']);
+				}
 			}
+			else if (DEVUSER) 
+				$this->setUser(json_decode(DEVUSER, true));
 		}
-		else if (DEVUSER) 
-			$this->setUser(json_decode(DEVUSER, true));
 
 		if ($user) {
 			$language = $user['language_code'];

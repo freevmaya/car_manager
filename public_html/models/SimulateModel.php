@@ -17,8 +17,6 @@ class SimulateModel extends BaseModel {
 					"INNER JOIN users u ON u.id = s.user_id ".
 					"INNER JOIN driverOnTheLine d ON s.user_id = d.user_id ".
 					"WHERE $whereStr";
-
-		trace($query);
 		return $dbp->line($query);
 	}
 

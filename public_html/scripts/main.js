@@ -834,6 +834,13 @@ function getClassName(obj) {
    return (results && results.length > 1) ? results[1] : "";
 };
 
+function checkCondition(checkFunc, action, data=null) {
+    if (checkFunc()) action(data);
+    else setTimeout(()=>{
+        checkCondition(checkFunc, action, data);
+    }, 50);
+}
+
 $(window).ready(()=>{
     PrepareInput();
 });

@@ -3,6 +3,9 @@
 	include_once(TEMPLATES_PATH.'/toolbar.php');
 	include_once(TEMPLATES_PATH.'/map/map-index.php');
 
+	if (DEV)
+		html::AddScriptFile("passenger/dev.js");
+
 	$orderModel = new OrderModel();
 
 	if ($this->asDriver) {
@@ -22,8 +25,6 @@
 //------------------------------PASSENGER---------------------------------------------
 
 		html::AddScriptFile("passenger/order-states.js");
-		if (DEV)
-			html::AddScriptFile("passenger/dev.js");
 		
 		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted', 'execution', 'wait_meeting'], 'limit'=>1]);
 

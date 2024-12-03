@@ -75,10 +75,12 @@ class DriverModel extends BaseModel {
 		return $dbp->asArray($query);
 	}
 
-	public function SuitableDrivers($lat = null, $lng = null) {
+	public function SuitableDrivers($lat = null, $lng = null, $a_user = null) {
 		GLOBAL $dbp, $user;
 
-		if ($order = (new OrderModel())->getActiveOrder($user['id'], "'accepted', 'wait_meeting', 'execution'")) {
+		if (!$a_user) $a_user = $user;
+
+		if ($order = (new OrderModel())->getActiveOrder($a_user['id'], "'accepted', 'wait_meeting', 'execution'")) {
 
 			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number, o.id AS order_id, o.remaindDistance ".
 
@@ -94,9 +96,9 @@ class DriverModel extends BaseModel {
 		} else {
 
 			if (!$lat) {
-				$user = Page::getSession('user');
-				$lat = $user['lat'];
-				$lng = $user['lng'];
+				$a_user = Page::getSession('user');
+				$lat = $a_user['lat'];
+				$lng = $a_user['lng'];
 			}
 
 			$drivers = [];
