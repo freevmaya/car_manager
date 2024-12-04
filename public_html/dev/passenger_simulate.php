@@ -61,6 +61,19 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 		return false;
 	}
 
+	function NearestOffer($offers, $user) {
+		$min_distance = PHP_FLOAT_MAX;
+		$result = null;
+		foreach ($offers as $offer) {
+			$driver = json_decode($offer['text'], true);
+			$distance = Distance($user['lat'], $user['lng'], $driver['lat'], $driver['lng']) + (isset($driver['remaindDistance']) ? $driver['remaindDistance'] : 0);
+
+			if ($distance < $min_distance)
+				$result = $offer;
+		}
+		return $result;
+	}
+
 	do {
 
 		$passengers = BaseModel::FullItems($simulateModel->getItems(), ['order_id'=>$orderModel]);
@@ -75,9 +88,41 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						$rndRoute = $routes[rand(0, $count - 1)];
 					} while (isNotAllowRoute($rndRoute) || ($count <= count($passengers)));
 					
+					print_r("Start order {$pass['user_id']}");
 					$simulateModel->Start($pass['user_id'], $rndRoute);
+				}
+			}
 
-					print_r($pass);
+			$items = $nModel->getItems(['user_id'=>$pass['user_id'], 'content_type'=>['offerToPerform'], 'state'=>'active']);
+
+			$offers = [];
+			foreach ($items as $notify) {
+
+				if ($notify['content_type'] == 'offerToPerform') {
+
+					$offers[] = $notify;
+					$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
+
+				} else if ($notify['content_type'] == 'changeOrder') {
+					$order = json_decode($notify['text'], true);
+					if ($order['state'] == 'wait_meeting') {
+						$route = $routeModel->getItem($order['route_id']);
+
+						print_r("Set position for meeting\n");
+						$start = json_decode($route['start'], true);
+
+						$userModel->UpdatePosition($pass['user_id'], $start);
+						$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
+					}
+				}
+			}
+
+			if (count($offers) > 0) {
+				print_r("There is offer\n");
+				if ($offer = NearestOffer($offers, $pass)) {
+
+					print_r("Accept offer {$offer['text']}\n");
+					$simulateModel->AcceptOffer($pass['user_id'], json_decode($offer['text'], true));
 				}
 			}
 

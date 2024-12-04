@@ -1,6 +1,8 @@
 <?
 
 define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution'");
+define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
+define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
 
 abstract class BaseModel {
 	abstract protected function getTable();

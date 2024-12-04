@@ -66,6 +66,19 @@ class SimulatePassModel extends BaseModel {
 		return null;
 	}
 
+	public function AcceptOffer($user_id, $offer) {
+		GLOBAL $dbp;
+
+		$orderModel = new OrderModel();
+
+		if ($order = $orderModel->getActiveOrder(['user_id'=>$user_id])) {
+			$orderModel->SetState($order['id'], 'accepted', $offer['id']);
+			(new NotificationModel())->AddNotify($order['id'], 'acceptedOffer', $offer['user_id'], Lang('The offer has been accepted'));
+		}
+
+		return null;
+	}
+
 	public function Stop($user_id) {
 		GLOBAL $dbp;
 		$minutes = rand(2, 6);

@@ -2,8 +2,8 @@
 class DriverModel extends BaseModel {
 
 	protected $expiredInterval = 'INTERVAL 1 DAY';
-	protected $offlineInterval = 'INTERVAL 15 SECOND';
-	protected $lostConnectInterval = 'INTERVAL 10 MINUTE';
+	protected $offlineInterval = OFFLINEINTERVAL;
+	protected $lostConnectInterval = LOSTCONNECTINTERVAL;
 	protected static $maxDistanceToStart = 5000; // Удаленость от старта
 	
 	protected function getTable() {

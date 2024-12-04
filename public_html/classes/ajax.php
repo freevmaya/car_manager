@@ -59,6 +59,7 @@ class Ajax extends Page {
 
 		if (isset($data['lat'])) {
 
+			//trace(array_merge($data, $user));
 			(new UserModel())->UpdatePosition($user['id'], $data);
 
 			$user['lat'] = $data['lat'];

@@ -106,11 +106,14 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						$pathToStart = $nModel->getItems(['user_id'=>$order['user_id'], 'content_id'=>$order['id'], 'content_type'=>'pathToStart', 'state'=>'active']);
 
 						if (count($pathToStart) == 0) {
-
-							print_r("Get path to start {$order['user_id']}\n");
 							$order = BaseModel::FullItem($order, ['route_id'=>$routeModel]);
-							$nModel->getData($driver['user_id'], $order['user_id'], json_encode(['action'=>'getPath', 'start'=>$driver, 'finish'=>$order['route']['start']]), 'replyPath', 
-								['driver'=>$driver, 'order'=>$order]);
+							$realUser = $userModel->GetAnyRealOnLine();
+							if ($realUser) {
+
+								print_r("Get path to start {$order['user_id']}\n");
+								$nModel->getData($driver['user_id'], $realUser['id'], json_encode(['action'=>'getPath', 'start'=>$driver, 'finish'=>$order['route']['start']]), 'replyPath', 
+									['driver'=>$driver, 'order'=>$order]);
+							} else print_r("Not found real user online\n");
 						} else {
 							//$simulateModel->Start($driver['user_id'], $route_id);
 							print_r("Finished path to start\n");

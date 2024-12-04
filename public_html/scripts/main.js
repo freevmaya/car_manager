@@ -401,6 +401,10 @@ function PlaceId(place) {
     return null;
 }
 
+function PlaceToDBFormat(val) {
+    return Extend({placeId: PlaceId(val), latLng: val.location}, val, ['displayName', 'formattedAddress']);
+}
+
 JSON.vparse = function(v) {
     if (isStr(v))
         return JSON.parse(v);

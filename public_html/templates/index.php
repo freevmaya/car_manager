@@ -45,7 +45,12 @@ html::AddJsData(json_encode(
 
                 user = $.extend(user, latLng);
                 return setInterval(()=>{
+
+                    if (typeof(v_map) != 'undefined')
+                        latLng = toLatLng(v_map.getMainPosition());
+
                     action(latLng);
+                    
                 }, 500);
             <?} else {?>
                 return navigator.geolocation.watchPosition((result)=>{

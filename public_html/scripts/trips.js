@@ -118,11 +118,7 @@ $(window).ready(() => {
 
         SelectPlace(val) {
             this.#elem.find('.value').text(PlaceName(val));
-
-            let place = val.location ? 
-                            Extend({placeId: val.id, latLng: val.location}, val, ['displayName', 'formattedAddress']) :
-                        toLatLng(val.latLng)
-            this.#control.val(place);
+            this.#control.val(val.location ? PlaceToDBFormat(val) : toLatLng(val.latLng));
 
             routeManager.showRoute(this.fieldId);
         }

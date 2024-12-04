@@ -241,11 +241,13 @@ class VMap {
 	}
 
 	DrawPath(data, options) {
-		//console.log(data);
 		return DrawPath(this.map, data, options);
 	}
 
 	getPath(notifyId, request) {
+
+		Проверять и расширять start и finish
+		
 		this.getRoutes(JSON.vparse(request.start), JSON.vparse(request.finish), travelMode, (result)=>{
 			transport.Reply(notifyId, result);
 		});

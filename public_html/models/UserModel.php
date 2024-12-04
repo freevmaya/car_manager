@@ -44,6 +44,13 @@ class UserModel extends BaseModel {
 		return $dbp->one("SELECT id FROM {$this->getTable()} WHERE `username` = '{$value}'") === false; 
 	}
 
+	public function GetAnyRealOnLine() {
+		GLOBAL $dbp;
+		$query = "SELECT * FROM {$this->getTable()} WHERE isReal = 1 AND `last_time` >= NOW() - ".OFFLINEINTERVAL;
+		trace($query);
+		return $dbp->line($query);
+	}
+
 	public function getFields() {
 		return [
 			'id' => [
