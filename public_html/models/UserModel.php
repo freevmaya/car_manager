@@ -47,7 +47,6 @@ class UserModel extends BaseModel {
 	public function GetAnyRealOnLine() {
 		GLOBAL $dbp;
 		$query = "SELECT * FROM {$this->getTable()} WHERE isReal = 1 AND `last_time` >= NOW() - ".OFFLINEINTERVAL;
-		trace($query);
 		return $dbp->line($query);
 	}
 

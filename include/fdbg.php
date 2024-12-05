@@ -8,7 +8,7 @@ define('INFO_TYPE', 'info');
 
 class fdbg {
     public static function trace($str, $topCalled=1, $type = INFO_TYPE) {
-        GLOBAL $FDBGLogFile, $FDBGErrorsFile;
+        GLOBAL $FDBGLogFile, $FDBGErrorsFile, $_GET, $_POST;
 
         $targetFile = $type == ERROR_TYPE ? $FDBGErrorsFile : $FDBGLogFile;
         
@@ -25,9 +25,12 @@ class fdbg {
 
         if (!is_string($str)) $str = json_encode($str, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
+        $paramsStr = json_encode(array_merge($_GET, $_POST), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
         $notifyStr = 
             'time: '.date('d.m.y H.i')."\n".
             "stack: \n".$stackStr.
+            ($type == ERROR_TYPE ? ("params: \n".$paramsStr) : '').
             "message: \n".$str."\n\n";
 
 

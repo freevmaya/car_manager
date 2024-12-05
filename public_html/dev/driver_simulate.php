@@ -28,23 +28,32 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 	$tracers = [];
 
 	function replyPath($path, $data) {
-		GLOBAL $simulateModel, $routeModel, $nModel;
+		GLOBAL $simulateModel, $routeModel, $nModel, $orderModel;
 
 		$driver = $data['driver'];
 		$order = $data['order'];
 
-		$pathToDb = [
-			'start'=>$path['request']['origin'],
-			'finish'=>$path['request']['destination'],
-			'travelMode'=>$path['request']['travelMode'],
-			'routes'=>$path['routes'][0]['overview_path'],
-			'user_id'=>$driver['user_id']
-		];
+		$overview_path = $path['routes'][0]['overview_path'];
 
-		$route_id = $routeModel->Update($pathToDb);
-		$simulateModel->Start($driver['user_id'], $route_id);
+		if (count($overview_path) > 1) {
 
-		$nModel->AddNotify($order['id'], 'pathToStart', $order['user_id'], json_encode($path));
+			$pathToDb = [
+				'start'=>$path['start'],
+				'finish'=>$path['finish'],
+				'travelMode'=>$path['request']['travelMode'],
+				'routes'=>$overview_path,
+				'user_id'=>$driver['user_id']
+			];
+
+			$route_id = $routeModel->Update($pathToDb);
+			$simulateModel->Start($driver['user_id'], $route_id);
+
+			$nModel->AddNotify($order['id'], 'pathToStart', $order['user_id'], json_encode($path));
+			$orderModel->SetState($order['id'], 'driver_move');
+		} else {
+			print_r("Error route path: ".print_r($path, true));
+			$orderModel->SetState($order['id'], 'rejected');
+		}
 	}
 
 	function isNotAllowRoute($route_id) {
@@ -62,27 +71,27 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 		$drivers = BaseModel::FullItems($simulateModel->getItems(), ['route_id'=>$routeModel]);
 
 		foreach ($drivers as $driver) {
+
+			//print_r($driver);
 			$driverModel->Update($driver);
 
 			$routes = @$driver['route'] ? json_decode($driver['route']['routes'], true) : null;
 			$tracer = null;
-			$order = $orderModel->getActiveOrder(['driver_id' => $driver['driver_id']]);
+			$order = $orderModel->getActiveOrder(['driver_id' => $driver['id']]);
 
 			if ($routes) {
 
 				if (!isset($tracers[$driver['id']])) {
-					$tracers[$driver['id']] = new Tracer($routes, 30); // 5 km/h
-					print_r("Got new course {$driver['user_id']} and began\n");
+					$tracers[$driver['id']] = new Tracer($routes, 60);
+					print_r("Got new course ({$driver['id']}, route_id: {$driver['route_id']}) and began\n");
 				}
 				
 				$tracer = $tracers[$driver['id']];
 				$tracer->Update();
 
 				$userModel->UpdatePosition($driver['user_id'], $tracer->routePos, $tracer->routeAngle);
-				if ($order) {
-					trace($tracer);
+				if ($order)
 					$orderModel->SetRemaindDistance($order['id'], $tracer->remaindDistance());
-				}
 
 
 				if ($tracer->finished) {
@@ -90,50 +99,58 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 					unset($tracers[$driver['id']]);
 					$simulateModel->Stop($driver['user_id']);
-					print_r("Finished course {$driver['user_id']}\n");
-					continue;
+					print_r("Finished course {$driver['id']}\n");
 				}
 			}
 
 			if (!$tracer || $tracer->finished) {
 				//Если есть активная заявка.
 				if ($order) {
-					// Здесь отправляем на место начала поездки по заявке
-					// если не найдет еще путь к точке сбора
 
 					if ($order['state'] == 'accepted') {
+
+						// Здесь отправляем на место начала поездки по заявке
+						// если не найдет еще путь к точке сбора
 
 						$pathToStart = $nModel->getItems(['user_id'=>$order['user_id'], 'content_id'=>$order['id'], 'content_type'=>'pathToStart', 'state'=>'active']);
 
 						if (count($pathToStart) == 0) {
+
+							print_r("There isn't path to start for order {$order['id']}\n");
+
 							$order = BaseModel::FullItem($order, ['route_id'=>$routeModel]);
 							$realUser = $userModel->GetAnyRealOnLine();
 							if ($realUser) {
 
-								print_r("Get path to start {$order['user_id']}\n");
-								$nModel->getData($driver['user_id'], $realUser['id'], json_encode(['action'=>'getPath', 'start'=>$driver, 'finish'=>$order['route']['start']]), 'replyPath', 
-									['driver'=>$driver, 'order'=>$order]);
+								if ($nModel->getData($driver['user_id'], $realUser['id'], json_encode(['action'=>'getPath', 'start'=>['lat'=>$driver['lat'], 'lng'=>$driver['lng']], 'finish'=>$order['route']['start']]), 'replyPath', 
+									['driver'=>$driver, 'order'=>$order])) {
+
+									print_r("Get path to start from {$realUser['id']}\n");
+								}
+
 							} else print_r("Not found real user online\n");
-						} else {
-							//$simulateModel->Start($driver['user_id'], $route_id);
-							print_r("Finished path to start\n");
-							$nModel->SetState(['id'=>$pathToStart[0]['id'], 'state'=>'read']);
-							$orderModel->SetState($order['id'], 'wait_meeting', false, true);
-							print_r("Wait meeting\n");
-						}
+
+						} else $nModel->SetState(['id'=>$pathToStart[0]['id'], 'state'=>'read']);
+
+					} else if ($order['state'] == 'driver_move') {
+
+						print_r("Finished path to start\n");
+						$orderModel->SetState($order['id'], 'wait_meeting', false, true);
+						print_r("Wait meeting\n");
+
 					} else if ($order['state'] == 'wait_meeting') {
 
 						$user = $userModel->getItem($order['user_id']);
 
 						$distance = Distance($user['lat'], $user['lng'], $driver['lat'], $driver['lng']);
-						if ($distance < 10) { // Если заказчик на растоянии меньше 10 метров
+						if ($distance < 40) { // Если заказчик на растоянии меньше 40 метров
 							sleep(1);
 
+							print_r("Ok! Execution order\n");
 							$orderModel->SetState($order['id'], 'execution', false, true);
 							$simulateModel->Start($driver['user_id'], $order['route_id']);
-						}
 
-						print_r("Distance to user: ".$distance."\n");
+						} else print_r("Order: {$order['id']}. Distance to user: ".$distance."\n");
 
 
 					} else if ($order['state'] == 'execution') {
@@ -143,7 +160,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						$simulateModel->Stop($driver['user_id']);
 					}
 
-				} else if (strtotime($driver['waitUntil']) < strtotime('now')) {
+				} else if (!$driver['waitUntil'] || (strtotime($driver['waitUntil']) < strtotime('now'))) {
 					// Отдохнули, начинаем новый рейс!
 
 					$routes = $routeModel->getItems([]);
@@ -181,7 +198,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 					$order = $orderModel->getItem($notify['content_id']);
 
-					if (($order['driver_id'] == $driver['driver_id']) && isset($tracers[$driver['id']])) {
+					if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
 
 						$simulateModel->Stop($driver['user_id']);
 						if (isset($tracers[$driver['id']]))

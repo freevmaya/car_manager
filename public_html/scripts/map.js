@@ -214,6 +214,8 @@ class VMap {
 			return result;
 		}
 
+		//this.getPath(null, {start: startPlace, finish: finishPlace });
+
 		let request = {
             origin: preparePlace(startPlace),
             destination: preparePlace(finishPlace),
@@ -244,11 +246,30 @@ class VMap {
 		return DrawPath(this.map, data, options);
 	}
 
-	getPath(notifyId, request) {
+	async getPath(notifyId, request) {
 
-		Проверять и расширять start и finish
+		let This = this;
+
+		async function checkAndPreparePlace(place) {
+			if (place.lat)
+				place = Promise.resolve(place);
+			else place = This.getPlaceDetails(PlaceId(place));
+
+			return place;
+		}
 		
-		this.getRoutes(JSON.vparse(request.start), JSON.vparse(request.finish), travelMode, (result)=>{
+		let start = await checkAndPreparePlace(JSON.vparse(request.start));
+		let finish = await checkAndPreparePlace(JSON.vparse(request.finish));
+
+		this.getRoutes(start, finish, travelMode, (result)=>{
+
+            result.start = start;
+            result.finish = finish;
+
+			console.log(result);
+			Promise.resolve(result);
+			
+            transport.SendStatusNotify(notifyId, 'accepted');
 			transport.Reply(notifyId, result);
 		});
 	}
@@ -259,8 +280,7 @@ class VMap {
         	let notify = e.value[i];
 			if (notify.content_type == 'requestData') {
                 let request = JSON.parse(notify.text);
-                eval("let result = this." + request.action + "(" + notify.id + ", " + notify.text + ");");
-                transport.SendStatusNotify(notify, 'read');
+                let result = this[request.action](notify.id, request);
             }
         }
     }

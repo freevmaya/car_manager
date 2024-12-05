@@ -239,7 +239,7 @@ class AjaxTransport extends EventProvider {
     SendStatusNotify(data, a_status = 'receive') {
         Ajax({
             action: 'StateNotification',
-            data: { id: data.id, state: a_status }
+            data: { id: typeof(data) == 'object' ? data.id : data, state: a_status }
         });
     }
 

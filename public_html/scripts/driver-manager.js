@@ -35,11 +35,11 @@ class DriverManager {
 	}
 
 	onReceive(e) {
+		let receiveDrivers = e.value.slice();
 
-		let drivers = e.value.slice();
 		function indexOfById(id) {
-			for (let i=0; i<drivers.length; i++)
-				if (drivers[i].id == id)
+			for (let i=0; i<receiveDrivers.length; i++)
+				if (receiveDrivers[i].id == id)
 					return i;
 			return -1;
 		}
@@ -49,18 +49,15 @@ class DriverManager {
 			let carIdx = indexOfById(this.cars[i].id);
 			if (carIdx > -1) {
 
-				//console.log(drivers[carIdx]);
-				m.car.setPos(this.toLatLng(drivers[carIdx]), drivers[carIdx].angle, parseInt(drivers[carIdx].online) == 1);
-				drivers.splice(carIdx, 1);
+				//console.log(receiveDrivers[carIdx]);
+				m.car.setPos(this.toLatLng(receiveDrivers[carIdx]), receiveDrivers[carIdx].angle, parseInt(receiveDrivers[carIdx].online) == 1);
+				receiveDrivers.splice(carIdx, 1);
 
-			} else {
-				//v_map.MarkerManager.RemoveCar(this.#markers[i].id);
-				//this.#markers.splice(i, 1);
-			}
+			} else v_map.MarkerManager.RemoveCar(this.cars[i].id);
 		}
 
-		for (let i=0; i<drivers.length; i++)
-			this.CreateCar(drivers[i]);
+		for (let i=0; i<receiveDrivers.length; i++)
+			this.CreateCar(receiveDrivers[i]);
 	}
 
 	CreateCar(driver) {

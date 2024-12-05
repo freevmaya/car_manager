@@ -113,7 +113,7 @@ class Ajax extends Page {
 		if (isset($data['driver_id']))
 			$data['d.id'] = $data['driver_id'];
 
-		if ($simulate = (new SimulateModel())->getItem($data))
+		if (($simulate = (new SimulateModel())->getItem($data)) && (isset($simulate['route_id'])))
 			return (new RouteModel())->getItem($simulate['route_id']);
 
 		return null;

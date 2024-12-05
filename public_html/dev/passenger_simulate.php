@@ -88,12 +88,12 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						$rndRoute = $routes[rand(0, $count - 1)];
 					} while (isNotAllowRoute($rndRoute) || ($count <= count($passengers)));
 					
-					print_r("Start order {$pass['user_id']}");
+					print_r("Start order {$pass['user_id']} route_id: {$rndRoute['id']}");
 					$simulateModel->Start($pass['user_id'], $rndRoute);
 				}
 			}
 
-			$items = $nModel->getItems(['user_id'=>$pass['user_id'], 'content_type'=>['offerToPerform'], 'state'=>'active']);
+			$items = $nModel->getItems(['user_id'=>$pass['user_id'], 'content_type'=>['offerToPerform', 'changeOrder', 'pathToStart'], 'state'=>'active']);
 
 			$offers = [];
 			foreach ($items as $notify) {
@@ -103,7 +103,15 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 					$offers[] = $notify;
 					$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
 
+				} elseif ($notify['content_type'] == 'pathToStart') {
+
+					$order = $orderModel->getItem($notify['content_id'], true);
+
+					print_r("Driver {$order['driver_id']} begin go to start\n");
+					$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
+
 				} else if ($notify['content_type'] == 'changeOrder') {
+
 					$order = json_decode($notify['text'], true);
 					if ($order['state'] == 'wait_meeting') {
 						$route = $routeModel->getItem($order['route_id']);
@@ -113,6 +121,9 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 						$userModel->UpdatePosition($pass['user_id'], $start);
 						$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
+					} else {
+						print_r("Change order {$order['id']} to {$order['state']}\n");
+						$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
 					}
 				}
 			}
@@ -121,8 +132,9 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				print_r("There is offer\n");
 				if ($offer = NearestOffer($offers, $pass)) {
 
-					print_r("Accept offer {$offer['text']}\n");
-					$simulateModel->AcceptOffer($pass['user_id'], json_decode($offer['text'], true));
+					$driver = json_decode($offer['text'], true);
+					print_r("Accept offer from driver {$driver['id']}/{$driver['user_id']}\n");
+					$simulateModel->AcceptOffer($pass['user_id'], $driver);
 				}
 			}
 

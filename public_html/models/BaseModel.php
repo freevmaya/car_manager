@@ -1,6 +1,6 @@
 <?
 
-define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution'");
+define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution', 'driver_move'");
 define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
 define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
 

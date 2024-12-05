@@ -41,27 +41,28 @@ class SimulatePassModel extends BaseModel {
 	public function Start($user_id, $route) {
 		GLOBAL $dbp;
 
+		$start = json_decode($route['start'], true);
 
-		if ($order_id = (new OrderModel())->AddOrder(['user_id'=>$user_id, 'route_id'=>$route['id']])) {
+		$user = (new UserModel())->getItem($user_id);
 
-			$userModel = new UserModel();
+		$drivers = (new DriverModel())->SuitableDrivers($start['lat'], $start['lng'], $user);
+		$countDriver = count($drivers);
 
-			$user = $userModel->getItem($user_id);
-			$start = json_decode($route['start'], true);
+		if ($countDriver > 0) {
 
-			$drivers = (new DriverModel())->SuitableDrivers($start['lat'], $start['lng'], $user);
-			$countDriver = count($drivers);
+			if ($order_id = (new OrderModel())->AddOrder(['user_id'=>$user_id, 'route_id'=>$route['id']])) {
 
-			$user['lat'] = $start['lat'];
-			$user['lng'] = $start['lng'];
-			
-			$userModel->Update($user);
+				$userModel = new UserModel();
 
-			if ($countDriver > 0)
+				$user['lat'] = $start['lat'];
+				$user['lng'] = $start['lng'];
+				
+				$userModel->Update($user);
 				$this->NotifyOrderToDrivers($drivers, $order_id);
 
-			return $dbp->query("UPDATE {$this->getTable()} SET `waitUntil` = NULL WHERE user_id={$user_id}");
-		}
+				return $dbp->query("UPDATE {$this->getTable()} SET `waitUntil` = NULL WHERE user_id={$user_id}");
+			}
+		} else print_r("There aren't free drivers");
 
 		return null;
 	}

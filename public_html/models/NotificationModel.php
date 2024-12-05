@@ -138,7 +138,7 @@ class NotificationModel extends BaseModel {
 
 		$requestList = $this->getItems(['content_type'=>'requestData', 'state'=>['active', 'read'], 'user_id'=>$to_user_id]);
 		if (count($requestList) == 0) {
-			$this->AddNotify($from_user_id, 'requestData', $to_user_id, is_array($request) ? json_encode($request) : $request);
+			return $this->AddNotify($from_user_id, 'requestData', $to_user_id, is_array($request) ? json_encode($request) : $request);
 		} else {
 			$replyList = $this->getItems(['content_type'=>'replyData', 'state'=>'active', 'user_id'=>$from_user_id]);
 			if (count($replyList) > 0) {
@@ -149,5 +149,6 @@ class NotificationModel extends BaseModel {
 				$this->SetState(['id'=>$reply['id'], 'state'=>'read']);
 			}
 		}
+		return false;
 	}
 }

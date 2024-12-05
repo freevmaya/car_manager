@@ -23,7 +23,7 @@ class SimulateModel extends BaseModel {
 	public function getItems($options=null) {
 		GLOBAL $dbp;
 
-		$query = "SELECT s.*, u.*, d.id AS driver_id, d.user_id, d.car_id, d.active, d.useTogether, d.activationTime, d.expiredTime FROM {$this->getTable()} s ".
+		$query = "SELECT s.*, u.*, d.id, d.user_id, d.car_id, d.active, d.useTogether, d.activationTime, d.expiredTime FROM {$this->getTable()} s ".
 					"INNER JOIN users u ON u.id = s.user_id ".
 					"INNER JOIN driverOnTheLine d ON s.user_id = d.user_id ".
 					"WHERE u.id AND d.active";
