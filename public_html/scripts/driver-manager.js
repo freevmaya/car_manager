@@ -86,21 +86,26 @@ class DriverManager {
 		Ajax({
 			action: 'GetOrderRoute',
 			data: { driver_id: m.driver.id }
-		}).then((r)=>{
-			let content = '';
-			if (r) {
-				content += 'Busy';
+		}).then((order)=>{
+			let content = 'Free';
+			if (order) {
+				let r = order.route;
+				if (r) {
 
-				r.start = JSON.parse(r.start);
-				r.finish = JSON.parse(r.finish);
+					r.start = JSON.parse(r.start);
+					r.finish = JSON.parse(r.finish);
 
-				v_map.getRoutes(r.start, r.finish, r.travelMode, ((result)=>{
-					this.#driverPath = v_map.DrawPath(result, {polylineOptions: {
-								            strokeColor: '#663'
-								        }});
-				}).bind(this));
+					v_map.getRoutes(r.start, r.finish, r.travelMode, ((result)=>{
+						this.#driverPath = v_map.DrawPath(result, {polylineOptions: {
+									            strokeColor: '#663'
+									        }});
+					}).bind(this));
 
-			} else content += 'Free'
+					content = templateClone($('.templates .driver-order'), order)[0].outerHTML;
+				} else content = "Busy"
+
+				console.log(order);
+			}
 
 			this.hidePath();
 			this.infoWindow.close();

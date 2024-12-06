@@ -67,7 +67,7 @@ class OrderModel extends BaseModel {
 		return $dbp->bquery("UPDATE orders SET remaindDistance=? WHERE id=?", 'di', [$remaindDistance, $order_id]);
 	}
 
-	public function SetState($id, $state, $driver_id = false, $sendNotify = false) {
+	public function SetState($id, $state, $driver_id = false) {
 		GLOBAL $dbp;
 
 		$result = false;
@@ -76,10 +76,7 @@ class OrderModel extends BaseModel {
 				'sii', [$state, $driver_id, $id]);
 		else $result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=? WHERE id=?", 'si', [$state, $id]);
 
-		if ($sendNotify) {
-			$order = $this->getItems(['o.id' => $id])[0];
-			(new NotificationModel())->AddNotify($order['id'], 'changeOrder', $order['user_id'], json_encode($order), null, true);
-		}
+		(new OrderListeners())->SendNotify($id, 'changeOrder', json_encode(['state'=>$state]));
 		
 		return $result;
 	}

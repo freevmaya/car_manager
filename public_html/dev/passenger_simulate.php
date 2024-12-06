@@ -88,7 +88,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						$rndRoute = $routes[rand(0, $count - 1)];
 					} while (isNotAllowRoute($rndRoute) || ($count <= count($passengers)));
 					
-					print_r("Start order {$pass['user_id']} route_id: {$rndRoute['id']}");
+					print_r("Start order {$pass['user_id']} route_id: {$rndRoute['id']}\n");
 					$simulateModel->Start($pass['user_id'], $rndRoute);
 				}
 			}
@@ -112,7 +112,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 				} else if ($notify['content_type'] == 'changeOrder') {
 
-					$order = json_decode($notify['text'], true);
+					$order = array_merge($orderModel->getItem($notify['content_id']), json_decode($notify['text'], true));
 					if ($order['state'] == 'wait_meeting') {
 						$route = $routeModel->getItem($order['route_id']);
 

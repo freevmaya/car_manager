@@ -59,6 +59,11 @@ class SimulatePassModel extends BaseModel {
 				
 				$userModel->Update($user);
 				$this->NotifyOrderToDrivers($drivers, $order_id);
+				
+				$users = BaseModel::getListValues($drivers, 'user_id');
+				$users[] = $user_id;
+
+				(new OrderListeners())->AddListener($order_id, $users);
 
 				return $dbp->query("UPDATE {$this->getTable()} SET `waitUntil` = NULL WHERE user_id={$user_id}");
 			}

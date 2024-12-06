@@ -150,7 +150,20 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 							$orderModel->SetState($order['id'], 'execution', false, true);
 							$simulateModel->Start($driver['user_id'], $order['route_id']);
 
-						} else print_r("Order: {$order['id']}. Distance to user: ".$distance."\n");
+						} else {
+
+							print_r("Order: {$order['id']}. Distance to user: ".$distance."\n");
+
+							$order = BaseModel::FullItem($order, ['route_id'=>$routeModel]);
+							$start = json_decode($order['route']['start'], true);
+							$distance = Distance($start['lat'], $start['lng'], $driver['lat'], $driver['lng']);
+
+							if ($distance > 50) {
+
+								print_r("Driver distance to start: ".$distance."\n");
+								$orderModel->SetState($order['id'], 'accepted');
+							}
+						}
 
 
 					} else if ($order['state'] == 'execution') {
@@ -177,13 +190,13 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				$userModel->OnLine($driver['user_id']);
 			}
 
-			$items = $nModel->getItems(['user_id'=>$driver['user_id'], 'content_type'=>['orderCreated', 'acceptedOffer', 'orderCancelled'], 'state'=>'active']);
+			$items = $nModel->getItems(['user_id'=>$driver['user_id'], 'content_type'=>['orderCreated', 'changeOrder'], 'state'=>'active']);
 
 			foreach ($items as $notify) {
 
-				if ($notify['content_type'] == 'orderCreated') {
-					$order = $orderModel->getItem($notify['content_id']);
-					if ($order && ($order['state'] == 'wait')) {
+				if (($notify['content_type'] == 'orderCreated') && !$order) {
+					$newOrder = $orderModel->getItem($notify['content_id']);
+					if ($newOrder && ($newOrder['state'] == 'wait')) {
 						$driverDetail = $driverModel->getItem(['user_id'=>$driver['user_id']]);
 
 						if (isset($tracers[$driver['id']])) {
@@ -192,17 +205,22 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 							$driverDetail['remaindDistance'] = $tracer->remaindDistance();
 						}
 
-						$nModel->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driverDetail), $driver['id']);
+						$nModel->AddNotify($newOrder['id'], 'offerToPerform', $newOrder['user_id'], json_encode($driverDetail), $driver['id']);
 					}
-				} else if ($notify['content_type'] == 'orderCancelled') {
+				} else if ($notify['content_type'] == 'changeOrder') {
 
-					$order = $orderModel->getItem($notify['content_id']);
+					$orderChng = json_decode($notify['text'], true);
 
-					if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
+					if ($orderChng['state'] = 'cancel') {
 
-						$simulateModel->Stop($driver['user_id']);
-						if (isset($tracers[$driver['id']]))
-							unset($tracers[$driver['id']]);
+						$order = $orderModel->getItem($notify['content_id']);
+
+						if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
+
+							$simulateModel->Stop($driver['user_id']);
+							if (isset($tracers[$driver['id']]))
+								unset($tracers[$driver['id']]);
+						}
 					}
 				}
 

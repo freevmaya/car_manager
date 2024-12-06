@@ -169,12 +169,14 @@ class AjaxTransport extends EventProvider {
     #getPosition;
     requireDrivers;
     requestData;
+    statusesToReturn;
 
     constructor(periodTime) {
         super();
         this.intervalID = setInterval(this.update.bind(this), periodTime);
         this.requireDrivers = false;
         this.requestData = {};
+        this.statusesToReturn = [];
 
         if (!isEmpty(jsdata) && !isEmpty(jsdata.notificationList))
             this.onRecive(jsdata.notificationList);
@@ -185,12 +187,19 @@ class AjaxTransport extends EventProvider {
     }
 
     update() {
-        let params = {action: "checkState", data: null};
+        
+        let data = $.extend({}, this.requestData);
+        let params = {action: "checkState"};
+
+        if (!isEmpty(this.statusesToReturn)) {
+            data.statusesToReturn = this.statusesToReturn;
+            this.statusesToReturn = [];
+        }
 
         if (user.sendCoordinates || this.requireDrivers) {
             this.enableGeo(true);
-        
-            let data = $.extend({}, this.requestData);
+
+
             if (this.requireDrivers)
                 data.requireDrivers = true;
 
@@ -202,13 +211,10 @@ class AjaxTransport extends EventProvider {
                 data = $.extend(data, this.#getPosition);
             }
 
-            params.data = JSON.stringify(data);
-            Ajax(params).then(this.onRecive.bind(this));
+        } else this.enableGeo(false);
 
-        } else {
-            this.enableGeo(false);
-            Ajax($.extend({}, params)).then(this.onRecive.bind(this));
-        }
+        params.data = JSON.stringify(data);
+        Ajax(params).then(this.onRecive.bind(this));
     }
 
     receiveGeo(position) {
@@ -237,10 +243,13 @@ class AjaxTransport extends EventProvider {
     }
 
     SendStatusNotify(data, a_status = 'receive') {
+        this.statusesToReturn.push({ id: typeof(data) == 'object' ? data.id : data, state: a_status });
+        /*
         Ajax({
             action: 'StateNotification',
             data: { id: typeof(data) == 'object' ? data.id : data, state: a_status }
         });
+        */
     }
 
     Reply(notifyId, data) {
@@ -556,7 +565,7 @@ function toLatLng(obj) {
         if (isFunc(obj.lat))
             return {lat:obj.lat(), lng: obj.lng()};
             
-        return {lat:obj.lat, lng: obj.lng};
+        return {lat: Number(obj.lat), lng: Number(obj.lng)};
     }
     return null;
 }

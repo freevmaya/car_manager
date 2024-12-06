@@ -265,8 +265,7 @@ class VMap {
 
             result.start = start;
             result.finish = finish;
-
-			console.log(result);
+            
 			Promise.resolve(result);
 			
             transport.SendStatusNotify(notifyId, 'accepted');

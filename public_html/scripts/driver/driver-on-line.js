@@ -16,11 +16,13 @@ class MarkerOrderManager extends MarkerManager {
             if (item.content_type == "orderCreated") {
                 this.AddOrder(item.content, true);
             }
-            else if (item.content_type == "orderCancelled") {
-                this.CancelOrder(item.content_id);
-            }
-            else if (item.content_type == "acceptedOffer") {
-                this.acceptedOffer(item.content_id);
+            else if (item.content_type == "changeOrder") {
+                let order = JSON.parse(item.text);
+
+                if ((order.state == 'cancel') || (order.state == 'finished') || (order.state == 'rejected'))
+                    this.CancelOrder(item.content_id);
+                if (order.state == "accepted")
+                    this.acceptedOffer(item.content_id);
             }
         }
     }

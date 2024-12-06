@@ -17,6 +17,13 @@ html::AddTemplate('<div class="driver-window">
 	<div class="content">{content}</div>
 </div>', 'driver-window');
 
+html::AddTemplate('<div class="driver-order">
+	<h3>'.lang('Order').': {id}</h3>
+	<div>'.lang('User').': {user_id}</div>
+	<div>'.lang('State').': {state}</div>
+	<div>'.lang('remaindDistance').': {remaindDistance}</div>
+</div>', 'driver-order');
+
 ?>
 
 <div id="windows"></div>

@@ -55,7 +55,18 @@ class Ajax extends Page {
 		$count = count($notificationList);
 
 		if ($count > 0)
-			$result['notificationList'] = $notificationList;
+			$result['notificationList'] = $notificationList;			
+
+		if (isset($data['requireDrivers']))
+			$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng']);		
+
+		if (isset($data['statusesToReturn'])) {
+
+			$nModel = new NotificationModel();
+
+			foreach ($data['statusesToReturn'] as $item)
+				$nModel->SetState($item);
+		}
 
 		if (isset($data['lat'])) {
 
@@ -64,10 +75,7 @@ class Ajax extends Page {
 
 			$user['lat'] = $data['lat'];
 			$user['lng'] = $data['lng'];
-			Page::setSession('user', $user);			
-
-			if (isset($data['requireDrivers']))
-				$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng']);
+			Page::setSession('user', $user);
 			/*
 			if (isset($data['order_id'])) {
 				$order = (new OrderModel())->getItem($data['order_id']);
@@ -108,7 +116,7 @@ class Ajax extends Page {
 	protected function GetOrderRoute($data)
 	{
 		if ($order = (new OrderModel())->getActiveOrder($data))
-			return (new RouteModel())->getItem($order['route_id']);
+			return BaseModel::FullItem($order, ['route_id'=>new RouteModel()]);
 
 		if (isset($data['driver_id']))
 			$data['d.id'] = $data['driver_id'];
@@ -146,10 +154,16 @@ class Ajax extends Page {
 			($order_id = (new OrderModel())->AddOrder($data))) {
 
 			$drivers = (new DriverModel())->SuitableDrivers();
-			$countDriver = count($drivers);
 
-			if ($countDriver > 0)
-				$this->NotifyOrderToDrivers($drivers, $order_id);
+			if (count($drivers) > 0) {
+				$users = BaseModel::getListValues($drivers, 'user_id');
+				$users[] = $data['user_id'];
+
+				(new OrderListeners())->AddListener($order_id, $users);
+				(new OrderListeners())->SendNotify($order_id, 'orderCreated', "Order сreated");
+
+				//$this->NotifyOrderToDrivers($drivers, $order_id);
+			}
 		} else $order_id = 'An error was caused by update route';
 
 		return ["result"=>$order_id];
@@ -174,14 +188,14 @@ class Ajax extends Page {
 		$notificationModel = new NotificationModel();
 		if ($result) {
 			if ($data['state'] == 'accepted') {
-				$driver = (new DriverModel())->getItem($data);
-				$result = $result && $notificationModel->AddNotify($data['id'], 'acceptedOffer', $driver['user_id'], Lang('The offer has been accepted'));
+				//$driver = (new DriverModel())->getItem($data);
+				//$result = $result && $notificationModel->AddNotify($data['id'], 'acceptedOffer', $driver['user_id'], Lang('The offer has been accepted'));
 			}
 			else if ($data['state'] == 'cancel') {
 
-				$notificationModel->SetState(['content_type'=>'pathToStart', 
-					'state'=>'rejected', 'content_id'=>$data['id']]);
+				$notificationModel->SetState(['content_type'=>'pathToStart', 'state'=>'rejected', 'content_id'=>$data['id']]);
 
+				/*
 				$oldList = $notificationModel->NotifiedDrivers($data['id'], 'orderCreated');
 				if (count($oldList) > 0) {
 
@@ -190,6 +204,7 @@ class Ajax extends Page {
 
 					$result = $result && $this->NotifyOrderToDrivers($oldList, $data['id'], 'orderCancelled', 'Order cancelled');
 				}
+				*/
 			}
 		}
 
