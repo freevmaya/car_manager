@@ -3,7 +3,7 @@ class DataView {
     #data;
     #parent;
     constructor(parent, tmpl, data) {
-        this.#data = data.content;
+        this.#data = data;
         this.#parent = parent;
 
         this.view = $(tmpl[0].outerHTML.replace(/\{(.*?)\}/g, (m, field) => {
@@ -51,6 +51,7 @@ DataView.getOrderInfo = (order, distanceToStart = false) => {
     let finish = isStr(order.finish) ? JSON.parse(order.finish) : order.finish;
 
     let result = 
+            intoTag(toLang("State") + ': <span id="state-' + order.id + '">' + toLang(order.state) + '</span>') + 
             intoTag(PlaceName(start) + " > " + PlaceName(finish)) + 
             intoTag(toLang("User") + ': ' + (order.username ? order.username : (order.first_name + " " + order.last_name))) + 
             intoTag(toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat)) + 
@@ -81,11 +82,20 @@ DataView.getOrderInfo = (order, distanceToStart = false) => {
 }
 
 DataView.Create = (parent, data) => {
-    let tmpl = $('.templates .' + data.content_type);
-    if (!isEmpty(tmpl)) {
-        if (data.content && (data.content.state == 'wait'))
-            return new DataView(parent, tmpl, data);
+    if (data.content_type == 'changeOrder') {
+        let order = JSON.parse(data.text);
+        let tmpl = $('.templates .' + order.state);
+        if (!isEmpty(tmpl)) {
+            if (data.content)
+                new DataView(parent, tmpl, data.content);
+            else {
+                Ajax({
+                    action: 'getOrder',
+                    data: data.content_id
+                }).then((result)=>{
+                    new DataView(parent, tmpl, data.content = result);
+                });
+            }
+        }
     }
-
-    return null;
 }

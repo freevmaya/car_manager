@@ -233,6 +233,14 @@ h1, h2 {
     transition: width 0.5s ease-in-out;
 }
 
+.cols {
+    display: flex;
+}
+
+.cols .btn-block {
+    align-items: end;
+}
+
 .dialog {
     margin: 2em;
     width: 24em;
@@ -381,6 +389,11 @@ h1, h2 {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+.select-target .field {
+    text-overflow: ellipsis;
+    height: 1.2em;
 }
 
 .field p {
@@ -1092,15 +1105,15 @@ input:focus, select:focus {
     transition: width 0.5s, height 0.5s;
 }
 
-.view.finished .driver {
+.order.finished .driver {
     display: none;
 }
 
-.view.finished .route {
+.order.finished .route {
     width: 100%;
 }
 
-.execution .close {
+.order.execution .close {
     visibility: hidden !important;
 }
 
@@ -1166,7 +1179,14 @@ input:focus, select:focus {
 
 .driver-window {
     margin: 0.8em;
+}
 
+.orderView .btn-block {
+    display: none;
+}
+
+.orderView.wait .btn-block {
+    display: block;
 }
 
 /*-----------------Загрузка----------------*/

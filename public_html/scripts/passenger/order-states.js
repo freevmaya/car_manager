@@ -181,6 +181,7 @@ class SelectPathView extends OrderView {
 
     setOptions(options) {
         options = $.extend({
+            template: 'select-path',
             classes: ['target-view'],
             content: [
                 {
@@ -201,9 +202,10 @@ class SelectPathView extends OrderView {
         }, options);
 
         super.setOptions(options);
+    }
 
-        this.footerElement.append(this.footerSliderView = $('<div class="sliderView hide">'));
-        this.footerSliderView.append(this.footerSlider = $('<div class="slider">'));
+    initView() {
+        super.initView();
         this.footerElement.append((this.goButton = $('<div class="button">'))
                                     .text(toLang('Go'))
                                     .click(this.Go.bind(this)));

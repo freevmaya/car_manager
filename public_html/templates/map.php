@@ -14,7 +14,7 @@
 		html::AddScriptFile("driver/driver-on-line.js");
 
 		html::AddJsData(
-				$orderModel->getItems(['state'=>['wait', 'accepted', 'wait_meeting', 'execution']])
+				$orderModel->getItems(['state'=>ACTIVEORDERLIST_ARR])
 			, 'orders');
 
 		html::AddJsCode("
@@ -26,7 +26,7 @@
 
 		html::AddScriptFile("passenger/order-states.js");
 		
-		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>ACTIVEORDERLISTARR, 'limit'=>1]);
+		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>ACTIVEORDERLIST_ARR, 'limit'=>1]);
 
 		$order = count($orders) > 0 ? $orders[0] : null;
 		if ($order)

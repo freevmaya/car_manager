@@ -1,10 +1,5 @@
 <?
 
-define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution', 'driver_move'");
-define('ACTIVEORDERLISTARR', ['wait', 'accepted', 'wait_meeting', 'execution', 'driver_move']);
-define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
-define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
-
 abstract class BaseModel {
 	abstract protected function getTable();
 	public function Update($values) {}

@@ -31,29 +31,10 @@ class NotificationModel extends BaseModel {
 		GLOBAL $dbp, $user;
 
 		$where = BaseModel::GetConditions($options, ['content_id', 'content_type', 'state', 'user_id']);
-		
 		$whereStr = implode(" AND ", $where);
 
 		$query = "SELECT * FROM {$this->getTable()} WHERE $whereStr";
-
-		$notificationList = $dbp->asArray($query);
-		$count = count($notificationList);
-
-		if ($count > 0) {
-
-			$orderModel = new OrderModel();
-
-			for ($i=0;$i<$count;$i++) {
-
-				$ct = $notificationList[$i]['content_type'];
-				if (($ct == 'orderCreated') || ($ct == 'orderCancelled'))
-					$notificationList[$i]['content'] = $orderModel->getItem($notificationList[$i]['content_id']);
-			}
-			
-		}
-
-
-		return $notificationList;
+		return $dbp->asArray($query);
 	}
 
 	public function getOffers($user_id, $notify_id=false) {

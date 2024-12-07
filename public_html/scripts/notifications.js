@@ -35,12 +35,16 @@ class NotifyItem {
         this.view = $('<div class="item radius shadow">');
         this.view.append($('<button class="close button">').click(this.Close.bind(this)));
 
-        if (this.data.content_type == "orderCreated") {
-            this.view.append($('<div class="header">').text(toLang("Application received")));
+        if (this.data.content_type == "changeOrder") {
 
-            getOrderInfo(this.data.order, ((str)=>{
-                this.view.append($('<p>').text(str);
-            }).bind(this));
+            let order = JSON.parse(this.data.text);
+            if (order.state == 'wait') {
+                this.view.append($('<div class="header">').text(toLang("Application received")));
+
+                getOrderInfo(this.data.order, ((str)=>{
+                    this.view.append($('<p>').text(str);
+                }).bind(this));
+            }
         }
         else this.view.append($('<p>').text(this.data.text));
 

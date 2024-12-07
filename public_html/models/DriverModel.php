@@ -4,7 +4,6 @@ class DriverModel extends BaseModel {
 	protected $expiredInterval = 'INTERVAL 1 DAY';
 	protected $offlineInterval = OFFLINEINTERVAL;
 	protected $lostConnectInterval = LOSTCONNECTINTERVAL;
-	protected static $maxDistanceToStart = 5000; // Удаленость от старта
 	
 	protected function getTable() {
 		return 'driverOnTheLine';
@@ -75,7 +74,7 @@ class DriverModel extends BaseModel {
 		return $dbp->asArray($query);
 	}
 
-	public function SuitableDrivers($lat = null, $lng = null, $a_user = null) {
+	public function SuitableDrivers($lat = null, $lng = null, $a_user = null, $maxDistanceToStart = 5000) {
 		GLOBAL $dbp, $user;
 
 		if (!$a_user) $a_user = $user;
@@ -115,7 +114,7 @@ class DriverModel extends BaseModel {
 
 				foreach ($list as $driver) {
 					$distance =  Distance($driver['lat'], $driver['lng'], $lat, $lng);
-					if ($distance < DriverModel::$maxDistanceToStart) {
+					if ($distance < $maxDistanceToStart) {
 						$driver['distanceStart'] = $distance;
 						$drivers[] = $driver;
 					}

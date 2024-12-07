@@ -5,9 +5,17 @@ define("SITE_PATH", dirname(__FILE__, 2));
 define('CLASSES_PATH', SITE_PATH.'/classes');
 define('TEMPLATES_PATH', SITE_PATH.'/templates');
 define("MODEL_PATH", SITE_PATH."/models");
+define('MODULESPATH', SITE_PATH."/modules");
 
 define("DEFAULTPAGE", "begin");
 define("DEFAULTFORM", "baseForm");
+
+define('AREA_RADIUS', 5000);
+define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution', 'driver_move'");
+define('ACTIVEORDERLIST_ARR', ['wait', 'accepted', 'wait_meeting', 'execution', 'driver_move']);
+define('INACTIVEORDERLIST_ARR', ['rejected', 'cancel']);
+define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
+define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
 
 include(BASEDIR."/classes/Utils.php");
 include(INCLUDE_PATH."/_edbu2.php");

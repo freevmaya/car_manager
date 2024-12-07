@@ -10,6 +10,13 @@ define('BASEURL', '//'.MAINDOMAIN);//'https://'.MAINDOMAIN.((MAINDOMAIN == "test
 define('SCRIPTURL', BASEURL.'/scripts');
 define("APIKEY", "AIzaSyBzErLfg0nBPSCmP2LcYq0Y5A-C0GIuBMM");
 
+define('AREA_RADIUS', 5000);
+define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution', 'driver_move'");
+define('ACTIVEORDERLIST_ARR', ['wait', 'accepted', 'wait_meeting', 'execution', 'driver_move']);
+define('INACTIVEORDERLIST_ARR', ['rejected', 'cancel']);
+define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
+define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
+
 define('_dbhost', 'localhost');
 define('_dbname_default', 'taxi');
 define('_dbuser', 'root');

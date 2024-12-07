@@ -24,7 +24,7 @@
 		]
 	];
 
-	html::addTemplate('<div class="orderCreated">
+	html::addTemplate('<div class="wait">
 		<div class="content" data-id="{id}">
 			{this.getOrderInfo(true)}
 		</div>
@@ -32,13 +32,13 @@
 			<button class="button" onclick="toolbar.acceptOrder({id})">'.lang('Accept').'</button>
 			<button class="button" onclick="toolbar.toMap({id})">'.lang('To map').'</button>
 		</div>
-		</div>', 'orderCreated');
+		</div>', 'wait');
 
-	html::addTemplate('<div class="orderCancelled">
+	html::addTemplate('<div class="cancel">
 			<div class="content" data-id="{id}">
 				{this.getOrderInfo()}
 			</div>
-		</div>', 'orderCancelled');
+		</div>', 'cancel');
 
 	html::addTemplate('<div class="option notifyItem {content_type}" data-id="{id}">
 			<div>

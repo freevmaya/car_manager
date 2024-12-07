@@ -190,11 +190,14 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				$userModel->OnLine($driver['user_id']);
 			}
 
-			$items = $nModel->getItems(['user_id'=>$driver['user_id'], 'content_type'=>['orderCreated', 'changeOrder'], 'state'=>'active']);
+			$items = $nModel->getItems(['user_id'=>$driver['user_id'], 'content_type'=>'changeOrder', 'state'=>'active']);
 
 			foreach ($items as $notify) {
+				
+				$orderChng = json_decode($notify['text'], true);
 
-				if (($notify['content_type'] == 'orderCreated') && !$order) {
+				if (($orderChng['state'] = 'wait') && !$order) {
+
 					$newOrder = $orderModel->getItem($notify['content_id']);
 					if ($newOrder && ($newOrder['state'] == 'wait')) {
 						$driverDetail = $driverModel->getItem(['user_id'=>$driver['user_id']]);
@@ -207,20 +210,16 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 						$nModel->AddNotify($newOrder['id'], 'offerToPerform', $newOrder['user_id'], json_encode($driverDetail), $driver['id']);
 					}
-				} else if ($notify['content_type'] == 'changeOrder') {
 
-					$orderChng = json_decode($notify['text'], true);
+				} else if ($orderChng['state'] = 'cancel') {
 
-					if ($orderChng['state'] = 'cancel') {
+					$order = $orderModel->getItem($notify['content_id']);
 
-						$order = $orderModel->getItem($notify['content_id']);
+					if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
 
-						if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
-
-							$simulateModel->Stop($driver['user_id']);
-							if (isset($tracers[$driver['id']]))
-								unset($tracers[$driver['id']]);
-						}
+						$simulateModel->Stop($driver['user_id']);
+						if (isset($tracers[$driver['id']]))
+							unset($tracers[$driver['id']]);
 					}
 				}
 

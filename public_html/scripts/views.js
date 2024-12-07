@@ -83,11 +83,11 @@ class View extends BaseParentView {
     headerElement;
     contentElement;
     footerElement;
-    constructor(options = {actions: {}}, afterDestroy = null) {
+    constructor(options = {}, afterDestroy = null) {
         super();
         this.afterDestroy = afterDestroy;
-        this.initView();
         this.setOptions(options);
+        this.initView();
         setTimeout(this.afterConstructor.bind(this), 5);
     }
 
@@ -96,14 +96,9 @@ class View extends BaseParentView {
     }
 
     initMainView() {
-        this.view = $('<div class="view shadow radius dialog">');
-        this.view.append(this.headerElement = $('<div class="header">'));
-        this.headerElement.append(this.closeBtn = $('<button class="close button">'));
-        
+        this.view = templateClone('.templates .' + this.options.template, this.options);        
         this.windows = $('#' + windowsLayerId);
         this.windows.append(this.view);
-
-        this.closeBtn.click(this.onCloseBtnClick.bind(this));
     }
 
     onCloseBtnClick() {
@@ -117,17 +112,12 @@ class View extends BaseParentView {
     initView() {
         this.initMainView();
 
-        this.view.append(this.contentElement = $('<div class="content">'));
-        this.view.append(this.footerElement = $('<div class="footer btn-block">'));
-        $(window).on('resize', this.onResize.bind(this));
-    }
+        this.headerElement = this.view.find('.header');
+        this.closeBtn = this.headerElement.find('.close.button');
+        this.contentElement = this.view.find('.content');
+        this.footerElement = this.view.find('.btn-block');
 
-    initContent() {
-        ViewManager.setContent(this, this.options.content, this.options.clone);
-    }
-
-    setOptions(options) {
-        this.options = $.extend({content: [], actions: []}, options);
+        this.closeBtn.click(this.onCloseBtnClick.bind(this));
 
         for (let i in this.options.classes)
             this.contentElement.addClass(this.options.classes[i]);
@@ -147,12 +137,22 @@ class View extends BaseParentView {
             this.footerElement.append(btn);
         }
 
+        $(window).on('resize', this.onResize.bind(this));
+
         this.initContent();
-        
-        if (this.options.curtain) this.blockBackground(true);
         
         setTimeout(this.toAlign.bind(this), 10);
         setTimeout(this.checkOverflow.bind(this), 500);
+    }
+
+    initContent() {
+        ViewManager.setContent(this, this.options.content, this.options.clone);
+    }
+
+    setOptions(options) {
+        this.options = $.extend({content: [], actions: [], template: 'view'}, options);
+        
+        if (this.options.curtain) this.blockBackground(true);
     }
 
     afterResize() {

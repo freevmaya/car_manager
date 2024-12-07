@@ -49,17 +49,40 @@ class OrderModel extends BaseModel {
 
 		if (isset($options['limit']))
 			$query .= " LIMIT 0, {$options['limit']}";
+
+		//trace($query);
 		return $dbp->asArray($query);
 	}
 
-	public function AddOrder($data) {
+	public function AddOrder($data, $distanceToListeners = 0) {
 		GLOBAL $dbp;
 
 		$pickUpTime = date('Y-m-d H:i:s', strtotime(isset($data['pickUpTime'])?$data['pickUpTime']:'NOW'));
 
 		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `route_id`) VALUES (?,NOW(),?,?)", 
 			'iss', [$data['user_id'], $pickUpTime, $data['route_id']]);
-		return $dbp->lastID();
+
+		$order_id = $dbp->lastID();
+
+		if ($distanceToListeners > 0) {
+
+			$route = (new RouteModel())->getItem($data['route_id']);
+			$latLng = json_decode($route['start'], true);
+
+			$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners);
+
+			if (count($drivers) > 0) {
+				$users = BaseModel::getListValues($drivers, 'user_id');
+				$users[] = $data['user_id'];
+
+				(new OrderListeners())->AddListener($order_id, $users);
+				(new OrderListeners())->SendNotify($order_id, 'changeOrder', json_encode(['state'=>'wait']));
+
+				//$this->NotifyOrderToDrivers($drivers, $order_id);
+			}
+		}
+
+		return $order_id;
 	}
 
 	public function SetRemaindDistance($order_id, $remaindDistance) {
@@ -76,7 +99,11 @@ class OrderModel extends BaseModel {
 				'sii', [$state, $driver_id, $id]);
 		else $result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=? WHERE id=?", 'si', [$state, $id]);
 
-		(new OrderListeners())->SendNotify($id, 'changeOrder', json_encode(['state'=>$state]));
+		$orderListeners = new OrderListeners();
+		$orderListeners->SendNotify($id, 'changeOrder', json_encode(['state'=>$state]));
+
+		if (in_array($state, INACTIVEORDERLIST_ARR))
+			$orderListeners->RemoveListeners($id);
 		
 		return $result;
 	}

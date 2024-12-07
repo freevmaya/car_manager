@@ -1,10 +1,11 @@
 <?
+
+include_once(MODULESPATH.'/views.php');
+
 html::AddScriptFiles([
 	"jquery-dateformat.min.js",
 	"color.js",
 	"map.js",
-	"data-view.js",
-	"views.js",
 	"tracer.js",
 	'driver-manager.js',
 	"https://code.jquery.com/ui/1.14.0/jquery-ui.js"

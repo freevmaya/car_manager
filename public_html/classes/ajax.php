@@ -46,27 +46,20 @@ class Ajax extends Page {
 		GLOBAL $dbp, $user;
 
 		$result = [];
-		$notificationList = (new NotificationModel())->getItems(
-			['user_id'=>$user['id'], 'state'=>'active']
-		);
 
-		//trace($notificationList);
-		//$dbp->asArray("SELECT * FROM notifications WHERE state='active' AND user_id = {$user['id']}");
-		$count = count($notificationList);
+		$nModel = new NotificationModel();
 
-		if ($count > 0)
+		if (isset($data['statusesToReturn']))
+			foreach ($data['statusesToReturn'] as $item)
+				$nModel->SetState($item);
+			
+		$notificationList = $nModel->getItems(['user_id'=>$user['id'], 'state'=>'active']);
+
+		if (count($notificationList) > 0)
 			$result['notificationList'] = $notificationList;			
 
 		if (isset($data['requireDrivers']))
-			$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng']);		
-
-		if (isset($data['statusesToReturn'])) {
-
-			$nModel = new NotificationModel();
-
-			foreach ($data['statusesToReturn'] as $item)
-				$nModel->SetState($item);
-		}
+			$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng'], null, AREA_RADIUS);
 
 		if (isset($data['lat'])) {
 
@@ -76,14 +69,6 @@ class Ajax extends Page {
 			$user['lat'] = $data['lat'];
 			$user['lng'] = $data['lng'];
 			Page::setSession('user', $user);
-			/*
-			if (isset($data['order_id'])) {
-				$order = (new OrderModel())->getItem($data['order_id']);
-				if ($order && $order['driver_id']) {
-					$result['driver'] = (new DriverModel())->getItem(['driver_id'=>$order['driver_id']]);
-				}
-			}*/
-
 		}
 		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");
 		return $result;
@@ -150,21 +135,9 @@ class Ajax extends Page {
 		if (!isset($data['route_id']))
 			$data['route_id'] = (new RouteModel())->Update($data['path']);
 
-		if ($data['route_id'] && 
-			($order_id = (new OrderModel())->AddOrder($data))) {
-
-			$drivers = (new DriverModel())->SuitableDrivers();
-
-			if (count($drivers) > 0) {
-				$users = BaseModel::getListValues($drivers, 'user_id');
-				$users[] = $data['user_id'];
-
-				(new OrderListeners())->AddListener($order_id, $users);
-				(new OrderListeners())->SendNotify($order_id, 'orderCreated', "Order сreated");
-
-				//$this->NotifyOrderToDrivers($drivers, $order_id);
-			}
-		} else $order_id = 'An error was caused by update route';
+		if (!$data['route_id'] || 
+			!($order_id = (new OrderModel())->AddOrder($data, AREA_RADIUS))) 
+			$order_id = 'An error was caused by update route';
 
 		return ["result"=>$order_id];
 	}
@@ -185,37 +158,7 @@ class Ajax extends Page {
 	protected function SetState($data) {
 		$result = (new OrderModel())->SetState($data['id'], $data['state'], @$data['driver_id']);
 
-		$notificationModel = new NotificationModel();
-		if ($result) {
-			if ($data['state'] == 'accepted') {
-				//$driver = (new DriverModel())->getItem($data);
-				//$result = $result && $notificationModel->AddNotify($data['id'], 'acceptedOffer', $driver['user_id'], Lang('The offer has been accepted'));
-			}
-			else if ($data['state'] == 'cancel') {
-
-				$notificationModel->SetState(['content_type'=>'pathToStart', 'state'=>'rejected', 'content_id'=>$data['id']]);
-
-				/*
-				$oldList = $notificationModel->NotifiedDrivers($data['id'], 'orderCreated');
-				if (count($oldList) > 0) {
-
-					$notificationModel->SetState(['content_type'=>'offerToPerform', 
-						'state'=>'rejected', 'content_id'=>BaseModel::getListValues($oldList, 'content_id')]);
-
-					$result = $result && $this->NotifyOrderToDrivers($oldList, $data['id'], 'orderCancelled', 'Order cancelled');
-				}
-				*/
-			}
-		}
-
 		return ["result"=>$result ? 'ok' : false];
-	}
-
-	protected function NotifyOrderToDrivers($drivers, $content_id, $content_type='orderCreated', $text="Order сreated") {
-		foreach ($drivers as $driver)
-			(new NotificationModel())->AddNotify($content_id, $content_type, $driver['user_id'], Lang($text));
-
-		return true;
 	}
 
 	protected function Reply($data) {
@@ -235,11 +178,15 @@ class Ajax extends Page {
 		return (new OrderModel())->getItems($data);
 	}
 
+	protected function getOrder($data) {
+		return (new OrderModel())->getItem($data);
+	}
+
 	protected function getOrderProcess($data) {
 		GLOBAL $user;
 
 		$result = 'Order not found';
-		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted', 'execution', 'finished'], 'limit'=>1]);
+		$orders = (new OrderModel())->getItems(['o.user_id'=>$user['id'], 'state'=>ACTIVEORDERLIST_ARR, 'limit'=>1]);
 		if (count($orders) > 0) {
 			$orders = BaseModel::FullItems($orders, ['route_id'=>new RouteModel()]);
 			$result = html::RenderField(['type'=>'order'], 

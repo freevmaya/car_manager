@@ -31,7 +31,7 @@ class SimulatePassModel extends BaseModel {
 		return $dbp->asArray($query);
 	}
 
-	protected function NotifyOrderToDrivers($drivers, $content_id, $content_type='orderCreated', $text="Order сreated") {
+	protected function NotifyOrderToDrivers($drivers, $content_id, $content_type='changeOrder', $text="{'state':'wait'}") {
 		foreach ($drivers as $driver)
 			(new NotificationModel())->AddNotify($content_id, $content_type, $driver['user_id'], Lang($text));
 
@@ -45,12 +45,11 @@ class SimulatePassModel extends BaseModel {
 
 		$user = (new UserModel())->getItem($user_id);
 
-		$drivers = (new DriverModel())->SuitableDrivers($start['lat'], $start['lng'], $user);
-		$countDriver = count($drivers);
+		$drivers = (new DriverModel())->SuitableDrivers($start['lat'], $start['lng'], null, AREA_RADIUS);
 
-		if ($countDriver > 0) {
+		if (count($drivers) > 0) {
 
-			if ($order_id = (new OrderModel())->AddOrder(['user_id'=>$user_id, 'route_id'=>$route['id']])) {
+			if ($order_id = (new OrderModel())->AddOrder(['user_id'=>$user_id, 'route_id'=>$route['id']], AREA_RADIUS)) {
 
 				$userModel = new UserModel();
 
@@ -58,12 +57,6 @@ class SimulatePassModel extends BaseModel {
 				$user['lng'] = $start['lng'];
 				
 				$userModel->Update($user);
-				$this->NotifyOrderToDrivers($drivers, $order_id);
-				
-				$users = BaseModel::getListValues($drivers, 'user_id');
-				$users[] = $user_id;
-
-				(new OrderListeners())->AddListener($order_id, $users);
 
 				return $dbp->query("UPDATE {$this->getTable()} SET `waitUntil` = NULL WHERE user_id={$user_id}");
 			}

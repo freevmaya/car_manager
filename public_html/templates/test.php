@@ -3,11 +3,11 @@
     html::AddScriptFile("main.js");
     html::AddScriptFile("map.js");
     html::AddScriptFile("views.js");
+
     //html::AddScriptFile("driver.js");
     //html::AddScriptFile("driver-manager.js");
+
     html::AddScriptFile("select-target.js");
-    //html::AddScriptFile("notifications.js");
-    
     html::AddScriptFile("https://code.jquery.com/ui/1.14.0/jquery-ui.js");
 
     html::AddStyleFile("https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css");
