@@ -30,6 +30,25 @@ class OrderView extends BottomView {
             this.options.marker.setMap(v_map.map);
         super.destroy();
     }
+
+    offerToPerform() {
+
+        v_map.getRoutes(user, this.options.order.start, this.options.order.travelMode, ((result)=>{
+
+            Ajax({
+                action: 'offerToPerform',
+                data: JSON.stringify({id: this.order.id, distance: result.routes[0].legs[0].distance.value})
+            }).then(((response)=>{
+                if (response.result == 'ok')
+                    this.Close();
+                else this.trouble(response);
+            }).bind(this));
+        }).bind(this));
+    }
+
+    moveToStart() {
+
+    }
 }
 
 class MarkerOrderManager extends MarkerManager {
@@ -210,16 +229,8 @@ class MarkerOrderManager extends MarkerManager {
                     }
                 ],
                 actions:  {
-                    'Offer to perform': (() => {
-                        Ajax({
-                            action: 'offerToPerform',
-                            data: JSON.stringify({id: order.id})
-                        }).then(((response)=>{
-                            if (response.result == 'ok')
-                                this.selOrderView.Close();
-                            else console.log(response);
-                        }).bind(this));
-                    }).bind(this)
+                    'Offer to perform': 'this.offerToPerform.bind(this)',
+                    'Move to start': 'this.moveToStart.bind(this)'
                 }
             }, OrderView, (()=>{
                 this.selectPath.setMap(null);

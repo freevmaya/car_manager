@@ -87,6 +87,7 @@ class Ajax extends Page {
 		if ($order = $orderModel->getItem($data['id'])) {
 
 			if ($driver = (new DriverModel())->getItem(['user_id'=>$user['id']])) {
+				$driver['distance'] = $data['distance'];
 				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driver), $driver['id']);
 			} else $error = 'Driver not activated';
 		}

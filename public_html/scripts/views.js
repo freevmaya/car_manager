@@ -76,6 +76,29 @@ class BaseParentView {
         });
         return values;
     }
+
+    trouble(msg = "") {
+        console.log(msg);
+        this.view.addClass('trouble');
+        setTimeout((()=>{
+            this.view.removeClass('trouble');
+        }).bind(this), 1000);
+    }
+
+
+    setValues(elem, attibutes) {
+
+        if ($.type(attibutes) == 'object') {
+            for (let i in attibutes)
+                if (isFunc(attibutes[i]))
+                    elem.click(attibutes[i]);
+                else elem.prop(i, attibutes[i]);
+        }
+        else if ($.type(attibutes) == 'function') 
+            elem.click(attibutes);
+        else if ($.type(attibutes) == 'string') 
+            eval('elem.click(' + attibutes + ')');
+    }
 }
 
 class View extends BaseParentView {
@@ -133,7 +156,7 @@ class View extends BaseParentView {
         for (let action in actions) {
             let btn = $('<button class="button">');
             btn.text(toLang(action));
-            setValues(btn, actions[action]);
+            this.setValues(btn, actions[action]);
             this.footerElement.append(btn);
         }
 
@@ -451,18 +474,6 @@ function createField(parent, fieldParam, tag) {
         element.prop('readonly', true);
 
     return container;
-}
-
-function setValues(elem, attibutes) {
-
-    if ($.type(attibutes) == 'object') {
-        for (let i in attibutes)
-            if (isFunc(attibutes[i]))
-                elem.click(attibutes[i]);
-            else elem.prop(i, attibutes[i]);
-    }
-    else if ($.type(attibutes) == 'function') 
-        elem.click(attibutes);
 }
 
 var viewManager;

@@ -58,7 +58,6 @@ class ViewPath extends BottomView {
 
 class OrderView extends ViewPath {
     #lastState = 'wait';
-    #order_id = 0;
     #listenerId;
 
     get LastState() { return this.#lastState; }
@@ -97,7 +96,7 @@ class OrderView extends ViewPath {
         for (let i in list)
             if (list[i].content_type == 'changeOrder') {
 
-                if (list[i].content_id == this.getOrderId())
+                if (list[i].content_id == this.Order.id)
                     this.changeOrder(JSON.parse(list[i].text));
 
                 transport.SendStatusNotify(list[i], 'read');
@@ -106,7 +105,7 @@ class OrderView extends ViewPath {
 
     onSuitableDrivers(drivers) {
         for (let i in drivers) {
-            if (drivers[i].order_id == this.getOrderId())
+            if (drivers[i].order_id == this.Order.id)
                 this.contentElement.find('.remaindDistance').text(DistanceToStr(drivers[i].remaindDistance));
         }
     }
@@ -121,7 +120,6 @@ class OrderView extends ViewPath {
     SetOrder(order) {
 
         if (order) {
-            this.setOrderId(order.id);
 
             if (order.state == 'finished')
                 this.closePath();
@@ -139,7 +137,6 @@ class OrderView extends ViewPath {
 
             this.options.order = order;
         } else {
-            this.setOrderId(null);
             this.closePath();
             this.options.order = null;
         }
@@ -147,11 +144,11 @@ class OrderView extends ViewPath {
 
     prepareToClose(afterPrepare) {
 
-        if (this.getOrderId() && (this.Order.state != 'finished'))
+        if (this.Order.id && (this.Order.state != 'finished'))
             app.showQuestion('Do you want to cancel your order?', (()=>{
                     Ajax({
                         action: 'SetState',
-                        data: JSON.stringify({id: this.getOrderId(), state: 'cancel'})
+                        data: JSON.stringify({id: this.Order.id, state: 'cancel'})
                     }).then(((data)=>{
 
                         if (data.result == 'ok')
@@ -161,14 +158,6 @@ class OrderView extends ViewPath {
                     }).bind(this));
             }).bind(this));
         else super.prepareToClose(afterPrepare);
-    }
-
-    setOrderId(v) {
-        this.#order_id = v;
-    }
-
-    getOrderId() {
-        return this.#order_id;
     }
 
     destroy() {
@@ -216,7 +205,7 @@ class SelectPathView extends OrderView {
     }
 
     GetOrder() {
-        return $.extend({id: this.getOrderId()}, this.GetPath());
+        return $.extend({id: this.Order.id}, this.GetPath());
     }
 
     Go() {
@@ -233,11 +222,12 @@ class SelectPathView extends OrderView {
                 })
             }).then(((response)=>{
                 if (response.result > 0) {
-                    this.setOrderId(response.result);
+                    this.options.callback(response.result);
                     this.Close();
-                }
+                } else this.trouble(response);
             }).bind(this));
         }
+        this.trouble('Select path please');
     }
 
     SelectPlace(finishPlace) {
@@ -267,10 +257,6 @@ class OrderAccepedView extends OrderView {
         this.#time = Date.now();
         this.#offers = [];
         this.allowOffers = this.orderState == 'wait';
-    }
-
-    initContent() {
-        super.initContent();
     }
 
     resetLayer() {
@@ -313,10 +299,11 @@ class OrderAccepedView extends OrderView {
         for (let i in list) {
             let notify = list[i];
             if (notify.content_type == "offerToPerform") {
-                if (this.offerIndexOf(notify.id) == -1)
+                if ((notify.content_id == this.Order.id) && (this.offerIndexOf(notify.id) == -1))
                     this.addOfferNotify(notify);
             }
         }
+        /*
 
         let time_count = Date.now() - this.#time;
         if ((time_count > WAITOFFERS) && (this.#offers.length > 0)) {
@@ -349,13 +336,14 @@ class OrderAccepedView extends OrderView {
             bestOffer.distance = bestDistance;
 
             this.#offers.splice(nearIx, 1);
-            for (let i=0; i<this.#offers.length; i++) {
+            for (let i=0; i<this.#offers.length; i++)
                 transport.SendStatusNotify(this.#offers[i], 'read');
-            }
+
             this.#offers = [];
             this.takeOffer(bestOffer);
             this.allowOffers = false;
         }
+        */
     }
 
     offerIndexOf(notify_id) {
@@ -370,37 +358,42 @@ class OrderAccepedView extends OrderView {
         this.#offers.push(notify);
         this.orderLayer.find('#offer-count').text(this.#offers.length);
     }
+        /*
 
     takeOffer(notify) {
-        /*
         let infoBlock = this.orderLayer.find('.driver-info');
 
         infoBlock.empty();
         
         new DataView(infoBlock, $('.templates .driver'), notify.driver);
         this.refreshColor();
-        */
         let d = notify.driver;
-        this.SetOrder($.extend(this.Order, {
-            state: 'accepted',
-            driverId: d.id,
-            driverName: d.username,
-            number: d.number,
-            comfort: d.comfort,
-            seating: d.seating,
-            car_body: d.car_body,
-            car_color: d.car_color,
-            car_colorName: d.car_colorName,
-            available_seat: d.available_seat
-        }));
 
-        Ajax({
-            action: 'SetState',
-            data: {id: this.getOrderId(), driver_id: notify.driver.id, state: 'accepted' }
-        }).then(() => {
-            transport.SendStatusNotify(notify, 'read');
-        });
+        if (d && d.id) {
+            Ajax({
+                action: 'SetState',
+                data: {id: this.Order.id, driver_id: d.id, state: 'accepted' }
+            }).then(((data) => {
+
+                if (data.result == 'ok')
+                    this.SetOrder($.extend(this.Order, {
+                        state: 'accepted',
+                        driverId: d.id,
+                        driverName: d.username,
+                        number: d.number,
+                        comfort: d.comfort,
+                        seating: d.seating,
+                        car_body: d.car_body,
+                        car_color: d.car_color,
+                        car_colorName: d.car_colorName,
+                        available_seat: d.available_seat
+                    }));
+                else this.trouble("Error accepted order");
+
+            }).bind(this));
+        } else this.trouble("Undefined driver");
     }
+        */
 
     refreshColor() {
         this.orderLayer.find(".param .item-image").each((i, elem)=>{
@@ -477,14 +470,13 @@ function BeginSelectPath() {
             v_map.setMainPosition(place.latLng);
 
             selectPathDialog = viewManager.Create({
-                startPlace: place
-            }, SelectPathView, () => {
-                if (selectPathDialog.getOrderId()) {
+                startPlace: place,
+                callback: (orderId)=>{
                     listener.remove();
                     BeginAcceptedOrder(currentOrder = selectPathDialog.GetOrder(), 
                                         selectPathDialog.getPathData());
-                } else selectPathDialog.closePath();
-
+                }
+            }, SelectPathView, () => {
                 selectPathDialog = null;
             });
         } else selectPathDialog.SelectPlace(place);
