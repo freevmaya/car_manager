@@ -1199,13 +1199,21 @@ input:focus, select:focus {
     display: block;
 }
 
-.orderView.accepted .btn-block .button:nth-child(2) {
+.taken-order .btn-block .button:nth-child(1)/*,
+.taken-order.driver_move .close,
+.taken-order.execution .close*/  {
+    display: none !important;
+}
+
+.taken-order.accepted .btn-block .button:nth-child(2) {
     display: block;
 }
 
 .orderView .btn-block .button {
     display: none;
 }
+
+
 
 /*-----------------Загрузка----------------*/
 

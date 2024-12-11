@@ -47,7 +47,7 @@ html::AddJsData(json_encode(
                 return setInterval(()=>{
 
                     if (typeof(v_map) != 'undefined')
-                        latLng = toLatLng(v_map.getMainPosition());
+                        latLng = v_map.getMainPosition();
 
                     action(latLng);
                     

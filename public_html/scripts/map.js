@@ -96,6 +96,7 @@ class VMap {
 	#mainMarker;
 	#options;
     #listenerId;
+    #mainTransform;
 
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
@@ -107,7 +108,7 @@ class VMap {
 		this.#view = elem;
 		this.#options = $.extend({
 			main_marker: true, 
-			start_position: false,
+			start_position: user.lat ? toLatLng(user) : false,
 			markerManagerClass: MarkerManager,
 			driverManagerClass: DriverManager,
 		}, options);
@@ -146,6 +147,8 @@ class VMap {
 	async initMap(crd) {
 
 		const position = toLatLng(crd);
+
+        this.#mainTransform = position;
 
 		const { Map, InfoWindow } = await google.maps.importLibrary("maps");
 		const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -192,13 +195,15 @@ class VMap {
 			this.#mainMarker.setMap(visible ? this.map : null);
 	}
 
-	setMainPosition(latLng) {
+	setMainPosition(latLng, angle = undefined) {
 		if (latLng && this.#mainMarker)
 			this.#mainMarker.position = latLng;
+
+		this.#mainTransform = (typeof(angle) != 'undefined') ? $.extend(toLatLng(latLng), {angle: angle}) : toLatLng(latLng);
 	}
 
 	getMainPosition() {
-		return this.#mainMarker ? this.#mainMarker.position : null;
+		return this.#mainTransform;
 	}
 
 	CreateMarker(position, title, className, onClick = null) {

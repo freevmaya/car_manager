@@ -42,7 +42,8 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 				'finish'=>$path['finish'],
 				'travelMode'=>$path['request']['travelMode'],
 				'routes'=>$overview_path,
-				'user_id'=>$driver['user_id']
+				'user_id'=>$driver['user_id'],
+				'meters'=>$path['routes'][0]['legs'][0]['distance']['value']
 			];
 
 			$route_id = $routeModel->Update($pathToDb);
@@ -167,10 +168,17 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 
 					} else if ($order['state'] == 'execution') {
-						print_r("Finished order\n");
+						if (!$tracer) {
 
-						$orderModel->SetState($order['id'], 'finished', false, true);
-						$simulateModel->Stop($driver['user_id']);
+							print_r("Ok! Execution order\n");
+							$simulateModel->Start($driver['user_id'], $order['route_id']);
+
+						} else if ($tracer->finished) {
+							print_r("Finished order\n");
+
+							$orderModel->SetState($order['id'], 'finished', false, true);
+							$simulateModel->Stop($driver['user_id']);
+						}
 					}
 
 				} else if (!$driver['waitUntil'] || (strtotime($driver['waitUntil']) < strtotime('now'))) {

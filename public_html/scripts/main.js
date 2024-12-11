@@ -3,6 +3,24 @@ var dateShortFormat = "dd.MM.yy HH:mm";
 var dateLongFormat  = "dd.MM.yyyy HH:mm";
 var dateOnlyFormat  = "dd.MM.yyyy";
 
+
+var currentPathOptions = {
+    preserveViewport: false,
+    suppressMarkers: false,
+    polylineOptions: {
+        strokeColor: 'green'
+    }
+}
+
+var defaultPathOptions = {
+    preserveViewport: true,
+    suppressMarkers: true,
+    draggable: false,
+    polylineOptions: {
+        strokeColor: 'rgba(0.6,0.6,0,0.5)'
+    }
+}
+
 class EventProvider {
     #incIndex;  
     constructor() {
@@ -205,7 +223,7 @@ class AjaxTransport extends EventProvider {
 
             if (this.requireDrivers) {
                 let mpos = v_map.getMainPosition();
-                if (mpos)
+                if (mpos) 
                     data = $.extend(data, toLatLng(mpos));
             } else if (this.#getPosition) {
                 data = $.extend(data, this.#getPosition);
@@ -737,14 +755,7 @@ function getRoutePoint(routes, idx=0, routeIndex=0) {
 
 function DrawPath(map, routeData, options = null) {
 
-    options = $.extend({
-        preserveViewport: true,
-        suppressMarkers: false,
-        draggable: false,
-        polylineOptions: {
-            strokeColor: 'green'
-        }
-    }, options);
+    options = $.extend({}, defaultPathOptions, options);
 
     var directionsRenderer = new google.maps.DirectionsRenderer(options);
     directionsRenderer.setMap(map);

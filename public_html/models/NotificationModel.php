@@ -28,7 +28,7 @@ class NotificationModel extends BaseModel {
 	}
 
 	public function getItems($options) {
-		GLOBAL $dbp, $user;
+		GLOBAL $dbp;
 
 		$where = BaseModel::GetConditions($options, ['content_id', 'content_type', 'state', 'user_id']);
 		$whereStr = implode(" AND ", $where);

@@ -62,16 +62,20 @@ class RouteModel extends BaseModel {
 
 		if (!$route_id) {
 
-			unset($start['displayName']);
-			unset($start['formattedAddress']);
+			if ($value['meters'] > 0) {
 
-			unset($finish['displayName']);
-			unset($finish['formattedAddress']);
+				unset($start['displayName']);
+				unset($start['formattedAddress']);
 
-			$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`, `routes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-			'isssssds', 
-			BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters', 'routes'], [0, '{}', '{}', null, null, null, 0, null]));
-			return $dbp->lastID();
+				unset($finish['displayName']);
+				unset($finish['formattedAddress']);
+
+				$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`, `routes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+				'isssssds', 
+				BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters', 'routes'], [0, '{}', '{}', null, null, null, 0, null]));
+				return $dbp->lastID();
+			} else die ('Distance cannot be zero!');
+			
 		}
 
 		return $route_id;

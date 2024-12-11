@@ -15,11 +15,19 @@
 
 		html::AddJsData(
 				$orderModel->getItems(['state'=>ACTIVEORDERLIST_ARR])
-			, 'orders');
+			, 'all_orders');
+		html::AddJsData(
+				$orderModel->getItems(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR])
+			, 'taken_orders');
+		html::AddJsData(
+				(new DriverModel())->getItem($user['id'])
+			, 'driver');
 
 		html::AddJsCode("
-			new VMap($('#map'), DriverMechanics, {markerManagerClass: MarkerOrderManager});
+			new DMap($('#map'));
 		");
+
+		html::AddTemplate(file_get_contents(TEMPLATES_PATH.'/driver/orderInfo.php'), 'orderInfo');
 
 	} else {
 //------------------------------PASSENGER---------------------------------------------
@@ -30,7 +38,7 @@
 
 		$order = count($orders) > 0 ? $orders[0] : null;
 		if ($order)
-			html::AddJsCode("currentOrder = ".json_encode($order).';');
+			html::AddJsData($order, 'currentOrder');
 
 		html::AddTemplate('<div class="car">
 	        <div class="car-image-box">

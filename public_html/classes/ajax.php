@@ -64,10 +64,12 @@ class Ajax extends Page {
 		if (isset($data['lat'])) {
 
 			//trace(array_merge($data, $user));
-			(new UserModel())->UpdatePosition($user['id'], $data);
+			(new UserModel())->UpdatePosition($user['id'], $data, isset($data['angle']) ? $data['angle'] : 0);
 
 			$user['lat'] = $data['lat'];
 			$user['lng'] = $data['lng'];
+			if (isset($data['angle']))
+					$user['angle'] = $data['angle'];
 			Page::setSession('user', $user);
 		}
 		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");
@@ -87,7 +89,7 @@ class Ajax extends Page {
 		if ($order = $orderModel->getItem($data['id'])) {
 
 			if ($driver = (new DriverModel())->getItem(['user_id'=>$user['id']])) {
-				$driver['distance'] = $data['distance'];
+				$driver['remaindDistance'] = $data['remaindDistance'];
 				$result = (new NotificationModel())->AddNotify($order['id'], 'offerToPerform', $order['user_id'], json_encode($driver), $driver['id']);
 			} else $error = 'Driver not activated';
 		}
@@ -160,6 +162,13 @@ class Ajax extends Page {
 		$result = (new OrderModel())->SetState($data['id'], $data['state'], @$data['driver_id']);
 
 		return ["result"=>$result ? 'ok' : false];
+	}
+
+	protected function Notification($data) {
+
+		$result = (new NotificationModel())->AddNotify($data['content_id'], $data['content_type'], $data['user_id'], $data['text']);
+
+		return ['result' => $result ? 'ok' : null];
 	}
 
 	protected function Reply($data) {

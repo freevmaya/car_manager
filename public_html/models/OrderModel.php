@@ -94,13 +94,18 @@ class OrderModel extends BaseModel {
 		GLOBAL $dbp;
 
 		$result = false;
-		if ($driver_id)
+		$data = ['state'=>$state];
+
+		if ($driver_id) {
 			$result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=?, `driver_id`=? WHERE id=?", 
 				'sii', [$state, $driver_id, $id]);
+
+			$data['driver_id'] = $driver_id;
+		}
 		else $result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=? WHERE id=?", 'si', [$state, $id]);
 
 		$orderListeners = new OrderListeners();
-		$orderListeners->SendNotify($id, 'changeOrder', json_encode(['state'=>$state]));
+		$orderListeners->SendNotify($id, 'changeOrder', json_encode($data));
 
 		if (in_array($state, INACTIVEORDERLIST_ARR))
 			$orderListeners->RemoveListeners($id);

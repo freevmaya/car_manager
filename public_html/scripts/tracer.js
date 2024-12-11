@@ -31,7 +31,7 @@ class Tracer extends EventProvider {
 
     get AvgSpeed() { return this.#avgSpeed; };
 
-    constructor(routes, callback, periodTime, options) {
+    constructor(routes, callback, periodTime, options=null) {
 
         super();
 
@@ -39,7 +39,7 @@ class Tracer extends EventProvider {
         this.#routes = routes;
         this.#time = Date.now();
         this.#callback = callback;
-        this.#intervalId = setInterval(this.#update.bind(this), periodTime);
+        this.#intervalId = setInterval(this.update.bind(this), periodTime);
 
         this.#periodTime = periodTime;
         this.#lengthList = [];
@@ -53,7 +53,7 @@ class Tracer extends EventProvider {
         super.destroy();
     }
 
-    #update() {
+    update() {
         this.#updateRoutePos();
 
         if (this.#lastPos) {

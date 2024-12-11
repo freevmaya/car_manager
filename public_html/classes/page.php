@@ -88,6 +88,8 @@ class Page {
 		}
 
 		if ($user) {
+			if ($userDB = (new UserModel())->getItem($user['id']))
+				$user = array_merge($user, $userDB);
 			$language = $user['language_code'];
 		} else $language = 'en';
 		
