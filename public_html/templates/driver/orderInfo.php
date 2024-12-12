@@ -9,7 +9,7 @@
 		<td>{toLang("User")}:</td><td>{username}</td>
 	</tr>
 	<tr>
-		<td>{toLang("Departure time")}</td><td>{$.format.date(data.pickUpTime, dateTinyFormat))}</td>
+		<td>{toLang("Departure time")}</td><td>{$.format.date(data.pickUpTime, dateTinyFormat)}</td>
 	</tr>
 	<tr>
 		<td>{toLang("Length")}</td><td>{DistanceToStr(data.meters)}</td>

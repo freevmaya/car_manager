@@ -103,6 +103,8 @@ $lang = [
 	'Distance'=>'Расстояние',
 	'Offer count'=>'Количество предложений',
 	'State'=>'Состояние',
-	'Remaining distance'=>'Ост. расстояние'
+	'Remaining distance'=>'Ост. расстояние',
+	'Home'=>'Главная',
+	'Trip on the map'=>'Поездка на карте'
 ];
 ?>

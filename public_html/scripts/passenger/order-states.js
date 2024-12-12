@@ -54,8 +54,13 @@ class ViewPath extends BottomView {
     closePath() {
         if (this.rpath) {
             this.rpath.setMap(null);
-            delete this.rpath;
+            this.rpath = null;
         }
+    }
+
+    destroy() {
+        this.closePath();
+        super.destroy();
     }
 }
 
@@ -195,24 +200,8 @@ class SelectPathView extends ViewPath {
 
     setOptions(options) {
         options = $.extend({
-            template: 'select-path',
-            classes: ['target-view'],
-            content: [
-                {
-                    id: 'startPlace',
-                    text: PlaceName(options.startPlace),
-                    info: PlaceAddress(options.startPlace),
-                    class: TextInfoField
-                },
-                {
-                    class: DividerField
-                }, 
-                {
-                    id: 'finishPlace',
-                    text: "Select your destination",
-                    class: TextInfoField
-                }
-            ]
+            title: toLang('Route'),
+            template: 'target-view'
         }, options);
 
         super.setOptions(options);
@@ -220,9 +209,10 @@ class SelectPathView extends ViewPath {
 
     initView() {
         super.initView();
-        this.footerElement.append((this.goButton = $('<div class="button">'))
-                                    .text(toLang('Go'))
-                                    .click(this.Go.bind(this)));
+        this.view.find('.btn-block .go')
+                .click(this.Go.bind(this));
+
+        this.fillText(this.options.startPlace, 'startPlace');
     }
 
     GetPath() {
@@ -248,6 +238,7 @@ class SelectPathView extends ViewPath {
             }).then(((response)=>{
                 if (response.result > 0) {
                     this.options.callback(response.result);
+                    this.rpath = null;
                     this.Close();
                 } else this.trouble(response);
             }).bind(this));
@@ -255,15 +246,22 @@ class SelectPathView extends ViewPath {
         this.trouble('Select path please');
     }
 
+    fillText(place, id) {
+        let field = this.view.find('div[data-id="' + id + '"]');
+        field.find('p')
+            .text(PlaceName(place));
+        field.find('.infoView')
+            .addClass('showInfo')
+            .text(PlaceAddress(place));
+    }
+
     SelectPlace(finishPlace) {
         this.showPath(this.options.startPlace, this.options.finishPlace = finishPlace, null, (()=>{
-            let field = this.fieldById("finishPlace");
-            field.view.text(PlaceName(this.options.finishPlace));
-            field.infoView.text(PlaceAddress(this.options.finishPlace));
-            field.infoView.addClass('showInfo');
+            
+            this.fillText(finishPlace, 'finishPlace');
+            this.footerElement.find('button').prop('disabled', false);
             
             this.afterResize();
-            this.footerElement.find('button').prop('disabled', false);
 
         }).bind(this));
     }

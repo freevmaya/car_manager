@@ -104,6 +104,8 @@ class OrderView extends BottomView {
             this.showPathToStart();
         else if ((state == 'execution') && this.isMyOrder)
             this.#tracerOrder = v_map.createTracer(this.options.path.routes, this.onFinishPathOrder.bind(this));
+
+        this.afterResize();
     }
 
     destroy() {
@@ -166,19 +168,17 @@ class OrderView extends BottomView {
     }
 
     moveToStart() {
-        if (managerOrders.count() == 1) {
-            this.showPathToStart((()=>{
+        this.showPathToStart((()=>{
 
-                Ajax({
-                    action: 'SetState',
-                    data: {id: this.Order.id, state: 'driver_move'}
-                }).then(((response)=>{
-                    if (response.result != 'ok')
-                        this.trouble(response);
-                }).bind(this));
-                
+            Ajax({
+                action: 'SetState',
+                data: {id: this.Order.id, state: 'driver_move'}
+            }).then(((response)=>{
+                if (response.result != 'ok')
+                    this.trouble(response);
             }).bind(this));
-        }
+            
+        }).bind(this));
     }
 
     onFinishPathOrder(tracer) {

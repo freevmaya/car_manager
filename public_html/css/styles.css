@@ -247,6 +247,14 @@ h1, h2 {
     transition: width 0.5s ease-in-out;
 }
 
+.orderView .content table {
+    width: fit-content;
+}
+
+.orderView .content table td {
+    padding-right: 1em;
+}
+
 .cols {
     display: flex;
 }
@@ -431,6 +439,15 @@ h1, h2 {
     opacity: 1;
   }
 }*/
+
+.target-view .InfoField {
+    margin: 0px;
+}
+
+.target-view .btn-block {
+    flex-shrink: 0;
+    width: 25%;
+}
 
 .field label {
     margin-bottom: 0.5em;
