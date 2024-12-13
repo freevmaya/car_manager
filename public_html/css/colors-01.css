@@ -131,7 +131,7 @@ body {
     color: #888;
 }
 
-.field input, .datetime {
+.field input, select, .datetime {
     background: #454545;
     border-color: #0000008c;
     color: #AAA;

@@ -191,6 +191,12 @@ h1, h2 {
     justify-content: center;
 }
 
+.nowrap {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .shadow, .ui-widget-content {
     box-shadow: 0px 0px 1em #000000ba;    
 }
@@ -261,6 +267,19 @@ h1, h2 {
 
 .cols .btn-block {
     align-items: end;
+}
+
+.line-fields .field {
+    margin: 0 !important;
+    flex-direction: row;
+    margin-left: 1em;
+}
+
+.line-fields label {
+    margin: 0 0.5em 0 0 !important;
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 
 .dialog {
@@ -446,7 +465,6 @@ h1, h2 {
 
 .target-view .btn-block {
     flex-shrink: 0;
-    width: 25%;
 }
 
 .field label {
@@ -482,11 +500,11 @@ input, select, .datetime {
     padding: 0.8em 1em;
     border-radius: 1.5em;
     height: 3em;
+    font-size: 0.9em;
 }
 
 .field > input, .field > .datetime {
     margin-left: 1em;
-    font-size: 0.9em;
 }
 
 input:focus, select:focus {
@@ -669,9 +687,8 @@ input:focus, select:focus {
 
 .infoView {
     margin-left: 0px;
-    opacity: 1;
     display: block;
-    font-size: 0.6em;
+    font-size: 0.7em;
     opacity: 0;
 
     animation-duration: 0.5s;

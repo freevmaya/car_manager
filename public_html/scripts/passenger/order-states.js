@@ -213,6 +213,8 @@ class SelectPathView extends ViewPath {
                 .click(this.Go.bind(this));
 
         this.fillText(this.options.startPlace, 'startPlace');
+
+        new DateTime(this.view.find('.DateTime'));
     }
 
     GetPath() {

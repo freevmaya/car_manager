@@ -9,7 +9,7 @@
 	<div class="container">
     	<div class="selectView" data-callback-index="field-<?=$fieldIdx?>">
         	<div class="block">
-            	<a class="value trip"<?=$data_block?>>
+            	<a class="value trip nowrap"<?=$data_block?>>
             		<?=$value['startPlace']?>
             		>
             		<?=$value['finishPlace']?>

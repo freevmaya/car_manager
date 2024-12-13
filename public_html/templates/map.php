@@ -48,7 +48,7 @@
 	    </div>', 'car');
 
 	    html::AddTemplate(html::RenderField(['type'=>'order'], $order), 'order');
-		html::AddTemplate(file_get_contents(TEMPLATES_PATH.'/driver/target-view.php'), 'target-view');
+		html::AddTemplate(html::RenderField(['type'=>'target-view']), 'target-view');
 
 		//html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
 	    
