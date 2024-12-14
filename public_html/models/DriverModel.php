@@ -74,7 +74,7 @@ class DriverModel extends BaseModel {
 		return $dbp->asArray($query);
 	}
 
-	public function SuitableDrivers($lat = null, $lng = null, $a_user = null, $maxDistanceToStart = 5000) {
+	public function SuitableDrivers($lat = null, $lng = null, $a_user = null, $maxDistanceToStart = 5000, $requireSeats=-1) {
 		GLOBAL $dbp, $user;
 
 		if (!$a_user) $a_user = $user;
@@ -93,6 +93,8 @@ class DriverModel extends BaseModel {
 			$drivers = $dbp->asArray($query);
 
 		} else {
+
+			$orderModel = new OrderModel();
 
 			if (!$lat) {
 				$a_user = Page::getSession('user');
@@ -116,7 +118,15 @@ class DriverModel extends BaseModel {
 					$distance =  Distance($driver['lat'], $driver['lng'], $lat, $lng);
 					if ($distance < $maxDistanceToStart) {
 						$driver['distanceStart'] = $distance;
-						$drivers[] = $driver;
+
+						if ($requireSeats > -1) {
+
+							$driver['seats'] = $driver['seating'] - $orderModel->getTakenSeats($driver['id']);
+
+							if ($driver['seats'] >= $requireSeats)
+								$drivers[] = $driver;
+
+						} else $drivers[] = $driver;
 					}
 				}
 			}

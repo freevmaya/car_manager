@@ -266,20 +266,8 @@ h1, h2 {
 }
 
 .cols .btn-block {
-    align-items: end;
-}
-
-.line-fields .field {
-    margin: 0 !important;
-    flex-direction: row;
-    margin-left: 1em;
-}
-
-.line-fields label {
-    margin: 0 0.5em 0 0 !important;
-    display: flex;
     align-items: center;
-    height: 100%;
+    justify-content: end;
 }
 
 .dialog {
@@ -467,6 +455,15 @@ h1, h2 {
     flex-shrink: 0;
 }
 
+.target-view .btn-block {
+    flex-direction: column;
+}
+
+.settings {
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .field label {
     margin-bottom: 0.5em;
 }
@@ -503,7 +500,7 @@ input, select, .datetime {
     font-size: 0.9em;
 }
 
-.field > input, .field > .datetime {
+.field > input, .field > .datetime, .field > select {
     margin-left: 1em;
 }
 
@@ -801,6 +798,25 @@ input:focus, select:focus {
     margin: 1em;
 }
 
+.target-view .extend-block {
+    max-width: 200px;
+    margin-top: 1em;
+    height: 0px;
+    overflow: hidden;
+    transition: 0.5s height;
+}
+
+.target-view.extend .extend-block {
+    height: 160px;
+    margin-left: 4px;
+}
+
+select {
+   -webkit-appearance: none; 
+   -moz-appearance: none;
+   appearance: none; 
+}
+
 .warning {
     padding: 0.8em;
     font-size: 0.8em;
@@ -1040,7 +1056,7 @@ input:focus, select:focus {
     display: block;
 }
 
-.button {
+.button, .button-flat {
     border: 0;
     cursor: pointer;
     opacity: 0.8;
@@ -1048,7 +1064,6 @@ input:focus, select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-
 }
 
 .center {
@@ -1056,16 +1071,19 @@ input:focus, select:focus {
     margin-right: auto !important;
 }
 
-.button:hover {
+.button:hover, .button-flat:hover {
     opacity: 1;
 }
 
-.button, .datetime-field {
-    min-width: 1em;
+.button, .datetime-field, .button-flat {
     margin: 0.3em;
     height: 3em;
     transition: 0.5s background-color;
     border-radius: 15em;
+}
+
+.btn-block .button, .button-flat {
+    min-width: 3em;
 }
 
 .button:active {

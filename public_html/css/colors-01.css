@@ -31,7 +31,7 @@ body {
     color: #ffffff75;
 }
 
-.button, .toolbar a {
+.button, .toolbar a, .button-flat {
     color: white;
     background-color: transparent;
 }
@@ -320,4 +320,8 @@ select.time {
 
 .order.wait_meeting .stateHead .state {
     color: coral;
+}
+
+.settings {
+    background-image: url(images/settings-white.png);
 }

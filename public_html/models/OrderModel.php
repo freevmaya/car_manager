@@ -31,6 +31,13 @@ class OrderModel extends BaseModel {
 		return $dbp->line($query);
 	}
 
+	public function getTakenSeats($driver_id) {
+		GLOBAL $dbp;
+
+		$query = "SELECT COUNT(id) {$this->getTable()} WHERE `driver_id`={$driver_id} AND `state` IN (".ACTIVEORDERLIST.")";
+		return $dbp->one($query);
+	}
+
 	public function getItems($options) {
 		GLOBAL $dbp;
 
@@ -59,8 +66,8 @@ class OrderModel extends BaseModel {
 
 		$pickUpTime = date('Y-m-d H:i:s', strtotime(isset($data['pickUpTime'])?$data['pickUpTime']:'NOW'));
 
-		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `route_id`) VALUES (?,NOW(),?,?)", 
-			'iss', [$data['user_id'], $pickUpTime, $data['route_id']]);
+		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `seats`, `route_id`) VALUES (?,NOW(),?,?,?)", 
+			'isii', [$data['user_id'], $pickUpTime, $data['seats'], $data['route_id']]);
 
 		$order_id = $dbp->lastID();
 
@@ -69,7 +76,7 @@ class OrderModel extends BaseModel {
 			$route = (new RouteModel())->getItem($data['route_id']);
 			$latLng = json_decode($route['start'], true);
 
-			$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners);
+			$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners, $data['seats']);
 
 			if (count($drivers) > 0) {
 				$users = BaseModel::getListValues($drivers, 'user_id');

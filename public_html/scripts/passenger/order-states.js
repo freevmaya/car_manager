@@ -198,6 +198,8 @@ class OrderView extends ViewPath {
 
 class SelectPathView extends ViewPath {
 
+    order;
+
     setOptions(options) {
         options = $.extend({
             title: toLang('Route'),
@@ -214,7 +216,7 @@ class SelectPathView extends ViewPath {
 
         this.fillText(this.options.startPlace, 'startPlace');
 
-        new DateTime(this.view.find('.DateTime'));
+        this.pickUpTime = new DateTime(this.view.find('.DateTime'));
     }
 
     GetPath() {
@@ -222,24 +224,27 @@ class SelectPathView extends ViewPath {
     }
 
     GetOrder() {
-        return $.extend({}, this.GetPath());
+        return this.order;
     }
 
     Go() {
-            
-        let path = this.GetPath();
 
-        if (path) {
+        if (this.order = this.GetPath()) {
+
+            let data = {
+                user_id: user.id,
+                path: this.order,
+                pickUpTime: this.pickUpTime.val(),
+                seats: this.view.find('select[name="seats"]').val()
+            }
+
             Ajax({
                 action: "AddOrder",
-                //action: "Go",
-                data: JSON.stringify({
-                    user_id: user.id,
-                    path: path
-                })
+                data: data
             }).then(((response)=>{
                 if (response.result > 0) {
-                    this.options.callback(response.result);
+                    this.order.id = response.result;
+                    this.options.callback(this.order);
                     this.rpath = null;
                     this.Close();
                 } else this.trouble(response);
@@ -487,9 +492,9 @@ function BeginSelectPath() {
 
             selectPathDialog = viewManager.Create({
                 startPlace: place,
-                callback: (orderId)=>{
+                callback: (order)=>{
                     listener.remove();
-                    BeginAcceptedOrder(jsdata.currentOrder = selectPathDialog.GetOrder(), 
+                    BeginAcceptedOrder(jsdata.currentOrder = order, 
                                         selectPathDialog.getPathData());
                 }
             }, SelectPathView, () => {
