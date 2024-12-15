@@ -49,7 +49,7 @@ class SimulatePassModel extends BaseModel {
 
 		if (count($drivers) > 0) {
 
-			if ($order_id = (new OrderModel())->AddOrder(['user_id'=>$user_id, 'route_id'=>$route['id']], AREA_RADIUS)) {
+			if ($order_id = (new OrderModel())->AddOrder(['user_id'=>$user_id, 'route_id'=>$route['id'], 'seats'=>rand(1, 4)], AREA_RADIUS)) {
 
 				$userModel = new UserModel();
 
@@ -72,7 +72,9 @@ class SimulatePassModel extends BaseModel {
 
 		if ($order = $orderModel->getActiveOrder(['user_id'=>$user_id])) {
 			$orderModel->SetState($order['id'], 'accepted', $offer['id']);
+			/*
 			(new NotificationModel())->AddNotify($order['id'], 'acceptedOffer', $offer['user_id'], Lang('The offer has been accepted'));
+			*/
 		}
 
 		return null;

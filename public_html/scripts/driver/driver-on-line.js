@@ -9,7 +9,7 @@ class DMap extends VMap {
             transport.AddListener('notificationList', 
                     v_map.MarkerManager.onNotificationList.bind(v_map.MarkerManager));
 
-            v_map.MarkerManager.AddOrders(jsdata.all_orders);
+            v_map.MarkerManager.AddOrders($.extend([], jsdata.all_orders, jsdata.taken_orders));
             managerOrders = new ManagerOrders(jsdata.taken_orders);
 
         }, {markerManagerClass: MarkerOrderManager});
@@ -40,6 +40,7 @@ class DMap extends VMap {
 
 class ManagerOrders {
     #orders;
+    selOrderView;
     constructor(my_orders) {
         this.#orders = my_orders;
     }
@@ -61,6 +62,45 @@ class ManagerOrders {
 
     removeOrder(order) {
         this.#orders.remove(order);
+    }
+
+    isShown(order_id) {
+        return this.selOrderView && (this.selOrderView.Order.id = order_id);
+    }
+
+    ShowInfoOrder(marker) {
+
+        let order = marker.order;
+        function showPathAndInfo() {
+
+            v_map.getRoutes(order.start, order.finish, travelMode, (function(result) {
+                this.selOrderView = viewManager.Create({
+                    title: "Order",
+                    bottomAlign: true,
+                    order: order,
+                    path: result,
+                    marker: marker,
+                    content: [
+                        {
+                            label: "InfoPath",
+                            content: templateClone($('.templates .orderInfo'), order),// $(DataView.getOrderInfo(order, true)),
+                            class: HtmlField
+                        }
+                    ],
+                    actions:  {
+                        'Offer to perform': 'this.offerToPerform.bind(this)',
+                        'Move to start': 'this.moveToStart.bind(this)'
+                    }
+                }, OrderView, (()=>{
+                    this.selOrderView = null;
+                }).bind(this));
+
+            }).bind(this));
+        }
+
+        if (this.selOrderView) 
+            this.selOrderView.Close().then(showPathAndInfo.bind(this));
+        else showPathAndInfo.bind(this)();
     }
 }
 
@@ -98,14 +138,14 @@ class OrderView extends BottomView {
         $('#state-' + this.Order.id).text(toLang(state));
 
         this.closePathOrder();
-        this.#pathOrder = v_map.DrawPath(this.options.path, state == 'execution' ? currentPathOptions : defaultPathOptions);
+        this.#pathOrder = v_map.DrawPath(this.options.path, this.isMyOrder ? currentPathOptions : defaultPathOptions);
 
         if (state == 'driver_move')
             this.showPathToStart();
         else if ((state == 'execution') && this.isMyOrder)
             this.#tracerOrder = v_map.createTracer(this.options.path.routes, this.onFinishPathOrder.bind(this));
 
-        this.afterResize();
+        this.resizeMap();
     }
 
     destroy() {
@@ -117,7 +157,8 @@ class OrderView extends BottomView {
         super.destroy();
     }
 
-    offerToPerform() {
+    offerToPerform(e) {
+        this.blockClickTemp(e);
 
         v_map.getRoutes(Extend({}, user, ['lat', 'lng']), this.options.order.start, this.options.order.travelMode, ((result)=>{
 
@@ -167,7 +208,8 @@ class OrderView extends BottomView {
         }).bind(this));
     }
 
-    moveToStart() {
+    moveToStart(e) {
+        this.blockClickTemp(e);
         this.showPathToStart((()=>{
 
             Ajax({
@@ -269,8 +311,8 @@ class MarkerOrderManager extends MarkerManager {
         if (idx > -1)
             this.markers.users[idx].order.state = state;
             
-        if (this.selOrderView && (this.selOrderView.Order.id == order_id))
-            this.selOrderView.SetState(state);
+        if (managerOrders.isShown(order_id))
+            managerOrders.selOrderView.SetState(state);
     }
 
     AcceptedOffer(order_id, driver_id=false) {
@@ -285,13 +327,14 @@ class MarkerOrderManager extends MarkerManager {
                 .removeClass('user-marker')
                 .addClass('user-current');
 
-            if (this.selOrderView)
-                this.selOrderView.view.addClass('taken-order');
+            if (managerOrders.isShown(order_id))
+                managerOrders.selOrderView.view.addClass('taken-order');
 
             managerOrders.addOrder(m.order);
         }
     }
 
+    /*
     ShowMarkerOfOrder(order_id, order = null) {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1) {
@@ -300,9 +343,9 @@ class MarkerOrderManager extends MarkerManager {
             this.Shake(this.markers.users[idx]);
 
             if (order)
-                this.#showInfoOrder(market, order);
+                this.ShowInfoOrder(market, order);
         }
-    }
+    }*/
 
     IndexOfByOrder(order_id) {
         for (let i in this.markers.users)
@@ -316,8 +359,8 @@ class MarkerOrderManager extends MarkerManager {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1) {
 
-            if (this.selOrderView) {
-                this.selOrderView.Close().then((()=>{
+            if (managerOrders.isShown(order_id)) {
+                managerOrders.selOrderView.Close().then((()=>{
                     this.markers.users[idx].setMap(null);
                     this.markers.users.splice(idx, 1);
                 }).bind(this));
@@ -332,8 +375,8 @@ class MarkerOrderManager extends MarkerManager {
     RemoveCar(id) {
         let idx = this.IndexOfByDriver(id);
         if (idx > -1) {
-            if (this.selOrderView && (this.selOrderView.Order.id == this.markers.users[idx].order.id))
-                this.selOrderView.Close();
+            if (managerOrders.selOrderView && (managerOrders.selOrderView.Order.id == this.markers.users[idx].order.id))
+                managerOrders.selOrderView.Close();
         }
         super.RemoveCar(id);
     }
@@ -358,48 +401,11 @@ class MarkerOrderManager extends MarkerManager {
 
     #createFromOrder(latLng, order, anim) {
         let m = this.CreateUserMarker(latLng, 'user-' + order.user_id, (()=>{
-            this.#showInfoOrder(m);
+            managerOrders.ShowInfoOrder(m);
         }).bind(this), 
                 (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 
                 (anim ? ' anim' : ''));
         m.order = order;
-        if (order.driver_id == jsdata.driver.id)
-            this.#showInfoOrder(m);
-    }
-
-    #showInfoOrder(marker) {
-
-        let order = marker.order;
-        function showPathAndInfo() {
-
-            this.ctrl.getRoutes(order.start, order.finish, travelMode, (function(result) {
-                this.selOrderView = viewManager.Create({
-                    title: "Order",
-                    bottomAlign: true,
-                    order: order,
-                    path: result,
-                    marker: marker,
-                    content: [
-                        {
-                            label: "InfoPath",
-                            content: templateClone($('.templates .orderInfo'), order),// $(DataView.getOrderInfo(order, true)),
-                            class: HtmlField
-                        }
-                    ],
-                    actions:  {
-                        'Offer to perform': 'this.offerToPerform.bind(this)',
-                        'Move to start': 'this.moveToStart.bind(this)'
-                    }
-                }, OrderView, (()=>{
-                    this.selOrderView = null;
-                }).bind(this));
-
-            }).bind(this));
-        }
-
-        if (this.selOrderView) 
-            this.selOrderView.Close().then(showPathAndInfo.bind(this));
-        else showPathAndInfo.bind(this)();
     }
 
     ShowOrders() {

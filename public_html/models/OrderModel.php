@@ -34,7 +34,7 @@ class OrderModel extends BaseModel {
 	public function getTakenSeats($driver_id) {
 		GLOBAL $dbp;
 
-		$query = "SELECT COUNT(id) {$this->getTable()} WHERE `driver_id`={$driver_id} AND `state` IN (".ACTIVEORDERLIST.")";
+		$query = "SELECT SUM(`seats`) FROM {$this->getTable()} WHERE `driver_id`={$driver_id} AND `state` IN (".ACTIVEORDERLIST.")";
 		return $dbp->one($query);
 	}
 
@@ -70,23 +70,26 @@ class OrderModel extends BaseModel {
 			'isii', [$data['user_id'], $pickUpTime, $data['seats'], $data['route_id']]);
 
 		$order_id = $dbp->lastID();
+		
+		if ($order_id) {
 
-		if ($distanceToListeners > 0) {
+			if ($distanceToListeners > 0) {
 
-			$route = (new RouteModel())->getItem($data['route_id']);
-			$latLng = json_decode($route['start'], true);
+				$route = (new RouteModel())->getItem($data['route_id']);
+				$latLng = json_decode($route['start'], true);
 
-			$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners, $data['seats']);
+				$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners, $data['seats']);
 
-			if (count($drivers) > 0) {
-				$users = BaseModel::getListValues($drivers, 'user_id');
-				$users[] = $data['user_id'];
+				if (count($drivers) > 0) {
+					$users = BaseModel::getListValues($drivers, 'user_id');
+					$users[] = $data['user_id'];
 
-				(new OrderListeners())->AddListener($order_id, $users);
-				(new OrderListeners())->SendNotify($order_id, 'changeOrder', json_encode(['state'=>'wait']));
-
-				//$this->NotifyOrderToDrivers($drivers, $order_id);
+					//$this->NotifyOrderToDrivers($drivers, $order_id);
+				}
 			}
+
+			(new OrderListeners())->AddListener($order_id, $users);
+			(new OrderListeners())->SendNotify($order_id, 'changeOrder', json_encode(['state'=>'wait']));
 		}
 
 		return $order_id;
@@ -98,16 +101,16 @@ class OrderModel extends BaseModel {
 	}
 
 	public function SetState($id, $state, $driver_id = false) {
-		GLOBAL $dbp;
+		GLOBAL $dbp, $user;
 
 		$result = false;
 		$data = ['state'=>$state];
 
+		(new OrderListeners())->AddListener($id, $user['id']); // Слушает тот, кто и устанавливает статус
+
 		if ($driver_id) {
 			$result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=?, `driver_id`=? WHERE id=?", 
 				'sii', [$state, $driver_id, $id]);
-
-			$data['driver_id'] = $driver_id;
 		}
 		else $result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=? WHERE id=?", 'si', [$state, $id]);
 

@@ -99,6 +99,14 @@ class BaseParentView {
         else if ($.type(attibutes) == 'string') 
             eval('elem.click(' + attibutes + ')');
     }
+
+    blockClickTemp(e, time=2000) {
+        let elem = $(e.currentTarget);
+        elem.prop("disabled", true);
+        setTimeout(()=>{
+            elem.prop("disabled", false);
+        }, time);
+    }
 }
 
 class View extends BaseParentView {
@@ -168,8 +176,12 @@ class View extends BaseParentView {
         setTimeout(this.checkOverflow.bind(this), 500);
     }
 
+    SetContent(content) {
+        ViewManager.setContent(this, this.options.content = content, this.options.clone);
+    }
+
     initContent() {
-        ViewManager.setContent(this, this.options.content, this.options.clone);
+        this.SetContent(this.options.content);
     }
 
     setOptions(options) {
@@ -178,15 +190,12 @@ class View extends BaseParentView {
         if (this.options.curtain) this.blockBackground(true);
     }
 
-    afterResize() {
-    }
-
     resizeMap() {
         if (v_map)
             setTimeout((()=>{
                 let space = (this.view.outerHeight() - this.view.height()) / 2;
                 v_map.View.css('bottom', this.view.outerHeight() - space);
-            }).bind(this), 500); 
+            }).bind(this), 300); 
     }
 
     toAlign() {
@@ -198,7 +207,6 @@ class View extends BaseParentView {
                     .addClass('radiusTop');
 
                 this.resizeMap();
-                this.afterResize();
             }
             //else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);
         }

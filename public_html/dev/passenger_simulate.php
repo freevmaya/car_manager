@@ -78,6 +78,8 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 		$passengers = BaseModel::FullItems($simulateModel->getItems(), ['order_id'=>$orderModel]);
 
+		trace($passengers);
+
 		foreach ($passengers as $pass) {
 
 			if (!$pass['order_id']) {

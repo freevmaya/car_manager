@@ -322,6 +322,6 @@ select.time {
     color: coral;
 }
 
-.settings {
+.view .settings {
     background-image: url(images/settings-white.png);
 }

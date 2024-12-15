@@ -188,16 +188,24 @@ class AjaxTransport extends EventProvider {
     requireDrivers;
     requestData;
     statusesToReturn;
+    periodTime;
 
     constructor(periodTime) {
         super();
-        this.intervalID = setInterval(this.update.bind(this), periodTime);
+
+        this.periodTime = periodTime;
         this.requireDrivers = false;
         this.requestData = {};
         this.statusesToReturn = [];
 
         if (!isEmpty(jsdata) && !isEmpty(jsdata.notificationList))
             this.onRecive(jsdata.notificationList);
+
+        this.initTimer();
+    }
+
+    initTimer() {
+        this.intervalID = setTimeout(this.update.bind(this), this.periodTime);
     }
 
     addRequestData(data) {
@@ -205,34 +213,41 @@ class AjaxTransport extends EventProvider {
     }
 
     update() {
+
+        if (this.requireRequest()) {
         
-        let data = $.extend({}, this.requestData);
-        let params = {action: "checkState"};
+            let data = $.extend({}, this.requestData);
+            let params = {action: "checkState"};
 
-        if (!isEmpty(this.statusesToReturn)) {
-            data.statusesToReturn = this.statusesToReturn;
-            this.statusesToReturn = [];
-        }
-
-        if (user.sendCoordinates || this.requireDrivers) {
-            this.enableGeo(true);
-
-
-            if (this.requireDrivers)
-                data.requireDrivers = true;
-
-            if (this.requireDrivers) {
-                let mpos = v_map.getMainPosition();
-                if (mpos) 
-                    data = $.extend(data, toLatLng(mpos));
-            } else if (this.#getPosition) {
-                data = $.extend(data, this.#getPosition);
+            if (!isEmpty(this.statusesToReturn)) {
+                data.statusesToReturn = this.statusesToReturn;
+                this.statusesToReturn = [];
             }
 
-        } else this.enableGeo(false);
+            if (user.sendCoordinates || this.requireDrivers) {
+                this.enableGeo(true);
 
-        params.data = JSON.stringify(data);
-        Ajax(params).then(this.onRecive.bind(this));
+
+                if (this.requireDrivers)
+                    data.requireDrivers = true;
+
+                if (this.requireDrivers) {
+                    let mpos = v_map.getMainPosition();
+                    if (mpos) 
+                        data = $.extend(data, toLatLng(mpos));
+                } else if (this.#getPosition) {
+                    data = $.extend(data, this.#getPosition);
+                }
+
+            } else this.enableGeo(false);
+
+            params.data = JSON.stringify(data);
+            Ajax(params).then(this.onRecive.bind(this));
+        } else this.initTimer();
+    }
+
+    requireRequest() {
+        return (this.listeners.length > 0) || user.sendCoordinates || this.requireDrivers;
     }
 
     receiveGeo(position) {
@@ -258,6 +273,8 @@ class AjaxTransport extends EventProvider {
         this.requestData = {};
         for (let n in value)
             this.SendEvent(n, value[n]);
+
+        this.initTimer();
     }
 
     SendStatusNotify(data, a_status = 'receive') {

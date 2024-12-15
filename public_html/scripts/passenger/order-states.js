@@ -268,7 +268,7 @@ class SelectPathView extends ViewPath {
             this.fillText(finishPlace, 'finishPlace');
             this.footerElement.find('button').prop('disabled', false);
             
-            this.afterResize();
+            this.resizeMap();
 
         }).bind(this));
     }

@@ -14,7 +14,7 @@
 		html::AddScriptFile("driver/driver-on-line.js");
 
 		html::AddJsData(
-				$orderModel->getItems(['state'=>ACTIVEORDERLIST_ARR])
+				$orderModel->getItems(['state'=>'wait'])
 			, 'all_orders');
 		html::AddJsData(
 				$orderModel->getItems(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR])

@@ -459,7 +459,7 @@ h1, h2 {
     flex-direction: column;
 }
 
-.settings {
+.view .settings {
     background-repeat: no-repeat;
     background-position: center;
 }
@@ -1141,6 +1141,19 @@ select {
 
 .order .driver .wait {
     display: none;
+}
+
+.orderInfo .route span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 20em;
+    display: inline-block;
+    margin-right: 0.5em;
+}
+
+.orderInfo .route {
+    text-align: center;
 }
 
 .data .block {
