@@ -159,7 +159,9 @@ class Ajax extends Page {
 	}
 
 	protected function SetState($data) {
-		$result = (new OrderModel())->SetState($data['id'], $data['state'], @$data['driver_id']);
+		GLOBAL $user;
+
+		$result = (new OrderModel())->SetState($data['id'], $data['state'], @$data['driver_id'], $user['id']);
 
 		return ["result"=>$result ? 'ok' : false];
 	}

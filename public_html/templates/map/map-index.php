@@ -1,7 +1,5 @@
 <?
 
-include_once(MODULESPATH.'/views.php');
-
 html::AddScriptFiles([
 	"jquery-dateformat.min.js",
 	"color.js",

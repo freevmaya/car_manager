@@ -57,8 +57,19 @@ class OrderModel extends BaseModel {
 		if (isset($options['limit']))
 			$query .= " LIMIT 0, {$options['limit']}";
 
-		//trace($query);
 		return $dbp->asArray($query);
+	}
+
+	public function getItemsWithChanges($options) {
+		GLOBAL $dbp, $user;
+
+		$result = $this->getItems($options);
+		$nModel = new NotificationModel();
+
+		for ($i=0; $i<count($result); $i++)
+			$result[$i]['changeList'] = $nModel->getItems(['user_id'=>$user['id'], 'content_id'=>$result[$i]['id'], 'content_type'=>'changeOrder'], '`text`, `time`');
+
+		return $result;
 	}
 
 	public function AddOrder($data, $distanceToListeners = 0) {
@@ -68,10 +79,10 @@ class OrderModel extends BaseModel {
 
 		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `seats`, `route_id`) VALUES (?,NOW(),?,?,?)", 
 			'isii', [$data['user_id'], $pickUpTime, $data['seats'], $data['route_id']]);
-
-		$order_id = $dbp->lastID();
 		
-		if ($order_id) {
+		if ($order_id = $dbp->lastID()) {
+
+			$users = [$data['user_id']];
 
 			if ($distanceToListeners > 0) {
 
@@ -80,12 +91,8 @@ class OrderModel extends BaseModel {
 
 				$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners, $data['seats']);
 
-				if (count($drivers) > 0) {
-					$users = BaseModel::getListValues($drivers, 'user_id');
-					$users[] = $data['user_id'];
-
-					//$this->NotifyOrderToDrivers($drivers, $order_id);
-				}
+				if (count($drivers) > 0)
+					$users = array_merge($users, BaseModel::getListValues($drivers, 'user_id'));
 			}
 
 			(new OrderListeners())->AddListener($order_id, $users);
@@ -100,13 +107,14 @@ class OrderModel extends BaseModel {
 		return $dbp->bquery("UPDATE orders SET remaindDistance=? WHERE id=?", 'di', [$remaindDistance, $order_id]);
 	}
 
-	public function SetState($id, $state, $driver_id = false) {
-		GLOBAL $dbp, $user;
+	public function SetState($id, $state, $driver_id = false, $setter_user_id=null) {
+		GLOBAL $dbp;
 
 		$result = false;
 		$data = ['state'=>$state];
 
-		(new OrderListeners())->AddListener($id, $user['id']); // Слушает тот, кто и устанавливает статус
+		if ($setter_user_id)
+			(new OrderListeners())->AddListener($id, $setter_user_id); // Слушает тот, кто и устанавливает статус
 
 		if ($driver_id) {
 			$result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=?, `driver_id`=? WHERE id=?", 

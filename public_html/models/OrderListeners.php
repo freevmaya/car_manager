@@ -8,6 +8,8 @@ class OrderListeners extends BaseModel {
 	public function AddListener($order_id, $user_or_users_id) {
 		GLOBAL $dbp;
 
+		trace($user_or_users_id);
+
 		$query = "REPLACE INTO {$this->getTable()} (`order_id`, `user_id`) VALUES ";
 
 		if (is_array($user_or_users_id)) {

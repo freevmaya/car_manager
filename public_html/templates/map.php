@@ -16,8 +16,9 @@
 		html::AddJsData(
 				$orderModel->getItems(['state'=>'wait'])
 			, 'all_orders');
+
 		html::AddJsData(
-				$orderModel->getItems(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR])
+				$orderModel->getItemsWithChanges(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR])
 			, 'taken_orders');
 		html::AddJsData(
 				(new DriverModel())->getItem($user['id'])

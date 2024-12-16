@@ -1,7 +1,3 @@
-
-
-const MAXDISTANCEFORMEETING = 20;
-
 class ViewPath extends BottomView {
     routes;
     rpath;

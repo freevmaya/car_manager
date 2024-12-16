@@ -21,6 +21,10 @@ var defaultPathOptions = {
     }
 }
 
+const MAXDISTANCEFORMEETING = 20;
+const MAXPERIODWAITMEETING = 5 * 60;
+
+
 class EventProvider {
     #incIndex;  
     constructor() {
@@ -186,7 +190,7 @@ class AjaxTransport extends EventProvider {
     #geoId;
     #getPosition;
     requireDrivers;
-    requestData;
+    extRequest;
     statusesToReturn;
     periodTime;
 
@@ -195,7 +199,7 @@ class AjaxTransport extends EventProvider {
 
         this.periodTime = periodTime;
         this.requireDrivers = false;
-        this.requestData = {};
+        this.extRequest = null;
         this.statusesToReturn = [];
 
         if (!isEmpty(jsdata) && !isEmpty(jsdata.notificationList))
@@ -208,15 +212,21 @@ class AjaxTransport extends EventProvider {
         this.intervalID = setTimeout(this.update.bind(this), this.periodTime);
     }
 
-    addRequestData(data) {
-        $.extend(this.requestData, data);
+    addExtRequest(data) {
+        if (!this.extRequest)
+            this.extRequest = [];
+        this.extRequest.push(data);
     }
 
     update() {
 
         if (this.requireRequest()) {
         
-            let data = $.extend({}, this.requestData);
+            let data = {};
+
+            if (this.extRequest)
+                data.extend = this.extRequest;
+
             let params = {action: "checkState"};
 
             if (!isEmpty(this.statusesToReturn)) {
@@ -270,7 +280,7 @@ class AjaxTransport extends EventProvider {
     }
 
     onRecive(value) {
-        this.requestData = {};
+        this.extRequest = null;
         for (let n in value)
             this.SendEvent(n, value[n]);
 
@@ -279,12 +289,6 @@ class AjaxTransport extends EventProvider {
 
     SendStatusNotify(data, a_status = 'receive') {
         this.statusesToReturn.push({ id: typeof(data) == 'object' ? data.id : data, state: a_status });
-        /*
-        Ajax({
-            action: 'StateNotification',
-            data: { id: typeof(data) == 'object' ? data.id : data, state: a_status }
-        });
-        */
     }
 
     Reply(notifyId, data) {

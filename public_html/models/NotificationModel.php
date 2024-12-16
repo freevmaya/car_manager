@@ -27,13 +27,13 @@ class NotificationModel extends BaseModel {
 		return $dbp->line("SELECT * FROM {$this->getTable()} WHERE id={$id}");
 	}
 
-	public function getItems($options) {
+	public function getItems($options, $fields="*") {
 		GLOBAL $dbp;
 
 		$where = BaseModel::GetConditions($options, ['content_id', 'content_type', 'state', 'user_id']);
 		$whereStr = implode(" AND ", $where);
 
-		$query = "SELECT * FROM {$this->getTable()} WHERE $whereStr";
+		$query = "SELECT {$fields} FROM {$this->getTable()} WHERE $whereStr";
 		return $dbp->asArray($query);
 	}
 

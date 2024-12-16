@@ -113,7 +113,7 @@ class DriverModel extends BaseModel {
 
 				"WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval}";
 				$list = $dbp->asArray($query);
-
+				
 				foreach ($list as $driver) {
 					$distance =  Distance($driver['lat'], $driver['lng'], $lat, $lng);
 					if ($distance < $maxDistanceToStart) {

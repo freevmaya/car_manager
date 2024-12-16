@@ -1,4 +1,4 @@
-var managerOrders;
+var takenOrders;
 
 class DMap extends VMap {
 
@@ -10,7 +10,7 @@ class DMap extends VMap {
                     v_map.MarkerManager.onNotificationList.bind(v_map.MarkerManager));
 
             v_map.MarkerManager.AddOrders($.extend([], jsdata.all_orders, jsdata.taken_orders));
-            managerOrders = new ManagerOrders(jsdata.taken_orders);
+            takenOrders = new TakenOrders(jsdata.taken_orders);
 
         }, {markerManagerClass: MarkerOrderManager});
     }
@@ -38,11 +38,30 @@ class DMap extends VMap {
 }
 
 
-class ManagerOrders {
+class TakenOrders {
     #orders;
+    #timerId;
     selOrderView;
-    constructor(my_orders) {
-        this.#orders = my_orders;
+    constructor(taken_orders) {
+        this.#orders = taken_orders;
+        this.beginCheckOrders();
+    }
+
+    beginCheckOrders() {
+        this.#timerId = setTimeout(this.checkOrders.bind(this), 1000);
+    }
+
+    IndexOfByOrder(order_id) {
+        for (let i=0; i<this.#orders.length; i++)
+            if (order_id == this.#orders[i].id)
+                return i;
+        return -1;
+    }
+
+    SetState(order_id, state) {
+        let idx = this.IndexOfByOrder(order_id);
+        if (idx > -1)
+            this.#orders[i].state = state;
     }
 
     remaindDistance() {
@@ -66,6 +85,32 @@ class ManagerOrders {
 
     isShown(order_id) {
         return this.selOrderView && (this.selOrderView.Order.id = order_id);
+    }
+
+    timeState(order, state) {
+        for (let i=0; i<order.changeList.length; i++) {
+            let order_part = JSON.parse(order.changeList[i].text);
+            if (order_part.state == state)
+                return order.changeList[i].time;
+        }
+        return false;
+    }
+
+    checkOrders() {
+        for (let i=0; i<this.#orders.length; i++)
+            if (this.#orders[i].state == 'wait_meeting') {
+                let time = this.timeState(this.#orders[i], 'wait_meeting');
+                if (time) {
+                    let deltaSec = Math.round((Date.now() - Date.parse(time)) / 1000);
+                    if (deltaSec > MAXPERIODWAITMEETING) {
+                        transport.addExtRequest({
+                            action: 'GetPosition',
+                            data: this.#orders[i].user_id
+                        });
+                    }
+                    this.beginCheckOrders();
+                }
+            }
     }
 
     ShowInfoOrder(marker) {
@@ -101,6 +146,10 @@ class ManagerOrders {
         if (this.selOrderView) 
             this.selOrderView.Close().then(showPathAndInfo.bind(this));
         else showPathAndInfo.bind(this)();
+    }
+
+    destroy() {
+        clearTimeout(this.#timerId);
     }
 }
 
@@ -164,7 +213,7 @@ class OrderView extends BottomView {
 
             Ajax({
                 action: 'offerToPerform',
-                data: JSON.stringify({id: this.Order.id, remaindDistance: result.routes[0].legs[0].distance.value + managerOrders.remaindDistance()})
+                data: JSON.stringify({id: this.Order.id, remaindDistance: result.routes[0].legs[0].distance.value + takenOrders.remaindDistance()})
             }).then(((response)=>{
                 if (response.result != 'ok')
                     this.trouble(response);
@@ -310,9 +359,10 @@ class MarkerOrderManager extends MarkerManager {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1)
             this.markers.users[idx].order.state = state;
-            
-        if (managerOrders.isShown(order_id))
-            managerOrders.selOrderView.SetState(state);
+        
+        takenOrders.SetState(order_id, state);
+        if (takenOrders.isShown(order_id))
+            takenOrders.selOrderView.SetState(state);
     }
 
     AcceptedOffer(order_id, driver_id=false) {
@@ -327,10 +377,10 @@ class MarkerOrderManager extends MarkerManager {
                 .removeClass('user-marker')
                 .addClass('user-current');
 
-            if (managerOrders.isShown(order_id))
-                managerOrders.selOrderView.view.addClass('taken-order');
+            if (takenOrders.isShown(order_id))
+                takenOrders.selOrderView.view.addClass('taken-order');
 
-            managerOrders.addOrder(m.order);
+            takenOrders.addOrder(m.order);
         }
     }
 
@@ -359,8 +409,8 @@ class MarkerOrderManager extends MarkerManager {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1) {
 
-            if (managerOrders.isShown(order_id)) {
-                managerOrders.selOrderView.Close().then((()=>{
+            if (takenOrders.isShown(order_id)) {
+                takenOrders.selOrderView.Close().then((()=>{
                     this.markers.users[idx].setMap(null);
                     this.markers.users.splice(idx, 1);
                 }).bind(this));
@@ -375,8 +425,8 @@ class MarkerOrderManager extends MarkerManager {
     RemoveCar(id) {
         let idx = this.IndexOfByDriver(id);
         if (idx > -1) {
-            if (managerOrders.selOrderView && (managerOrders.selOrderView.Order.id == this.markers.users[idx].order.id))
-                managerOrders.selOrderView.Close();
+            if (takenOrders.selOrderView && (takenOrders.selOrderView.Order.id == this.markers.users[idx].order.id))
+                takenOrders.selOrderView.Close();
         }
         super.RemoveCar(id);
     }
@@ -401,7 +451,7 @@ class MarkerOrderManager extends MarkerManager {
 
     #createFromOrder(latLng, order, anim) {
         let m = this.CreateUserMarker(latLng, 'user-' + order.user_id, (()=>{
-            managerOrders.ShowInfoOrder(m);
+            takenOrders.ShowInfoOrder(m);
         }).bind(this), 
                 (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 
                 (anim ? ' anim' : ''));

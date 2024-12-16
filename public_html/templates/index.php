@@ -1,5 +1,7 @@
 <?
 GLOBAL $devUser, $user, $lang;
+include_once(MODULESPATH.'/views.php');
+
 $anti_cache = '?_=28';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
