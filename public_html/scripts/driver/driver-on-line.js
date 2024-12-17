@@ -60,8 +60,15 @@ class TakenOrders {
 
     SetState(order_id, state) {
         let idx = this.IndexOfByOrder(order_id);
-        if (idx > -1)
-            this.#orders[i].state = state;
+        if (idx > -1) {
+            let order = this.#orders[idx];
+            order.state = state;
+            if (!order.changeList) order.changeList = [];
+            order.changeList.push({time: Date.now(), text: JSON.stringify({state: state})});
+
+            if (state == 'wait_meeting')
+                this.beginCheckOrders();
+        }
     }
 
     remaindDistance() {
@@ -88,24 +95,34 @@ class TakenOrders {
     }
 
     timeState(order, state) {
-        for (let i=0; i<order.changeList.length; i++) {
-            let order_part = JSON.parse(order.changeList[i].text);
-            if (order_part.state == state)
-                return order.changeList[i].time;
-        }
+        if (order.changeList)
+            for (let i=0; i<order.changeList.length; i++) {
+                let order_part = JSON.parse(order.changeList[i].text);
+                if (order_part.state == state)
+                    return order.changeList[i].time;
+            }
         return false;
     }
 
     checkOrders() {
         for (let i=0; i<this.#orders.length; i++)
             if (this.#orders[i].state == 'wait_meeting') {
-                let time = this.timeState(this.#orders[i], 'wait_meeting');
+                let order = this.#orders[i];
+                let time = this.timeState(order, 'wait_meeting');
                 if (time) {
-                    let deltaSec = Math.round((Date.now() - Date.parse(time)) / 1000);
+                    let deltaSec = Math.round((Date.now() - (isStr(time) ? Date.parse(time) : time)) / 1000);
                     if (deltaSec > MAXPERIODWAITMEETING) {
                         transport.addExtRequest({
                             action: 'GetPosition',
-                            data: this.#orders[i].user_id
+                            data: order.user_id
+                        }, (latLng)=>{
+                            let distance = Distance(latLng, order.start);
+                            if (distance <= MAXDISTANCEFORMEETING) {
+                                transport.addExtRequest({
+                                    action: 'SetState',
+                                    data: {id: order.id, state: 'execution'}
+                                })
+                            }
                         });
                     }
                     this.beginCheckOrders();
@@ -201,13 +218,15 @@ class OrderView extends BottomView {
         if (this.Order.state != 'finished')
             this.options.marker.setMap(v_map.map);
 
+        v_map.View.css('bottom', 0);
+
         this.closePathToStart();
         this.closePathOrder();
         super.destroy();
     }
 
     offerToPerform(e) {
-        this.blockClickTemp(e);
+        this.blockClickTemp(e, 10000);
 
         v_map.getRoutes(Extend({}, user, ['lat', 'lng']), this.options.order.start, this.options.order.travelMode, ((result)=>{
 
@@ -258,7 +277,7 @@ class OrderView extends BottomView {
     }
 
     moveToStart(e) {
-        this.blockClickTemp(e);
+        this.blockClickTemp(e, 10000);
         this.showPathToStart((()=>{
 
             Ajax({

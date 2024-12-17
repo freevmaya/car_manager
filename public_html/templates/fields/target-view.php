@@ -1,4 +1,4 @@
-<div class="view shadow radius dialog target-view" data-id="<?=html::fieldIdx()?>">
+<div class="shadow radius dialog target-view" data-id="<?=html::fieldIdx()?>">
 	<div class="header"><button class="close button"></button></div>
 	<div class="cols">
 		<div class="content">

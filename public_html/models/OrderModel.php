@@ -77,8 +77,10 @@ class OrderModel extends BaseModel {
 
 		$pickUpTime = date('Y-m-d H:i:s', strtotime(isset($data['pickUpTime'])?$data['pickUpTime']:'NOW'));
 
+		$seats = isset($data['seats']) ? $data['seats'] : 1;
+
 		$dbp->bquery("INSERT INTO orders (`user_id`, `time`, `pickUpTime`, `seats`, `route_id`) VALUES (?,NOW(),?,?,?)", 
-			'isii', [$data['user_id'], $pickUpTime, $data['seats'], $data['route_id']]);
+			'isii', [$data['user_id'], $pickUpTime, $seats, $data['route_id']]);
 		
 		if ($order_id = $dbp->lastID()) {
 
@@ -89,7 +91,7 @@ class OrderModel extends BaseModel {
 				$route = (new RouteModel())->getItem($data['route_id']);
 				$latLng = json_decode($route['start'], true);
 
-				$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners, $data['seats']);
+				$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners, $seats);
 
 				if (count($drivers) > 0)
 					$users = array_merge($users, BaseModel::getListValues($drivers, 'user_id'));

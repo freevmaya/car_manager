@@ -33,7 +33,7 @@ html::AddJsData(json_encode(
         });
 
         var BASEURL = '<?=BASEURL?>';
-        var lang = <?=json_encode($lang, JSON_PRETTY_PRINT)?>;
+        var lang = <?=preg_replace("/[\r\n]+/", '', json_encode($lang, JSON_PRETTY_PRINT))?>;
         var ajaxRequestId = '<?=$this->createRequestId(get_class($this))?>';
         var transport = new AjaxTransport(1000);
         var app = new App();

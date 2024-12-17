@@ -73,7 +73,23 @@ class Ajax extends Page {
 			Page::setSession('user', $user);
 		}
 		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");
+
+		if (isset($data['extend'])) {
+
+			$result['extendResult'] = [];
+
+			foreach ($data['extend'] as $eitem) {
+				$action = $eitem['action'];
+				$result['extendResult'][] = $this->$action($eitem['data']);
+			}
+		}
+
 		return $result;
+	}
+
+	protected function GetPosition($data) {
+		$user = (new UserModel())->getItem($data);  
+		return ['lat'=>$user['lat'], 'lng'=>$user['lng']];
 	}
 
 	protected function StateNotification($data) {

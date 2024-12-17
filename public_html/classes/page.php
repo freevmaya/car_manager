@@ -63,12 +63,13 @@ class Page {
 		Page::$current = $this;
 		$dbp = new mySQLProvider('localhost', _dbname_default, _dbuser, _dbpassword);
 
-		//trace($_SERVER['HTTP_USER_AGENT']);
-
 		if (DEV) {
+			//print_r($_SERVER['HTTP_USER_AGENT']);
+
 			$user = json_decode(DEVUSER, true);
-			if (!Page::getSession('user'))
-				$this->setUser($user);
+			$this->setUser($user);
+
+			//print_r($user);
 		} else {
 			if (isset($_GET['username']))
 				$this->setUser($_GET);
@@ -86,24 +87,23 @@ class Page {
 			else if (DEVUSER) 
 				$this->setUser(json_decode(DEVUSER, true));
 		}
+		//exit;
 
 		if ($user) {
 			if ($userDB = (new UserModel())->getItem($user['id']))
 				$user = array_merge($user, $userDB);
 			$language = $user['language_code'];
-		} else $language = 'en';
+		} else die("There isn't authorize");
 		
 		include_once(BASEDIR.'/languages/'.$language.'.php');
 
-		if ($user) {
-			$this->dataId = $user['id'];
-			$this->model = $this->initModel();
+		$this->dataId = $user['id'];
+		$this->model = $this->initModel();
 
-			if ($this->model && $this->isReciveData()) {
-				if ($this->requiestIdModel(Page::$request['form-request-id']) == get_class($this->model)) {
-					$this->requiestRemove(Page::$request['form-request-id']);
-					$this->model->Update(Page::$request);
-				}
+		if ($this->model && $this->isReciveData()) {
+			if ($this->requiestIdModel(Page::$request['form-request-id']) == get_class($this->model)) {
+				$this->requiestRemove(Page::$request['form-request-id']);
+				$this->model->Update(Page::$request);
 			}
 		}
 	}

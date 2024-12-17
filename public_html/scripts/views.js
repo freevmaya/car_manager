@@ -122,12 +122,11 @@ class View extends BaseParentView {
         setTimeout(this.afterConstructor.bind(this), 5);
     }
 
-    afterConstructor() {
-
-    }
+    afterConstructor() {}
 
     initMainView() {
-        this.view = templateClone('.templates .' + this.options.template, this.options);        
+        this.view = templateClone('.templates .' + this.options.template, this.options);
+        this.view.addClass('view');   
         this.windows = $('#' + windowsLayerId);
         this.windows.append(this.view);
     }
