@@ -30,6 +30,9 @@ class Tracer extends EventProvider {
     #periodTime;
 
     get AvgSpeed() { return this.#avgSpeed; };
+    get RouteDistance() { return this.#routeDistance; };
+    get RemaindDistance() { return this.#totalLength - this.#routeDistance; };
+    get RemaindTime() { return this.RemaindDistance / this.AvgSpeed; };
 
     constructor(routes, callback, periodTime, options=null) {
 

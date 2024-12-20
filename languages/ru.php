@@ -107,6 +107,8 @@ $lang = [
 	'Home'=>'Главная',
 	'Trip on the map'=>'Поездка на карте',
 	'Number of seats'=>'Количество мест',
-	'Time'=>'Время'
+	'Time'=>'Время',
+	'Remaind time'=>'Ост. время',
+	'Average speed'=>'Средняя скорость'
 ];
 ?>

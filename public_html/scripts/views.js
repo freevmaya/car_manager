@@ -152,10 +152,13 @@ class View extends BaseParentView {
         for (let i in this.options.classes)
             this.contentElement.addClass(this.options.classes[i]);
 
-        if (this.options.title) {
+        let tlt = this.options.title;
+        if (tlt) {
             if (!this.titleElement)
                 this.headerElement.prepend(this.titleElement = $('<h3></h3>'));
-            this.titleElement.text(toLang(this.options.title));
+            if (isStr(tlt))
+                this.titleElement.text(toLang(tlt));
+            else this.titleElement.append(tlt);
             $('<div class="hr">').insertAfter(this.headerElement);
         } else this.headerElement.addClass('empty');
 
@@ -193,7 +196,8 @@ class View extends BaseParentView {
         if (v_map)
             setTimeout((()=>{
                 let space = (this.view.outerHeight() - this.view.height()) / 2;
-                v_map.View.css('bottom', this.view.outerHeight() - space);
+                let h = v_map.View.height();
+                v_map.View.children().css('height', Math.round((h - (this.view.outerHeight() - space)) / h * 100) + '%');
             }).bind(this), 300); 
     }
 
@@ -237,7 +241,7 @@ class View extends BaseParentView {
         this.view.addClass("hide");
 
         if (typeof v_map !== 'undefined')
-            v_map.View.css('bottom', 0);
+            v_map.View.children().css('height', '100%');
 
         return new Promise(((resolveOuter) => {
             setTimeout((()=>{

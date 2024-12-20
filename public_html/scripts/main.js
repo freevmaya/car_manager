@@ -2,19 +2,36 @@ var dateTinyFormat  = "dd.MM HH:mm";
 var dateShortFormat = "dd.MM.yy HH:mm";
 var dateLongFormat  = "dd.MM.yyyy HH:mm";
 var dateOnlyFormat  = "dd.MM.yyyy";
+var HMSFormat  = "HH:mm:ss";
 
 
 var currentPathOptions = {
     preserveViewport: false,
     suppressMarkers: false,
+    markerOptions: {
+        clickable: true,
+        opacity: 0.5
+    },
     polylineOptions: {
         strokeColor: 'green'
     }
 }
 
+var pathToStartOptions = {
+    preserveViewport: false,
+    suppressMarkers: true,
+    polylineOptions: {
+        strokeColor: 'red'
+    }
+}
+
 var defaultPathOptions = {
     preserveViewport: true,
-    suppressMarkers: true,
+    suppressMarkers: false,
+    markerOptions: {
+        clickable: true,
+        opacity: 0.5
+    },
     draggable: false,
     polylineOptions: {
         strokeColor: 'rgba(0.6,0.6,0,0.5)'
@@ -22,7 +39,7 @@ var defaultPathOptions = {
 }
 
 const MAXDISTANCEFORMEETING = 20;
-const MAXPERIODWAITMEETING = 5 * 60;
+const MAXPERIODWAITMEETING = 2 * 60;
 
 
 class EventProvider {
@@ -401,7 +418,21 @@ class DateTime {
     }
 }
 
+Number.prototype.toHHMMSS = function () {
+
+    var sec_num = !this || isNaN(this) ? 0 : Math.floor(this); // don't forget the second param
+    var hours   = Math.floor(sec_num / 3600);
+    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+':'+minutes+':'+seconds;
+}
+
 function round(x, p) {
+    if (!x) return 0;
     let k = Math.pow(10, p);
     return Math.round(x * k) / k;
 }
@@ -412,7 +443,9 @@ function pow(v) {
 
 
 function toLang(v) {
-    return !lang[v] ? v : lang[v];
+    if (isStr(v))
+        return lang[v] ? lang[v] : v;
+    return v;
 }
 
 function toPlace(place) {
@@ -619,6 +652,14 @@ function toLatLng(obj) {
 
 var EARTHRADIUS = 6378.137; // Radius of earth in KM
 
+
+
+function LerpRad (A, B, w){
+    let CS = (1-w)*Math.cos(A) + w*Math.cos(B);
+    let SN = (1-w)*Math.sin(A) + w*Math.sin(B);
+    return Math.atan2(SN,CS);
+}
+
 function Lepr(p1, p2, t) {
     return {
         lat: p1.lat() * (1 - t) + p2.lat() * t,
@@ -732,11 +773,15 @@ function intoTag(value, tag = '<span>') {
     return $(tag).html(value)[0].outerHTML;
 }
 
+function getUserName(order) {
+    return order.username ? order.username : (order.first_name + " " + order.last_name);
+}
+
 function getOrderInfo(order, callback = null) {
     let start = isStr(order.start) ? JSON.parse(order.start) : order.start;
     let finish = isStr(order.finish) ? JSON.parse(order.finish) : order.finish;
     let result = PlaceName(start) + " > " + PlaceName(finish) + '. ' +
-            toLang("User") + ': ' + (order.username ? order.username : (order.first_name + " " + order.last_name)) + ". " + 
+            toLang("User") + ': ' + getUserName(order) + ". " + 
             toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat) + ". " + 
             toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
 

@@ -11,8 +11,8 @@ define("DEFAULTPAGE", "begin");
 define("DEFAULTFORM", "baseForm");
 
 define('AREA_RADIUS', 5000);
-define('ACTIVEORDERLIST', "'wait', 'accepted', 'driver_move', 'wait_meeting', 'execution'");
-define('ACTIVEORDERLIST_ARR', ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution']);
+define('ACTIVEORDERLIST', "'wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'expired'");
+define('ACTIVEORDERLIST_ARR', ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'expired']);
 define('INACTIVEORDERLIST_ARR', ['rejected', 'cancel']);
 define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
 define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');

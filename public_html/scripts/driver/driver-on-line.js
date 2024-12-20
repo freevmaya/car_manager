@@ -17,7 +17,7 @@ class DMap extends VMap {
 
     createTracer(routes, onFinished) {
         this.removeTracer();
-        this.tracer = new Tracer(routes, super.setMainPosition.bind(this), 100);
+        this.tracer = new Tracer(routes, this.superSetPosition.bind(this), 100);
         this.tracer.ReceivePoint(new google.maps.LatLng(this.getMainPosition()));
         this.tracer.AddListener('FINISHPATH', onFinished);
         return this.tracer;
@@ -30,10 +30,14 @@ class DMap extends VMap {
         }
     }
 
-    setMainPosition(latLng) {
+    superSetPosition(latLng, angle = undefined) {
+        super.setMainPosition(latLng, angle);
+    }
+
+    setMainPosition(latLng, angle = undefined) {
         if (this.tracer)
             this.tracer.ReceivePoint(latLng);
-        else super.setMainPosition(latLng);
+        else super.setMainPosition(latLng, angle);
     }
 }
 
@@ -122,8 +126,16 @@ class TakenOrders {
                                     action: 'SetState',
                                     data: {id: order.id, state: 'execution'}
                                 })
+                            } else {
+                                transport.addExtRequest({
+                                    action: 'SetState',
+                                    data: {id: order.id, state: 'expired'}
+                                })
                             }
                         });
+                    } else {
+                        if (this.selOrderView)
+                            this.selOrderView.SetStateText('wait_meeting', (MAXPERIODWAITMEETING - deltaSec) + ' sec.');
                     }
                     this.beginCheckOrders();
                 }
@@ -137,7 +149,8 @@ class TakenOrders {
 
             v_map.getRoutes(order.start, order.finish, travelMode, (function(result) {
                 this.selOrderView = viewManager.Create({
-                    title: "Order",
+                    title: $('<span>' + PlaceName(order.start) + '</span><span class="to"></span><span>' + 
+                                        PlaceName(order.finish) + '</span>'),
                     bottomAlign: true,
                     order: order,
                     path: result,
@@ -151,7 +164,9 @@ class TakenOrders {
                     ],
                     actions:  {
                         'Offer to perform': 'this.offerToPerform.bind(this)',
-                        'Move to start': 'this.moveToStart.bind(this)'
+                        'Move to start': 'this.moveToStart.bind(this)',
+                        'Reject': 'this.reject.bind(this)',
+                        'Go': 'this.letsGot.bind(this)'
                     }
                 }, OrderView, (()=>{
                     this.selOrderView = null;
@@ -176,13 +191,29 @@ class OrderView extends BottomView {
     #tracerToStart;
     #pathToStart;
     #pathOrder;
+    #isDrive;
+    #updateListenerId;
     get Order() { return this.options.order; };
-
     get isMyOrder() { return this.Order.driver_id == jsdata.driver.id; };
+    get isDrive() { return this.#isDrive; };
+    set isDrive(value) { 
+
+        this.#isDrive = value;
+        $(v_map.MainMarker.content)
+            .toggleClass('position', !value)
+            .toggleClass('driver-position', value);
+
+        //if (!value) v_map.setMainPosition(v_map.getMainPosition());
+        v_map.CameraFollowPath = value;
+        this.#updateListenerId = v_map.AddListener('UPDATE', this.onUpdateMap.bind(this));
+    };
+
+    constructor(elem, callback = null, options) {
+        super(elem, callback, options);
+    }
 
     initView() {
         super.initView();
-
         this.view.addClass("orderView");
         if (this.isMyOrder)
             this.view.addClass("taken-order");
@@ -198,20 +229,44 @@ class OrderView extends BottomView {
         this.options.marker.setMap(null);
     }
 
+    SetStateText(state, ext=null) {
+        $('#state-' + this.Order.id).text(toLang(state) + (ext ? (" " + ext) : ''));
+    }
+
     SetState(state) {
+        let lastState = this.Order.state;
+
         this.view.removeClass('wait accepted driver_move wait_meeting execution finished');
         this.view.addClass(this.Order.state = state);
-        $('#state-' + this.Order.id).text(toLang(state));
+        this.SetStateText(state);
+
+        this.view
+            .removeClass(lastState)
+            .addClass(state);
 
         this.closePathOrder();
-        this.#pathOrder = v_map.DrawPath(this.options.path, this.isMyOrder ? currentPathOptions : defaultPathOptions);
+
+        if ((state != 'finished') && !this.#pathOrder)
+            this.#pathOrder = v_map.DrawPath(this.options.path, this.isMyOrder ? currentPathOptions : defaultPathOptions);
 
         if (state == 'driver_move')
             this.showPathToStart();
         else if ((state == 'execution') && this.isMyOrder)
             this.#tracerOrder = v_map.createTracer(this.options.path.routes, this.onFinishPathOrder.bind(this));
 
-        this.resizeMap();
+        setTimeout(this.resizeMap.bind(this), 500);
+
+        this.isDrive = (state == 'driver_move') || (state == 'execution');
+    }
+
+    onUpdateMap() {
+
+        let tracer = this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null);
+        if (tracer) {
+            this.view.find('.remaindDistance').text(DistanceToStr(tracer.RemaindDistance));
+            this.view.find('.remaindTime').text(tracer.RemaindTime.toHHMMSS());
+            this.view.find('.avgSpeed').text(round(tracer.AvgSpeed * 3.6, 1) + "km/h");
+        }
     }
 
     destroy() {
@@ -219,10 +274,13 @@ class OrderView extends BottomView {
             this.options.marker.setMap(v_map.map);
 
         v_map.View.css('bottom', 0);
+        v_map.RemoveListener('UPDATE', this.#updateListenerId);
 
         this.closePathToStart();
         this.closePathOrder();
         super.destroy();
+
+        this.isDrive = false;
     }
 
     offerToPerform(e) {
@@ -268,7 +326,7 @@ class OrderView extends BottomView {
         this.closePathToStart();
 
         v_map.getRoutes(v_map.getMainPosition(), this.options.order.start, this.options.order.travelMode, ((result)=>{
-            this.#pathToStart = v_map.DrawPath(result, currentPathOptions);
+            this.#pathToStart = v_map.DrawPath(result, pathToStartOptions);
             if (afterShow) afterShow();
 
             if (this.isMyOrder)
@@ -289,6 +347,20 @@ class OrderView extends BottomView {
             }).bind(this));
             
         }).bind(this));
+    }
+
+    reject() {
+        Ajax({
+            action: 'SetState',
+            data: {id: this.Order.id, state: 'rejected'}
+        });
+    }
+
+    letsGot() {
+        Ajax({
+            action: 'SetState',
+            data: {id: this.Order.id, state: 'execution'}
+        });
     }
 
     onFinishPathOrder(tracer) {

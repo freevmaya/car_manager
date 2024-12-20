@@ -79,14 +79,17 @@ class MarkerManager {
 	}
 }
 
-MarkerManager.setPos = (marker, latLng, angle) => {
+MarkerManager.setPos = (marker, latLng, angle = undefined) => {
 	marker.position = latLng;
-	marker.content.style = "rotate:" + angle + "deg";
+	marker.content.style = "rotate:" + (typeof(angle) != 'undefined' ? angle : 0) + "deg";
 }
 
 var v_map;
 
-class VMap {
+const TIMEUPDATESTEP = 5;
+const UPDATESMOOTH = 0.01;
+
+class VMap extends EventProvider {
 	#markerManager;
 	#map;
 	#classes;
@@ -97,14 +100,37 @@ class VMap {
 	#options;
     #listenerId;
     #mainTransform;
+    #cameraFollowPath;
+    #mapAngle;
+    #mapLatLng;
+    #updateTimerId;
+    #toLatLng;
+    #toAngle;
 
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
 	get View() { return this.#view; }
 	get MainMarker() { return this.#mainMarker; }
+	get CameraFollowPath() { return this.#cameraFollowPath; }
+	set CameraFollowPath(value) { 
+		this.#cameraFollowPath = value;
+		this.#mapLatLng = this.#toLatLng = this.MainMarker.position;
+
+		if (value) 
+			this.#updateTimerId = setInterval(this.update.bind(this), TIMEUPDATESTEP);
+		else {
+			clearInterval(this.#updateTimerId);
+			this.#updateTimerId = null;
+			this.map.moveCamera({
+	            heading: 0
+	        });
+		}
+	}
 
 	constructor(elem, callback = null, options) {
+		super();
 		v_map = this;
+		this.#mapAngle = this.#toAngle = 0;
 		this.#view = elem;
 		this.#options = $.extend({
 			main_marker: true, 
@@ -150,7 +176,7 @@ class VMap {
 
         this.#mainTransform = position;
 
-		const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+		const { Map, InfoWindow, RenderingType } = await google.maps.importLibrary("maps");
 		const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 		const { DirectionsService } = await google.maps.importLibrary("routes");
 		const { Place } = await google.maps.importLibrary("places");
@@ -159,19 +185,21 @@ class VMap {
 			zoom: 15,
 			disableDefaultUI: true,
 			center: position,
-			//clickableIcons: false,
-			//mapId: "MAIN_MAP_ID",
-			mapId: "319511f83a6febb1",
+
+    		//renderingType: RenderingType.VECTOR,
+			mapId: "151146f0af358053",
 			language: user.language_code,
 			zoomControl: true,
 			scaleControl: true
+
 		});
 
 		this.#classes = {
 			AdvancedMarkerElement: AdvancedMarkerElement,
 			DirectionsService: DirectionsService,
 			InfoWindow: InfoWindow,
-			Place: Place
+			Place: Place,
+			RenderingType: RenderingType
 		};
 		
 		this.infoWindow = new InfoWindow();
@@ -195,9 +223,29 @@ class VMap {
 			this.#mainMarker.setMap(visible ? this.map : null);
 	}
 
+	update() {
+
+        this.#mapAngle = LerpRad(this.#mapAngle / 180 * Math.PI, this.#toAngle / 180 * Math.PI, UPDATESMOOTH) / Math.PI * 180;
+        this.#mapLatLng = LatLngLepr(this.#mapLatLng, this.#toLatLng, UPDATESMOOTH);
+
+		this.map.moveCamera({
+            center: this.#mapLatLng,
+            heading: this.#mapAngle
+        });
+
+        MarkerManager.setPos(this.MainMarker, this.#mapLatLng);
+		this.SendEvent('UPDATE', this);
+	}
+
 	setMainPosition(latLng, angle = undefined) {
-		if (latLng && this.#mainMarker)
-			this.#mainMarker.position = latLng;
+		if (latLng && this.MainMarker) {
+			if (this.#cameraFollowPath) {
+
+		        this.#toAngle = typeof(angle) == 'undefined' ? 0 : angle;
+		        this.#toLatLng = latLng;
+
+		    } else MarkerManager.setPos(this.MainMarker, latLng, angle);
+		}
 
 		this.#mainTransform = (typeof(angle) != 'undefined') ? $.extend(toLatLng(latLng), {angle: angle}) : toLatLng(latLng);
 	}
@@ -290,6 +338,8 @@ class VMap {
     }
 
 	destroy() {
+		if (this.#updateTimerId)
+			clearInterval(this.#updateTimerId);
 		this.#view.empty();
 	}
 }

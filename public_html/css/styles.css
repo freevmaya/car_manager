@@ -117,8 +117,13 @@ h1, h2 {
 }
 
 .position {
+    margin-left: -6px;
+    margin-top: -6px;
+}
+
+.driver-position {
     margin-left: -32px;
-    margin-top: -64px;
+    margin-top: -32px;
 }
 
 .user-marker, .user-current {
@@ -240,17 +245,15 @@ h1, h2 {
 
 .view {
     max-height: 90%;
-    /*max-width: 100%;*/
-
     z-index: 1;
     padding: 0.5em;
     display: flex;
     flex-flow: column;
 
     animation-name: showView;
-    animation-duration: 0.4s;
+    animation-duration: 1s;
 
-    transition: width 0.5s ease-in-out;
+    /*transition: width 0.5s ease-in-out;*/
 }
 
 .orderView .content table {
@@ -258,7 +261,13 @@ h1, h2 {
 }
 
 .orderView .content table td {
-    padding-right: 1em;
+    padding-right: 0.5em;
+}
+
+.orderView .btn-block button {
+
+    animation-name: showView;
+    animation-duration: 1s;
 }
 
 .cols {
@@ -303,7 +312,7 @@ h1, h2 {
 
 @keyframes showView {
   0% {
-    scale: 0.7;
+    scale: 0.5;
     opacity: 0;
     display: none;
   }
@@ -321,7 +330,7 @@ h1, h2 {
     display: block;
   }
   100% {
-    scale: 0.7;
+    scale: 0.5;
     opacity: 0;
     display: none;
   }
@@ -721,6 +730,10 @@ input:focus, select:focus {
     left: 0px;
     right: 0px;
     bottom: 0px;
+}
+
+#map > div {
+    transition: 0.5s height;
 }
 
 #map > div > div + div {
@@ -1143,17 +1156,50 @@ select {
     display: none;
 }
 
-.orderInfo .route span {
+.orderInfo .cols {
+    justify-content: space-between;
+}
+
+.orderInfo td:nth-child(1) {
+    text-align: right;
+}
+
+.orderView .header span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 20em;
+    max-width: 20em;   
+    height: 32px;
     display: inline-block;
     margin-right: 0.5em;
+    align-content: center;
 }
 
-.orderInfo .route {
+.orderView .header {
     text-align: center;
+    text-align: center;
+    margin: 0.5em;
+}
+
+.dynParam {
+    display: none;
+}
+
+.execution .orderInfo .stayParam,
+.driver_move .orderInfo .stayParam {
+    display: none;
+}
+
+.execution .orderInfo .dynParam,
+.driver_move .orderInfo .dynParam {
+    display: table-row;
+}
+
+.header .to {
+    width: 32px;
+    height: 32px;
+    background-image: url(images/goto.png);
+    opacity: 0.3;
 }
 
 .data .block {
@@ -1264,13 +1310,20 @@ select {
     display: block;
 }
 
-.taken-order .btn-block .button:nth-child(1)/*,
-.taken-order.driver_move .close,
-.taken-order.execution .close*/  {
+.taken-order .btn-block .button:nth-child(1) {
     display: none !important;
 }
 
 .taken-order.accepted .btn-block .button:nth-child(2) {
+    display: block;
+}
+
+.taken-order.expired .btn-block .button:nth-child(3),
+.taken-order.expired .btn-block .button:nth-child(4) {
+    display: block;
+}
+
+.taken-order.wait_meeting .btn-block .button:nth-child(4) {
     display: block;
 }
 

@@ -4,7 +4,7 @@ html::AddScriptFiles([
 	"views.js"
 ]);
 
-html::AddTemplate('<div class="view shadow radius dialog">
+html::AddTemplate('<div class="view shadow radius">
 	<div class="header"><button class="close button"></button></div>
 	<div class="content"></div>
 	<div class="footer btn-block"></div>
