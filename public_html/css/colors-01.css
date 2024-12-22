@@ -1,6 +1,10 @@
 body {
-    background-color: #2b2427;
+    /*background-color: #2b2427;*/
     color: #888;
+}
+
+.wrapper {
+    background-color: #2b2427;
 }
 
 .date, .time {

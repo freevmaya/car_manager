@@ -1,6 +1,6 @@
 <div class="orderInfo">
-	<div class="cols">
-		<table>
+	<div class="cols cols-2">
+		<table class="orderDetail">
 			<tr>
 				<td>{toLang('State')}:</td><td id="state-{id}">{state}</td>
 			</tr>
@@ -26,8 +26,11 @@
 				<td>{toLang("Average speed")}:</td><td class="avgSpeed">0</td>
 			</tr>
 		</table>
-		<div>
-			Right block
+		<div class="dynParam">
+			<div class="stepInfo">
+				<div class="instruction"></div>
+				<div class="remaindDistance"></div>
+			</div>
 		</div>
 	</div>
 </div>

@@ -4,7 +4,7 @@ function InitSelectView(fieldId, indexField, onSelect, title='', actions=[]) {
 
 	let view;
 	$('*[data-id=' + fieldId + '] .popup-button').click(()=>{
-		view = viewManager.Create({curtain: $('.wrapper'),
+		view = viewManager.Create({modal: true,
 						title: title ? title : toLang('Select item'),
 						content: $('*[data-id=' + fieldId + '] .items'),
 						clone: true,

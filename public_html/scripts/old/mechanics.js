@@ -18,7 +18,7 @@ function Mechanics() {
 	});
 
 	function showPickMeUpDialog(place) {
-		return viewManager.Create({curtain: $('#map'), content: [
+		return viewManager.Create({modal: true, content: [
 				{
 					class: GroupFields,
 					classes: ['btn-block'],
@@ -55,7 +55,7 @@ function Mechanics() {
 
 	function showCarDialog() {
 		let v;
-		return v = viewManager.Create({title: 'Dialog', curtain: $('#map'), actions: {
+		return v = viewManager.Create({title: 'Dialog', modal: true, actions: {
 				Ok: () => { v.Close(); },
 				Cancel: () => { v.Close(); }
 			}, content: [
@@ -93,7 +93,7 @@ function Mechanics() {
 
 	function showDriverDialog() {
 		if (!viewManager.CurrentView()) {
-			let v = viewManager.Create({title: 'Driver', curtain: $('#map'), 
+			let v = viewManager.Create({title: 'Driver', modal: true, 
 				content: [
 					{
 						text: "ManualForDriver",

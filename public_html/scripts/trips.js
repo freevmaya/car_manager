@@ -200,7 +200,7 @@ $(window).ready(() => {
         });
 
         dialog = viewManager.Create({
-            curtain: $('.wrapper'),
+            modal: true,
             title: toLang(readonly ? 'Current order' : 'New order trip'),
             content: [
                 {

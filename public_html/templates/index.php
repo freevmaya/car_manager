@@ -104,7 +104,11 @@ html::AddJsData(json_encode(
 </head>
 <body>
     <div class="wrapper">
-        <?=$content?>
+        <div id="modal-windows"></div>
+        <div id="back-content">
+            <div id="windows"></div>
+            <?=$content?>
+        </div>
     </div>
 
     <?=html::RenderTemplates()?>

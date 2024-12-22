@@ -185,7 +185,7 @@ h1, h2 {
   100% { margin-left: -2em; }
 }
 
-#windows {
+#windows, #modal-windows {
     position: absolute;
     top: 0px;
     bottom: 0px;
@@ -194,6 +194,24 @@ h1, h2 {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: 0.5s background, 0.5s filter;
+}
+
+#modal-windows {
+    pointer-events: none;
+    z-index: 3;
+}
+
+.modal #modal-windows {
+    background: #0000002e;
+}
+
+#map, #windows .view, #toolbarMenu {
+    transition: 0.5s filter;
+}
+
+.modal #map, .modal #windows .view, .modal #toolbarMenu {
+    filter: blur(0.2em) !important;
 }
 
 .nowrap {
@@ -272,6 +290,10 @@ h1, h2 {
 
 .cols {
     display: flex;
+}
+
+.cols-2 * {
+    min-width: 50%;
 }
 
 .cols .btn-block {
@@ -724,12 +746,12 @@ input:focus, select:focus {
 #map {
     transition: 0.5 -webkit-filter linear;
     filter: none;
-    pointer-events: all;
     position: absolute !important;
     top: 2.3em;
     left: 0px;
     right: 0px;
     bottom: 0px;
+    background-color: white;
 }
 
 #map > div {
@@ -770,11 +792,6 @@ input:focus, select:focus {
   100% {
     opacity: 1;
   }
-}
-
-.curtain {
-    filter: blur(0.4em) !important;
-    pointer-events: none !important;
 }
 
 #DriverMenu {
@@ -1156,6 +1173,14 @@ select {
     display: none;
 }
 
+.offerView td {
+    padding: 0.2em;
+}
+
+.orderInfo {
+    width: 100%;
+}
+
 .orderInfo .cols {
     justify-content: space-between;
 }
@@ -1164,15 +1189,41 @@ select {
     text-align: right;
 }
 
-.orderView .header span {
+.orderInfo .stepInfo {
+    padding-left: 1em;
+}
+
+.stepInfo .remaindDistance {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 2em;
+}
+
+.dist-warning {
+    color: white;
+}
+
+.orderView .content {
+    align-items: center;
+}
+
+.place {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 20em;   
-    height: 32px;
     display: inline-block;
+}
+
+.orderDetail .place {
+    max-width: 10em;
+}
+
+.orderView .header span {
+    max-width: 20em;
+    height: 32px;
     margin-right: 0.5em;
     align-content: center;
+    display: inline-block;
 }
 
 .orderView .header {

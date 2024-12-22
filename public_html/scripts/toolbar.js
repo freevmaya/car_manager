@@ -51,13 +51,16 @@ class ToolbarUser {
 
 		if (!isEmpty(data)) {
 			for (let i in data) {
-	            if (!isEmpty(data[i].text) && (data[i].text[0] != '{')) {
-	            	if (data[i].state == 'active')
-						transport.SendStatusNotify(data[i], 'receive');
+            	if ((data[i].content_type == "changeOrder") && (data[i].state == 'active')) {
+            		let part_order = JSON.parse(data[i].text);
 
-					data[i].time = $.format.date(Date.parse(data[i].time), dateTinyFormat);
-					this.#notifyList.push(data[i]);
-	            }
+            		if (part_order.state == 'wait') {
+						this.#notifyList.push($.extend({}, data[i], {
+							time: $.format.date(Date.parse(data[i].time), dateTinyFormat),
+							text: toLang("OrderCreated")
+						}));
+					}
+            	}
 	        }
 
 	        this.showWarning(this.isNotify());
@@ -75,17 +78,16 @@ class ToolbarUser {
 			let item = this.#notifyList[i];
 
 			let option = templateClone($('.templates .notifyItem'), item);
-
 			option.find('.trash').click(this.trashClick.bind(this));
-			
-			DataView.Create(option.find('.container'), item);
+			option.data('order_id', item.order_id);
+			option.find('.header').click(this.headerClick.bind(this));
 
 			content.append(option);
 		}
 
 		let map = $('#map');
 
-		this.#listView = viewManager.Create({curtain: map.length > 0 ? map : $('.wrapper'),
+		this.#listView = viewManager.Create({modal: true,
 						title: toLang('Notifications'),
 						content: content}, View, (()=>{
 							this.#listView = null;
@@ -96,22 +98,77 @@ class ToolbarUser {
 		return this.#listView.contentElement.find('.option .header');
 	}
 
+	#getOrderId(notifyId) {
+		return this.#notifyList[this.#notifyIndexOf(notifyId)].content_id;
+	}
+
+	showOfferView(order_id) {
+		let order = null;
+
+		function showOrder() {
+			let view = viewManager.Create({modal: true,
+                title: 'OrderCreated',
+                content: templateClone('.templates .offerView', order),
+                actions:
+	                {
+	                	'Offer to perform': ()=>{
+	                		Ajax({
+				                action: 'offerToPerform',
+				                data: order_id
+				            }).then(((response)=>{
+				                if (response && (response.result == 'ok'))
+				                	iew.Close();
+		                		else view.trouble(response);
+				            }).bind(this));
+		                }
+	                }
+            }, View);
+		}
+
+		Ajax({
+			action: 'getOrder',
+			data: order_id
+		}).then(((result)=>{
+			order = result;
+			if (!this.#listView)
+				showOrder();
+		}).bind(this));
+
+		this.#listView.Close().then(()=>{
+			if (order) showOrder();
+		});
+	}
+
+	headerClick(e) {
+		
+		let option = $(e.currentTarget).closest('.option');
+		let order_id = this.#getOrderId(option.data('id'));
+		if (order_id && v_map) {
+
+			if (takenOrders) {
+				if (!takenOrders.selOrderView) {
+					this.#listView.Close();
+					takenOrders.ShowInfoOrder(order_id);
+				}
+				else this.showOfferView(order_id);
+ 			} else {
+				this.#listView.Close();
+ 				v_map.MarkerManager.ShowMarkerOfOrder(order_id);
+ 			}
+		}
+	}
+
 	trashClick(e) {
 		
 		let option = $(e.currentTarget).closest('.option');
 		let nid = option.data('id');
 		transport.SendStatusNotify({id: nid}, 'read');
-
-		let order_id = option.data('order_id');
-		option.remove();
 		this.removeNotify(nid);
 
-		if ((this.notifyOptionHeaderList().length == 0) || (order_id)) 
+		if (this.notifyOptionHeaderList().length == 0)
 			this.#listView.Close();
-
-		if (order_id)
-			v_map.MarkerManager.ShowMarkerOfOrder(order_id);
 	}
+	/*
 
 	getOrder(notify_id) {
 
@@ -150,7 +207,7 @@ class ToolbarUser {
 	        }).bind(this));
 
 		}
-	}
+	}*/
 
 	destroy() {
 		transport.RemoveListener(this.#listenerId);

@@ -2,7 +2,7 @@
 	include_once(TEMPLATES_PATH.'/toolbar.php');
 	
 	if ($this->model) {
-		html::$scripts[] = 'https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js';
+		html::AddScriptFile('jquery.inputmask.min.js');
 ?>
 
 <div class="pageContent">

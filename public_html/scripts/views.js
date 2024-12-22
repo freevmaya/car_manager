@@ -1,4 +1,6 @@
 var windowsLayerId = 'windows';
+var modalLayerId = 'modal-windows';
+
 
 class ViewManager {
     openedViews = {};
@@ -127,7 +129,7 @@ class View extends BaseParentView {
     initMainView() {
         this.view = templateClone('.templates .' + this.options.template, this.options);
         this.view.addClass('view');   
-        this.windows = $('#' + windowsLayerId);
+        this.windows = $('#' + (this.options.modal ? modalLayerId : windowsLayerId));
         this.windows.append(this.view);
     }
 
@@ -189,15 +191,14 @@ class View extends BaseParentView {
     setOptions(options) {
         this.options = $.extend({content: [], actions: [], template: 'view'}, options);
         
-        if (this.options.curtain) this.blockBackground(true);
+        if (this.options.modal) this.blockBackground(true);
     }
 
     resizeMap() {
-        if (v_map)
+        if (v_map && this.options.bottomAlign)
             setTimeout((()=>{
-                let space = (this.view.outerHeight() - this.view.height()) / 2;
                 let h = v_map.View.height();
-                v_map.View.children().css('height', Math.round((h - (this.view.outerHeight() - space)) / h * 100) + '%');
+                v_map.View.children().css('height', Math.round((h - this.view.outerHeight()) / h * 100) + '%');
             }).bind(this), 300); 
     }
 
@@ -237,11 +238,8 @@ class View extends BaseParentView {
 
     Close() {
 
-        if (this.options.curtain) this.blockBackground(false);
+        if (this.options.modal) this.blockBackground(false);
         this.view.addClass("hide");
-
-        if (typeof v_map !== 'undefined')
-            v_map.View.children().css('height', '100%');
 
         return new Promise(((resolveOuter) => {
             setTimeout((()=>{
@@ -252,8 +250,8 @@ class View extends BaseParentView {
     }
 
     blockBackground(value) {
-        if (value) this.options.curtain.addClass('curtain');
-        else this.options.curtain.removeClass('curtain');
+        if (value) $('.wrapper').addClass('modal');
+        else $('.wrapper').removeClass('modal');
     }
 
     getInput(name) {
@@ -269,7 +267,9 @@ class BottomView extends View {
     }
 
     Close() {
-        v_map.View.css('bottom', 0);
+
+        if (typeof v_map !== 'undefined')
+            v_map.View.children().css('height', '100%');
         return super.Close();
     }
 }
@@ -492,8 +492,10 @@ var formView;
 
 $(window).ready(()=>{
     viewManager = new ViewManager();
-    if ($('#' + windowsLayerId).length == 0)
-        $('body').prepend($('<div id="' + windowsLayerId + '">'));
+    if ($('#' + windowsLayerId).length == 0) {
+        $('#back-content').prepend($('<div id="' + modalLayerId + '">'));
+        $('.wrapper').prepend($('<div id="' + windowsLayerId + '">'));
+    }
 
     let pageForm = $('form');
     if (pageForm) {

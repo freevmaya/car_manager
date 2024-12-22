@@ -29,6 +29,7 @@
 		");
 
 		html::AddTemplate(file_get_contents(TEMPLATES_PATH.'/driver/orderInfo.php'), 'orderInfo');
+		html::AddTemplate(file_get_contents(TEMPLATES_PATH.'/driver/offerView.php'), 'offerView');
 
 	} else {
 //------------------------------PASSENGER---------------------------------------------

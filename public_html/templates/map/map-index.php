@@ -24,6 +24,4 @@ html::AddTemplate('<div class="driver-order">
 </div>', 'driver-order');
 
 ?>
-
-<div id="windows"></div>
 <?=html::RenderField(['type'=>'map', 'id'=>"map"], 'map')?>

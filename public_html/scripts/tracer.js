@@ -28,11 +28,19 @@ class Tracer extends EventProvider {
     #callback;
     #intervalId;
     #periodTime;
+    #curStep;
+    #curStepIndex;
+    #curLeg;
 
     get AvgSpeed() { return this.#avgSpeed; };
     get RouteDistance() { return this.#routeDistance; };
     get RemaindDistance() { return this.#totalLength - this.#routeDistance; };
     get RemaindTime() { return this.RemaindDistance / this.AvgSpeed; };
+    get Legs() { return this.#routes[this.#routeIndex].legs[this.#curLeg]; };
+    get Duration() { return this.Legs.duration; };
+    get Step() { return this.correctStepIndex(this.#curStepIndex) > -1 ? this.Legs.steps[this.#curStepIndex] : null; }
+    get NextStep() { return this.correctStepIndex(this.#curStepIndex + 1) ? this.Legs.steps[this.#curStepIndex + 1] : null; }
+    get StepIndex() { return this.#curStepIndex; }
 
     constructor(routes, callback, periodTime, options=null) {
 
@@ -49,6 +57,37 @@ class Tracer extends EventProvider {
         this.#totalLength = CalcPathLength(this.#routes, this.#routeIndex, this.#lengthList);
         this.#routePos = this.#routes[this.#routeIndex].overview_path[0];
         this.#routeDistance = 0;
+        this.#curLeg = 0;
+        this.#curStep = null;
+
+        this.updateSteps();
+    }
+
+    correctStepIndex(idx) {
+        return (idx > -1) && (idx < this.Legs.steps.length);
+    }
+
+    updateSteps() {
+        let steps = this.#routes[this.#routeIndex].legs[this.#curLeg].steps;
+        let accumDist = 0;
+
+        for (let i=0; i<steps.length; i++) {
+            accumDist += steps[i].distance.value;
+            steps[i].finishDistance = accumDist;
+        }
+    }
+
+    #getCurrentStep() {
+        let steps = this.#routes[this.#routeIndex].legs[this.#curLeg].steps;
+        let accumDist = 0;
+
+        for (let i=0; i<steps.length; i++) {
+
+            accumDist += steps[i].distance.value;
+            if (accumDist > this.#routeDistance)
+                return i;
+        }
+        return -1;
     }
 
     destroy() {
@@ -66,10 +105,19 @@ class Tracer extends EventProvider {
         this.#lastPos = this.#routePos;
     }
 
+    #checkCurStep() {
+
+        let lastStep = this.Step;
+        this.#curStepIndex = this.#getCurrentStep();
+        if (this.Step != lastStep)
+            this.SendEvent("CHANGESTEP", this.Step);
+    }
+
     #updateRoutePos() {
         if (this.#avgSpeed) {
             this.#routeDistance += this.#avgSpeed * this.#periodTime / 1000;
             this.#calcPoint();
+            this.#checkCurStep();
         }
     }
 

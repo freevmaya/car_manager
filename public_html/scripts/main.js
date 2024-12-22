@@ -51,7 +51,7 @@ class EventProvider {
 
     #toArray(event) {
         let result = [];
-        if (this.listeners.hasOwnProperty(event)) {
+        if (this.listeners && this.listeners.hasOwnProperty(event)) {
             for (let i in this.listeners[event])
                 result.push(this.listeners[event][i]);
             result.sort((item1, item2) => { return item2.priority - item1.priority;});
@@ -154,7 +154,7 @@ class App {
                 }).bind(this)
             } : {};
 
-            this.#question = viewManager.Create({curtain: $('#map'),
+            this.#question = viewManager.Create({modal: true,
                 title: 'Warning!',
                 content: [
                     {
@@ -610,6 +610,11 @@ function isStr(s) {
 
 function isEmpty(v) {
     return (typeof(v) === 'undefined') || (v == null) || (v.length == 0);
+}
+
+function isNumeric(str) {
+  if (typeof str != "string") return false;
+  return !isNaN(str) && !isNaN(parseFloat(str));
 }
 
 function PrepareInput() {

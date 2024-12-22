@@ -185,13 +185,10 @@ class VMap extends EventProvider {
 			zoom: 15,
 			disableDefaultUI: true,
 			center: position,
-
-    		//renderingType: RenderingType.VECTOR,
-			mapId: "151146f0af358053",
+			mapId: "319511f83a6febb1",
+			//mapId: "151146f0af358053",
 			language: user.language_code,
-			zoomControl: true,
-			scaleControl: true
-
+			zoomControl: true
 		});
 
 		this.#classes = {
@@ -228,12 +225,14 @@ class VMap extends EventProvider {
         this.#mapAngle = LerpRad(this.#mapAngle / 180 * Math.PI, this.#toAngle / 180 * Math.PI, UPDATESMOOTH) / Math.PI * 180;
         this.#mapLatLng = LatLngLepr(this.#mapLatLng, this.#toLatLng, UPDATESMOOTH);
 
-		this.map.moveCamera({
-            center: this.#mapLatLng,
-            heading: this.#mapAngle
-        });
+		if (this.#map.renderingType == 'VECTOR') {
+			this.map.moveCamera({
+	            center: this.#mapLatLng,
+	            heading: this.#mapAngle
+	        });
 
-        MarkerManager.setPos(this.MainMarker, this.#mapLatLng);
+	        MarkerManager.setPos(this.MainMarker, this.#mapLatLng);
+	    } else MarkerManager.setPos(this.MainMarker, this.#mapLatLng, this.#mapAngle);
 		this.SendEvent('UPDATE', this);
 	}
 

@@ -15,11 +15,10 @@ class DMap extends VMap {
         }, {markerManagerClass: MarkerOrderManager});
     }
 
-    createTracer(routes, onFinished) {
+    createTracer(routes) {
         this.removeTracer();
         this.tracer = new Tracer(routes, this.superSetPosition.bind(this), 100);
         this.tracer.ReceivePoint(new google.maps.LatLng(this.getMainPosition()));
-        this.tracer.AddListener('FINISHPATH', onFinished);
         return this.tracer;
     }
 
@@ -49,6 +48,17 @@ class TakenOrders {
     constructor(taken_orders) {
         this.#orders = taken_orders;
         this.beginCheckOrders();
+        this.showImportantOrder();
+    }
+
+    showImportantOrder() {
+        for (let i=0; i<this.#orders.length; i++)
+            if (['execution', 'driver_move', 'wait_meeting'].includes(this.#orders[i].state)) {
+
+                let idx = v_map.MarkerManager.IndexOfByOrder(this.#orders[i].id);
+                this.ShowInfoOrder(v_map.MarkerManager.markers.users[idx]);
+                return;
+            }
     }
 
     beginCheckOrders() {
@@ -95,7 +105,7 @@ class TakenOrders {
     }
 
     isShown(order_id) {
-        return this.selOrderView && (this.selOrderView.Order.id = order_id);
+        return this.selOrderView && (this.selOrderView.Order.id == order_id);
     }
 
     timeState(order, state) {
@@ -142,14 +152,16 @@ class TakenOrders {
             }
     }
 
-    ShowInfoOrder(marker) {
+    ShowInfoOrder(markerOrOrderId) {
 
+        let marker = isNumeric(markerOrOrderId) ? v_map.MarkerManager.MarkerByOrderId(markerOrOrderId) : markerOrOrderId;
+        if (!marker) return;
         let order = marker.order;
         function showPathAndInfo() {
 
             v_map.getRoutes(order.start, order.finish, travelMode, (function(result) {
                 this.selOrderView = viewManager.Create({
-                    title: $('<span>' + PlaceName(order.start) + '</span><span class="to"></span><span>' + 
+                    title: $('<span class="place">' + PlaceName(order.start) + '</span><span class="to"></span><span class="place">' + 
                                         PlaceName(order.finish) + '</span>'),
                     bottomAlign: true,
                     order: order,
@@ -208,6 +220,10 @@ class OrderView extends BottomView {
         this.#updateListenerId = v_map.AddListener('UPDATE', this.onUpdateMap.bind(this));
     };
 
+    get currentTracer() {
+        return this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null);
+    }
+
     constructor(elem, callback = null, options) {
         super(elem, callback, options);
     }
@@ -251,21 +267,35 @@ class OrderView extends BottomView {
 
         if (state == 'driver_move')
             this.showPathToStart();
-        else if ((state == 'execution') && this.isMyOrder)
-            this.#tracerOrder = v_map.createTracer(this.options.path.routes, this.onFinishPathOrder.bind(this));
+        else if ((state == 'execution') && this.isMyOrder) {
+            this.#tracerOrder = v_map.createTracer(this.options.path.routes);
+
+            this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
+            this.#tracerOrder.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+        }
 
         setTimeout(this.resizeMap.bind(this), 500);
 
         this.isDrive = (state == 'driver_move') || (state == 'execution');
     }
 
+    onChangeStep() {
+        let tracer = this.currentTracer;
+        this.view.find('.stepInfo .instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
+    }
+
     onUpdateMap() {
 
-        let tracer = this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null);
+        let tracer = this.currentTracer;
         if (tracer) {
-            this.view.find('.remaindDistance').text(DistanceToStr(tracer.RemaindDistance));
-            this.view.find('.remaindTime').text(tracer.RemaindTime.toHHMMSS());
-            this.view.find('.avgSpeed').text(round(tracer.AvgSpeed * 3.6, 1) + "km/h");
+            this.view.find('.orderDetail .remaindDistance').text(DistanceToStr(tracer.RemaindDistance));
+            this.view.find('.orderDetail .remaindTime').text(tracer.RemaindTime.toHHMMSS());
+            this.view.find('.orderDetail .avgSpeed').text(round(tracer.AvgSpeed * 3.6, 1) + "km/h");
+
+            let remaindDistance = tracer.Step ? (tracer.Step.finishDistance - tracer.RouteDistance) : 0;
+            let elem = this.view.find('.stepInfo .remaindDistance');
+            elem.text(DistanceToStr(remaindDistance));
+            elem.toggleClass('dist-warning', remaindDistance < 100);
         }
     }
 
@@ -329,8 +359,12 @@ class OrderView extends BottomView {
             this.#pathToStart = v_map.DrawPath(result, pathToStartOptions);
             if (afterShow) afterShow();
 
-            if (this.isMyOrder)
-            this.#tracerToStart = v_map.createTracer(result.routes, this.onFinishPathToStart.bind(this));
+            if (this.isMyOrder) {
+                this.#tracerToStart = v_map.createTracer(result.routes);
+
+                this.#tracerToStart.AddListener('FINISHPATH', this.onFinishPathToStart.bind(this));
+                this.#tracerToStart.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+            }
         }).bind(this));
     }
 
@@ -401,12 +435,20 @@ class MarkerOrderManager extends MarkerManager {
 
                     case "wait":
 
-                        Ajax({
-                            action: 'GetOrder',
-                            data: item.content_id
-                        }).then(((order)=>{
-                            this.AddOrder(order, true);
-                        }).bind(this));
+                        if (!(takenOrders.selOrderView && takenOrders.selOrderView.isDrive)) {
+                            let idx = this.IndexOfByOrder(item.content_id);
+
+                            if (idx > -1)
+                                this.Shake(this.markers.users[idx]);
+                            else {
+                                Ajax({
+                                    action: 'GetOrder',
+                                    data: item.content_id
+                                }).then(((order)=>{
+                                    this.AddOrder(order, true);
+                                }).bind(this));
+                            }
+                        }
                         break;
 
                     case "cancel":
@@ -473,9 +515,8 @@ class MarkerOrderManager extends MarkerManager {
 
             takenOrders.addOrder(m.order);
         }
-    }
+    } 
 
-    /*
     ShowMarkerOfOrder(order_id, order = null) {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1) {
@@ -486,7 +527,11 @@ class MarkerOrderManager extends MarkerManager {
             if (order)
                 this.ShowInfoOrder(market, order);
         }
-    }*/
+    }
+
+    MarkerByOrderId(order_id) {
+        return this.markers.users[this.IndexOfByOrder(order_id)];
+    }
 
     IndexOfByOrder(order_id) {
         for (let i in this.markers.users)
