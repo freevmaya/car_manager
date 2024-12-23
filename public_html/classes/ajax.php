@@ -87,6 +87,14 @@ class Ajax extends Page {
 		return $result;
 	}
 
+	protected function SetRemaindDistance($data) {
+		return (new OrderModel())->SetRemaindDistance($data['order_id'], $data['remaindDistance']);
+	}
+
+	protected function GetRemaindDistance($data) {
+		return (new OrderModel())->GetRemaindDistance($data);
+	}
+
 	protected function GetPosition($data) {
 		$user = (new UserModel())->getItem($data);  
 		return ['lat'=>$user['lat'], 'lng'=>$user['lng']];

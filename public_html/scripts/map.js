@@ -86,7 +86,8 @@ MarkerManager.setPos = (marker, latLng, angle = undefined) => {
 
 var v_map;
 
-const TIMEUPDATESTEP = 5;
+const TIMEUPDATESTEP_VECTORMAP = 5;
+const TIMEUPDATESTEP_RASTERMAP = 50;
 const UPDATESMOOTH = 0.01;
 
 class VMap extends EventProvider {
@@ -106,24 +107,31 @@ class VMap extends EventProvider {
     #updateTimerId;
     #toLatLng;
     #toAngle;
+    #timeUpdateStep;
+    #mouseDown;
 
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
 	get View() { return this.#view; }
 	get MainMarker() { return this.#mainMarker; }
 	get CameraFollowPath() { return this.#cameraFollowPath; }
+	get isVector() { return this.#map.renderingType == 'VECTOR'; }
+	get mouseDown() { return this.#mouseDown; }
 	set CameraFollowPath(value) { 
-		this.#cameraFollowPath = value;
-		this.#mapLatLng = this.#toLatLng = this.MainMarker.position;
+		if (this.#cameraFollowPath != value) {
+			this.#cameraFollowPath = value;
+			this.#mapLatLng = this.#toLatLng = this.MainMarker.position;
+			this.#timeUpdateStep = this.isVector ? TIMEUPDATESTEP_VECTORMAP : TIMEUPDATESTEP_RASTERMAP;
 
-		if (value) 
-			this.#updateTimerId = setInterval(this.update.bind(this), TIMEUPDATESTEP);
-		else {
-			clearInterval(this.#updateTimerId);
-			this.#updateTimerId = null;
-			this.map.moveCamera({
-	            heading: 0
-	        });
+			if (value) 
+				this.#updateTimerId = setInterval(this.update.bind(this), this.#timeUpdateStep);
+			else {
+				clearInterval(this.#updateTimerId);
+				this.#updateTimerId = null;
+				this.map.moveCamera({
+		            heading: 0
+		        });
+			}
 		}
 	}
 
@@ -203,6 +211,18 @@ class VMap extends EventProvider {
 
 		if (this.#options.main_marker)
 			this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
+
+		this.#map.addListener('mousedown', this.onDown.bind(this));
+		this.#map.addListener('mouseup', this.onUp.bind(this));
+	}
+
+	onDown(e) {
+		this.#mouseDown = true;
+		console.log(e.doomEvent);
+	}
+
+	onUp(e) {
+		this.#mouseDown = false;
 	}
 
 	driverManagerOn(value) {
@@ -222,17 +242,25 @@ class VMap extends EventProvider {
 
 	update() {
 
-        this.#mapAngle = LerpRad(this.#mapAngle / 180 * Math.PI, this.#toAngle / 180 * Math.PI, UPDATESMOOTH) / Math.PI * 180;
-        this.#mapLatLng = LatLngLepr(this.#mapLatLng, this.#toLatLng, UPDATESMOOTH);
+		let smooth = UPDATESMOOTH * this.#timeUpdateStep;
 
-		if (this.#map.renderingType == 'VECTOR') {
-			this.map.moveCamera({
+        this.#mapAngle = LerpRad(this.#mapAngle / 180 * Math.PI, this.#toAngle / 180 * Math.PI, smooth) / Math.PI * 180;
+        this.#mapLatLng = LatLngLepr(this.#mapLatLng, this.#toLatLng, smooth);
+
+        let setCam = this.#mapLatLng;
+		if (this.isVector) {
+
+			setCam = {
 	            center: this.#mapLatLng,
 	            heading: this.#mapAngle
-	        });
+	        };
 
 	        MarkerManager.setPos(this.MainMarker, this.#mapLatLng);
 	    } else MarkerManager.setPos(this.MainMarker, this.#mapLatLng, this.#mapAngle);
+
+	    if (!this.#mouseDown)
+	    	this.map.setCenter(setCam);
+	    
 		this.SendEvent('UPDATE', this);
 	}
 

@@ -79,7 +79,7 @@ class DriverModel extends BaseModel {
 
 		if (!$a_user) $a_user = $user;
 
-		if ($order = (new OrderModel())->getActiveOrder($a_user['id'], "'accepted', 'wait_meeting', 'execution'")) {
+		if ($order = (new OrderModel())->getActiveOrder($a_user['id'], "'accepted', 'wait_meeting', 'execution', 'driver_move'")) {
 
 			$query = "SELECT d.id, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, c.comfort, c.seating, cb.symbol AS car_body, c.number, o.id AS order_id, o.remaindDistance ".
 
@@ -90,6 +90,8 @@ class DriverModel extends BaseModel {
 				"INNER JOIN orders o ON o.driver_id = d.id ".
 
 				"WHERE o.id={$order['id']}";
+
+			//trace($query);
 			$drivers = $dbp->asArray($query);
 
 		} else {

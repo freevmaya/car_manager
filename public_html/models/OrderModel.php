@@ -106,7 +106,16 @@ class OrderModel extends BaseModel {
 
 	public function SetRemaindDistance($order_id, $remaindDistance) {
 		GLOBAL $dbp;
-		return $dbp->bquery("UPDATE orders SET remaindDistance=? WHERE id=?", 'di', [$remaindDistance, $order_id]);
+		return $dbp->bquery("UPDATE {$this->getTable()} SET remaindDistance=? WHERE id=?", 'di', [$remaindDistance, $order_id]);
+	}
+
+	public function GetRemaindDistance($order_id) {
+		GLOBAL $dbp;
+		if (($order_id = intval($order_id)) > 0) {
+			$query = "SELECT orders.remaindDistance FROM {$this->getTable()} WHERE id={$order_id}";
+			return $dbp->one($query);
+		}
+		return $order_id;
 	}
 
 	public function SetState($id, $state, $driver_id = false, $setter_user_id=null) {

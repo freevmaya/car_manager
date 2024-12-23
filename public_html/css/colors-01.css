@@ -7,6 +7,14 @@ body {
     background-color: #2b2427;
 }
 
+.modal #modal-windows {
+    background: #0000002e;
+}
+
+.shadow, .ui-widget-content {
+    box-shadow: 0px 0px 1em #000000ba;    
+}
+
 .date, .time {
     color: #cdcdcd;
 }

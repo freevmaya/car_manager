@@ -106,6 +106,7 @@ class ToolbarUser {
 		let order = null;
 
 		function showOrder() {
+			let remaindDistance = takenOrders ? takenOrders.remaindDistance() : 0;
 			let view = viewManager.Create({modal: true,
                 title: 'OrderCreated',
                 content: templateClone('.templates .offerView', order),
@@ -114,10 +115,10 @@ class ToolbarUser {
 	                	'Offer to perform': ()=>{
 	                		Ajax({
 				                action: 'offerToPerform',
-				                data: order_id
+				                data: {id: order_id, remaindDistance: remaindDistance }
 				            }).then(((response)=>{
 				                if (response && (response.result == 'ok'))
-				                	iew.Close();
+				                	view.Close();
 		                		else view.trouble(response);
 				            }).bind(this));
 		                }
@@ -145,7 +146,7 @@ class ToolbarUser {
 		let order_id = this.#getOrderId(option.data('id'));
 		if (order_id && v_map) {
 
-			if (takenOrders) {
+			if (user.asDriver) {
 				if (!takenOrders.selOrderView) {
 					this.#listView.Close();
 					takenOrders.ShowInfoOrder(order_id);
@@ -164,6 +165,7 @@ class ToolbarUser {
 		let nid = option.data('id');
 		transport.SendStatusNotify({id: nid}, 'read');
 		this.removeNotify(nid);
+		option.remove();
 
 		if (this.notifyOptionHeaderList().length == 0)
 			this.#listView.Close();

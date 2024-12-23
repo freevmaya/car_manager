@@ -203,7 +203,7 @@ h1, h2 {
 }
 
 .modal #modal-windows {
-    background: #0000002e;
+    pointer-events: all;
 }
 
 #map, #windows .view, #toolbarMenu {
@@ -218,10 +218,6 @@ h1, h2 {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.shadow, .ui-widget-content {
-    box-shadow: 0px 0px 1em #000000ba;    
 }
 
 .radius {
@@ -269,7 +265,7 @@ h1, h2 {
     flex-flow: column;
 
     animation-name: showView;
-    animation-duration: 1s;
+    animation-duration: 0.5s;
 
     /*transition: width 0.5s ease-in-out;*/
 }

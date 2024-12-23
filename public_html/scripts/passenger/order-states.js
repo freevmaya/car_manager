@@ -90,11 +90,24 @@ class OrderView extends ViewPath {
         this.#listenerId = transport.AddListener('SuitableDrivers', ((e)=>{
             this.onSuitableDrivers(e.value);
         }).bind(this));
+
+        //this.onReceiveRemaindDistance(this.Order.remaindDistance);
     }
 
     afterConstructor() {
         super.afterConstructor();
         this.onReceiveNotifyList(jsdata.notificationList);
+    }
+
+    onReceiveRemaindDistance(data) {
+        if (data) {
+            console.log(data);
+        }
+
+        transport.addExtRequest({
+            action: 'GetRemaindDistance',
+            data: this.Order.id
+        }, this.onReceiveRemaindDistance.bind(this));
     }
 
     onReceiveNotifyList(list) {
@@ -103,21 +116,10 @@ class OrderView extends ViewPath {
 
                 let part_order = JSON.parse(list[i].text);
 
-                if (part_order.state == 'wait') {
+                if (part_order.state == 'wait')
                     this.Order.id = list[i].content_id;
-                    transport.SendStatusNotify(list[i], 'read');
-                }
-                else if (part_order.state == 'wait_meeting') {
-                    if (this.checkDistanceToStart()) {
-                        Ajax({
-                            action: 'SetState',
-                            data: {id: this.Order.id, state: 'execution' }
-                        }).then(((r)=>{
-                            if (r.result == 'ok')
-                                transport.SendStatusNotify(list[i], 'read');
-                        }).bind(this));
-                    }
-                } else transport.SendStatusNotify(list[i], 'read');
+
+                transport.SendStatusNotify(list[i], 'read');
 
                 if (list[i].content_id == this.Order.id)
                     this.changeOrder(part_order);
@@ -388,8 +390,8 @@ class OrderAccepedView extends OrderView {
         let infoBlock = this.orderLayer.find('.driver-info');
 
         infoBlock.empty();
-        
-        new DataView(infoBlock, $('.templates .driver'), notify.driver);
+        infoBlock.append(templateClone($('.templates .driver'), notify.driver));
+
         this.refreshColor();
         let d = notify.driver;
 

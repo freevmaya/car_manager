@@ -229,10 +229,25 @@ class AjaxTransport extends EventProvider {
         this.intervalID = setTimeout(this.update.bind(this), this.periodTime);
     }
 
+    extRequestIndexOf(action) {
+        for (let i=0; i<this.extRequest.length; i++)
+            if (this.extRequest[i].action == action)
+                return i;
+        return -1;
+    }
+
+    hasExtRequest(action) {
+        return this.extRequestIndexOf(action) > -1;
+    }
+
     addExtRequest(data, callback=null) {
         if (!this.extRequest)
             this.extRequest = [];
-        this.extRequest.push(callback ? $.extend(data, {callback: callback}) : data);
+
+        let request = callback ? $.extend(data, {callback: callback}) : data;
+        let idx = this.extRequestIndexOf(data.action);
+        if (idx > -1) this.extRequest[idx] = request;
+        else this.extRequest.push(request);
     }
 
     update() {
