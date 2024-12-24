@@ -1,5 +1,4 @@
 <?
-
 	$fieldIdx = html::fieldIdx();
 
 	html::AddScriptFile('select-place.js');
@@ -12,12 +11,13 @@
 			<h3><?=lang('Route')?></h3>
 			<div class="name">
 			<div class="value trip">
-	    		<span class="start-place">{PlaceName(data.start)}</span>
-	    		<span class="finish-place">{PlaceName(data.finish)}</span>
+	    		<span class="start-place place">{PlaceName(data.start)}</span>
+	    		<span class="finish-place place">{PlaceName(data.finish)}</span>
 	    	</div>
 	    	</div>
 			<div class="param"><span><?=lang('Distance')?></span><span class="distance">{DistanceToStr(data.meters)}</span></div>
-			<div class="param"><span><?=lang('Remaining distance')?></span><span class="remaindDistance">{toLang(data.remaindDistance)}</span></div>
+			<div class="dynParam"><span><?=lang('Remaining distance')?></span><span class="remaindDistance">{toLang(data.remaindDistance)}</span></div>
+			<div class="dynParam"><span><?=lang('Departure time')?></span><span class="">{DepartureTime(data.pickUpTime)}</span></div>
     	</div>
 		<div class="block driver">
 			<h3><?=lang('Driver/auto')?></h3>

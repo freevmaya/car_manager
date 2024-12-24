@@ -399,8 +399,7 @@ class OrderView extends BottomView {
         }
     }
 
-    moveToStart(e) {
-        this.blockClickTemp(e, 10000);
+    #moveToStart() {
         this.showPathToStart((()=>{
 
             Ajax({
@@ -412,6 +411,18 @@ class OrderView extends BottomView {
             }).bind(this));
             
         }).bind(this));
+    }
+
+    moveToStart(e) {
+        this.blockClickTemp(e, 10000);
+
+        let distKm = Distance(this.Order.start, user) / 1000;
+        let takeTime = distKm / SLOWSPEED_KM_H * 60 * 60;
+        let deltaTime = DeltaTime(this.Order.pickUpTime);
+
+        if (deltaTime > takeTime)
+            app.showQuestion(toLang('Trip start time: %1. Are you sure you want to start the trip?', [DepartureTime(this.Order.pickUpTime)]), this.#moveToStart.bind(this));
+        else this.#moveToStart();
     }
 
     reject() {
@@ -522,7 +533,7 @@ class MarkerOrderManager extends MarkerManager {
     SetState(order_id, state) {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1)
-            this.markers.users[idx].order.state = state;
+            $(this.markers.users[idx].content).setStateClass(state);
         
         takenOrders.SetState(order_id, state);
         if (takenOrders.isShown(order_id))
@@ -617,11 +628,15 @@ class MarkerOrderManager extends MarkerManager {
     }
 
     #createFromOrder(latLng, order, anim) {
+
+        let extConten = DeltaTime(order.pickUpTime) <= NOWDELTASEC ? null : 
+                            $('<span>' + DepartureTime(order.pickUpTime) + '</span>');
+
         let m = this.CreateUserMarker(latLng, 'user-' + order.user_id, (()=>{
             takenOrders.ShowInfoOrder(m);
         }).bind(this), 
                 (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 
-                (anim ? ' anim' : ''));
+                (anim ? ' anim' : '') + ' ' + order.state, extConten);
         m.order = order;
     }
 

@@ -13,9 +13,13 @@
 
 		html::AddScriptFile("driver/driver-on-line.js");
 
+		$wait_orders = $orderModel->getItems(['state'=>'wait']);
 		html::AddJsData(
-				$orderModel->getItems(['state'=>'wait'])
+				$wait_orders
 			, 'all_orders');
+
+		if (count($wait_orders) > 0)
+			(new OrderListeners())->AddListener(BaseModel::getListValues($wait_orders, 'id'), $user['id']);
 
 		html::AddJsData(
 				$orderModel->getItemsWithChanges(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR])

@@ -20,7 +20,7 @@
 				<td>{toLang("Remaining distance")}:</td><td class="remaindDistance">{remaindDistance}</td>
 			</tr>
 			<tr class="dynParam">
-				<td>{toLang("Remaind time")}:</td><td class="remaindTime">0</td>
+				<td>{toLang("Time left")}:</td><td class="remaindTime">0</td>
 			</tr>
 			<tr class="dynParam">
 				<td>{toLang("Average speed")}:</td><td class="avgSpeed">0</td>

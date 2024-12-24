@@ -8,8 +8,6 @@ class OrderListeners extends BaseModel {
 	public function AddListener($order_id, $user_or_users_id) {
 		GLOBAL $dbp;
 
-		trace($user_or_users_id);
-
 		$query = "REPLACE INTO {$this->getTable()} (`order_id`, `user_id`) VALUES ";
 
 		if (is_array($user_or_users_id)) {
@@ -20,7 +18,15 @@ class OrderListeners extends BaseModel {
 
 			$query .= implode(',', $items);
 
-		} else $query .= "($order_id, $user_or_users_id)";
+		} else {
+			if (is_array($order_id)) {
+				$items = [];
+				foreach ($order_id as $id)
+					$items[] = "($id, $user_or_users_id)";
+
+				$query .= implode(',', $items);
+			} else $query .= "($order_id, $user_or_users_id)";
+		}
 
 		return $dbp->query($query);
 	}

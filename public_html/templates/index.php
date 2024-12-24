@@ -18,7 +18,8 @@ html::AddJsData(json_encode(
     <title><?=$this->title?></title>
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/styles.css<?=$anti_cache?>">
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/colors-<?=$this->colorSheme('01')?>.css<?=$anti_cache?>">
-    <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>    
+    <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>   
+    <script src="<?=SCRIPTURL?>/consts.js<?=$anti_cache?>"></script>    
     <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>
     <?=html::RenderJSFiles();?>
     <?=html::RenderStyleFiles();?>

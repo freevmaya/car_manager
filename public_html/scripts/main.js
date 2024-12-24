@@ -1,47 +1,3 @@
-var dateTinyFormat  = "dd.MM HH:mm";
-var dateShortFormat = "dd.MM.yy HH:mm";
-var dateLongFormat  = "dd.MM.yyyy HH:mm";
-var dateOnlyFormat  = "dd.MM.yyyy";
-var HMSFormat  = "HH:mm:ss";
-
-
-var currentPathOptions = {
-    preserveViewport: false,
-    suppressMarkers: false,
-    markerOptions: {
-        clickable: true,
-        opacity: 0.5
-    },
-    polylineOptions: {
-        strokeColor: 'green'
-    }
-}
-
-var pathToStartOptions = {
-    preserveViewport: false,
-    suppressMarkers: true,
-    polylineOptions: {
-        strokeColor: 'red'
-    }
-}
-
-var defaultPathOptions = {
-    preserveViewport: true,
-    suppressMarkers: false,
-    markerOptions: {
-        clickable: true,
-        opacity: 0.5
-    },
-    draggable: false,
-    polylineOptions: {
-        strokeColor: 'rgba(0.6,0.6,0,0.5)'
-    }
-}
-
-const MAXDISTANCEFORMEETING = 20;
-const MAXPERIODWAITMEETING = 2 * 60;
-
-
 class EventProvider {
     #incIndex;  
     constructor() {
@@ -457,9 +413,13 @@ function pow(v) {
 }
 
 
-function toLang(v) {
+function toLang(v, params=null) {
     if (isStr(v))
-        return lang[v] ? lang[v] : v;
+        v = lang[v] ? lang[v] : v;
+
+    if (params)
+        for (let i=0; i<params.length; i++)
+            v = v.replace('%' + (i + 1), params[i]);
     return v;
 }
 
@@ -797,12 +757,28 @@ function getUserName(order) {
     return order.username ? order.username : (order.first_name + " " + order.last_name);
 }
 
+function DeltaTime(endTime) {
+    return (Date.parse(endTime) - Date.now()) / 1000;
+}
+
+function TimeLeft(endTime) {
+    return DeltaTime(endTime).toHHMMSS();
+}
+
+function DepartureTime(time) {
+    let delta = (Date.parse(time) - Date.now()) / 1000;
+    if (delta < -SOONDELTASEC)
+        return toLang('Expired');
+    return delta <= NOWDELTASEC ? toLang('Now') : 
+            (delta <= SOONDELTASEC ? toLang('Soon') : $.format.date(time, dateTinyFormat));
+}
+
 function getOrderInfo(order, callback = null) {
     let start = isStr(order.start) ? JSON.parse(order.start) : order.start;
     let finish = isStr(order.finish) ? JSON.parse(order.finish) : order.finish;
     let result = PlaceName(start) + " > " + PlaceName(finish) + '. ' +
             toLang("User") + ': ' + getUserName(order) + ". " + 
-            toLang("Departure time") + ': ' + $.format.date(order.pickUpTime, dateTinyFormat) + ". " + 
+            toLang("Departure time") + ': ' + DepartureTime(order.pickUpTime) + ". " + 
             toLang("Length") + ": " + round(order.meters / 1000, 1) + toLang("km.");
 
     if (callback) {
@@ -967,5 +943,9 @@ $(window).ready(()=>{
     $.fn.Remove = function() {
         this.addClass('hide');
         setTimeout(this.remove.bind(this), 400);
-    }; 
+    };
+    $.fn.setStateClass = function(state) {
+        this.removeClass(STATELIST);
+        this.addClass(state);
+    }
 })( jQuery );

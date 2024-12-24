@@ -8,16 +8,16 @@ class MarkerManager {
 		};
 	}
 
-	CreateMarker(position, title, className, onClick = null, addClass=null) {
-		let priceTag = document.createElement("div");
-		priceTag.className = className;
-		if (addClass) priceTag.addClass(addClass);
+	CreateMarker(position, title, className, onClick = null, extContent=null) {
+		let priceTag = $('<div>');
+		priceTag.addClass(className);
+		if (extContent) priceTag.append(extContent);
 
 		let marker = new this.ctrl.Classes['AdvancedMarkerElement']({
 		    map: this.ctrl.map,
 		    position: position,
 		    title: title,
-		    content: priceTag,
+		    content: priceTag[0],
 			gmpClickable: onClick != null
 		});
 
@@ -52,8 +52,8 @@ class MarkerManager {
         return -1;
     }
 
-	CreateUserMarker(position, title, onClick = null, markerClass='user-marker') {
-		let result = this.CreateMarker(position, title, markerClass, onClick);
+	CreateUserMarker(position, title, onClick = null, markerClass='user-marker', extContent=null) {
+		let result = this.CreateMarker(position, title, markerClass, onClick, extContent);
 		this.markers.users.push(result);
 		return result;
 	}
@@ -101,14 +101,17 @@ class VMap extends EventProvider {
 	#options;
     #listenerId;
     #mainTransform;
+    #mapLatLng;
+    #markerLatLng;
     #cameraFollowPath;
     #mapAngle;
-    #mapLatLng;
     #updateTimerId;
     #toLatLng;
     #toAngle;
     #timeUpdateStep;
     #mouseDown;
+    #mouseDownTimerId;
+    #followCenter;
 
 	get map() { return this.#map; }
 	get Classes() { return this.#classes; }
@@ -119,8 +122,9 @@ class VMap extends EventProvider {
 	get mouseDown() { return this.#mouseDown; }
 	set CameraFollowPath(value) { 
 		if (this.#cameraFollowPath != value) {
+			this.#followCenter = value;
 			this.#cameraFollowPath = value;
-			this.#mapLatLng = this.#toLatLng = this.MainMarker.position;
+			this.#mapLatLng = this.#toLatLng = this.#markerLatLng = this.MainMarker.position;
 			this.#timeUpdateStep = this.isVector ? TIMEUPDATESTEP_VECTORMAP : TIMEUPDATESTEP_RASTERMAP;
 
 			if (value) 
@@ -214,15 +218,30 @@ class VMap extends EventProvider {
 
 		this.#map.addListener('mousedown', this.onDown.bind(this));
 		this.#map.addListener('mouseup', this.onUp.bind(this));
+		this.#map.addListener('mousemove', this.onMouseMove.bind(this));
+	}
+
+	onMouseMove(e) {
 	}
 
 	onDown(e) {
 		this.#mouseDown = true;
-		console.log(e.doomEvent);
+		this.#followCenter = false;
+		if (this.#mouseDownTimerId)
+			clearTimeout(this.#mouseDownTimerId);
 	}
 
 	onUp(e) {
+			
 		this.#mouseDown = false;
+
+		if (this.CameraFollowPath) {
+			this.#mouseDownTimerId = setTimeout((()=>{
+				this.#mouseDownTimerId = false;
+				this.#followCenter = this.CameraFollowPath;
+				this.#mapLatLng = this.map.center;
+			}).bind(this), 2000);
+		}
 	}
 
 	driverManagerOn(value) {
@@ -245,29 +264,26 @@ class VMap extends EventProvider {
 		let smooth = UPDATESMOOTH * this.#timeUpdateStep;
 
         this.#mapAngle = LerpRad(this.#mapAngle / 180 * Math.PI, this.#toAngle / 180 * Math.PI, smooth) / Math.PI * 180;
-        this.#mapLatLng = LatLngLepr(this.#mapLatLng, this.#toLatLng, smooth);
+        this.#markerLatLng = LatLngLepr(this.#markerLatLng, this.#toLatLng, smooth);
 
-        let setCam = this.#mapLatLng;
 		if (this.isVector) {
 
-			setCam = {
-	            center: this.#mapLatLng,
-	            heading: this.#mapAngle
-	        };
+	        this.map.setHeading(this.#mapAngle);
 
-	        MarkerManager.setPos(this.MainMarker, this.#mapLatLng);
-	    } else MarkerManager.setPos(this.MainMarker, this.#mapLatLng, this.#mapAngle);
+	        MarkerManager.setPos(this.MainMarker, this.#markerLatLng);
+	    } else MarkerManager.setPos(this.MainMarker, this.#markerLatLng, this.#mapAngle);
 
-	    if (!this.#mouseDown)
-	    	this.map.setCenter(setCam);
-	    
+	    if (this.#followCenter) {
+        	this.#mapLatLng = LatLngLepr(this.#mapLatLng, this.#toLatLng, smooth);
+	    	this.map.setCenter(this.#mapLatLng);
+	    }
+
 		this.SendEvent('UPDATE', this);
 	}
 
 	setMainPosition(latLng, angle = undefined) {
 		if (latLng && this.MainMarker) {
 			if (this.#cameraFollowPath) {
-
 		        this.#toAngle = typeof(angle) == 'undefined' ? 0 : angle;
 		        this.#toLatLng = latLng;
 

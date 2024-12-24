@@ -135,6 +135,14 @@ h1, h2 {
     margin-top: -4em;
 }
 
+.IPAZAH-content-container span {
+    text-align: center;
+    color: black;
+    background: #ffffff94;
+    display: block;
+    width: max-content;
+}
+
 #map .anim {
     animation-name: markerAnim;
     animation-duration: 5s;
@@ -376,11 +384,13 @@ h1, h2 {
 */
 
 .hr {
+    width: 0;
     height: 1px;
     pointer-events: none;
     animation-name: showTitle;
     animation-duration: 1s;
     animation-fill-mode: forwards;
+    animation-delay: 1s;
     border-width: 1px;
     border-style: solid;
 }
@@ -592,7 +602,13 @@ input:focus, select:focus {
 .sliderView::-webkit-scrollbar {
 }
 
-.content .slider {
+.form .data {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+}
+
+.pageContent .slider {
     height: max-content;
 }
 
@@ -1228,18 +1244,33 @@ select {
     margin: 0.5em;
 }
 
+.data .block .param,
+.data .block .dynParam  {
+    justify-content: space-between;
+    font-size: 0.8em;
+    min-height: 1.5em;
+}
+
+.data .block .param {
+    display: flex;
+}
+
 .dynParam {
     display: none;
 }
 
-.execution .orderInfo .stayParam,
-.driver_move .orderInfo .stayParam {
+.execution .stayParam,
+.driver_move .stayParam {
     display: none;
 }
 
 .execution .orderInfo .dynParam,
 .driver_move .orderInfo .dynParam {
     display: table-row;
+}
+.execution .order .dynParam,
+.driver_move .order .dynParam {
+    display: flex;
 }
 
 .header .to {
@@ -1253,7 +1284,7 @@ select {
     text-align: left;
     border-radius: 1em;
     padding: 1em;
-    width: 50%;
+    max-width: 50%;
 }
 
 .trips .data .block {
@@ -1266,7 +1297,10 @@ select {
 
 .view .data {
     display: flex;
-
+    /*
+    align-content: center;
+    flex-wrap: wrap;
+    */
 }
 
 .view.order .content{
@@ -1295,14 +1329,14 @@ select {
     display: none !important;
 }
 
-.view.order .stateHead {
+.order .stateHead {
     text-align: center !important;
 }
 
 .data .block h3 {
     margin-top: -1.5em;
     margin: -2em 2em 0 2em;
-    width: fit-content;
+    align-content: center;
     padding: 0 1em;
     font-style: italic;
     color: aquamarine;
@@ -1320,13 +1354,6 @@ select {
 
 .data .block .name {
     padding: 0.5em 0;
-}
-
-.data .block .param {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8em;
-    min-height: 1.5em;
 }
 
 .data .block .param span {

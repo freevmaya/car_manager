@@ -1,10 +1,12 @@
 body {
-    /*background-color: #2b2427;*/
     color: #888;
 }
 
-.wrapper {
+html {
     background-color: #2b2427;
+}
+
+.wrapper {
 }
 
 .modal #modal-windows {

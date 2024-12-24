@@ -133,7 +133,7 @@ class OrderView extends ViewPath {
 
     onSuitableDrivers(drivers) {
         for (let i in drivers) {
-            if (drivers[i].order_id && (drivers[i].order_id == this.Order.id))
+            if (drivers[i].order_id && (drivers[i].order_id == this.Order.id)) 
                 this.contentElement.find('.remaindDistance').text(DistanceToStr(drivers[i].remaindDistance));
         }
     }
@@ -247,8 +247,7 @@ class SelectPathView extends ViewPath {
                     this.Close();
                 } else this.trouble(response);
             }).bind(this));
-        }
-        this.trouble('Select path please');
+        } else this.trouble('Select path please');
     }
 
     fillText(place, id) {

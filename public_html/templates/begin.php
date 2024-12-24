@@ -5,7 +5,7 @@ if ($this->asDriver()) {
 	include_once(TEMPLATES_PATH.'/driver/begin.php');
 } else {
 
-	html::AddScriptFiles(['views.js', 'driver-manager.js', 'map.js', 'trips.js', 'validator.js',
+	html::AddScriptFiles(['views.js', 'driver-manager.js', 'map.js', 'passenger/order-states.js', 'trips.js', 'validator.js',
 						  'jquery-dateformat.min.js',
 						  'https://code.jquery.com/ui/1.14.0/jquery-ui.js']);
 	html::AddStyleFile('css/jquery-ui.css');
@@ -29,6 +29,9 @@ if ($this->asDriver()) {
 		$lastTrips = BaseModel::FullItems($orederModel->getItems(['o.user_id'=>$user['id'], 'state'=>'finished', 'limit'=>3]), ['route_id'=>new RouteModel()]);
 		
 		$lastTripCount = count($lastTrips);
+	} else {
+		html::AddJsData($currentList, 'currentTrips');
+		html::AddTemplate(html::RenderField(['type'=>'order']), 'order');
 	}
 
 	html::AddTemplate('
@@ -76,9 +79,11 @@ if ($this->asDriver()) {
 				<h2><?=lang('My current trip')?></h2>
 				<div id="currentList">
 				<?
+				/*
 				for ($i=0; $i<$currentTripCount; $i++)
-					echo html::RenderField(['type'=>'order'], 
+					echo html::RenderField(['type'=>'order-html'], 
 						array_merge($currentList[$i], $currentList[$i]['route']));
+						*/
 				?>
 				</div>
 			</div>
