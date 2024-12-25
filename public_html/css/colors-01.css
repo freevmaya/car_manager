@@ -33,6 +33,12 @@ html {
     color: white;
 }
 
+#modal-windows .view,
+#windows .view {
+    box-shadow: 0px 0px 1em #000000ba;
+    background: #333;
+}
+
 .view > .title h3 {
     color: #8d8d8d;
 }
@@ -55,8 +61,8 @@ html {
 }
 
 .button {
-    background-color: #ffffff54;
-    box-shadow: 0px 0px 12px black;
+    /*background-color: #ffffff54;
+    box-shadow: 0px 0px 12px black;*/
 }
 
 .items .button {
@@ -163,10 +169,6 @@ html {
     background: #333;
 }
 
-.view {
-    background: #333;
-}
-
 .field label {
     color: #888;
 }
@@ -265,7 +267,7 @@ select.time {
     box-shadow: 1px 1px 3px #00000052;
 }
 
-.pageContent .footer {
+form > .footer{
     background-color: #333;
     box-shadow: 0px 0px 8px #00000059;
 }
@@ -346,7 +348,8 @@ select.time {
     background: #2b2427;
 }
 
-.view .data .block h3 {
+#windows .view .data .block h3,
+#modal-windows .view .data .block h3 {
     background: #333;
 }
 

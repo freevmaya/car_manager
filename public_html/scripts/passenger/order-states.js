@@ -1,4 +1,4 @@
-class ViewPath extends BottomView {
+class ViewPath extends View {
     routes;
     rpath;
     travelMode = travelMode;
@@ -10,7 +10,8 @@ class ViewPath extends BottomView {
     }
 
     #setRoutes(routes) {
-        this.setPath(v_map.DrawPath(this.routes = routes, currentPathOptions));
+        if (v_map)
+            this.setPath(v_map.DrawPath(this.routes = routes, currentPathOptions));
     }
 
     getRoutes() {
@@ -25,7 +26,7 @@ class ViewPath extends BottomView {
             if (afterRequest) afterRequest();
         }
 
-        if (isEmpty(routes)) 
+        if (isEmpty(routes) && v_map) 
             v_map.getRoutes(startPlace, finishPlace, this.travelMode, afterGetRoutes.bind(this));
         else afterGetRoutes.bind(this)(routes);
     }
@@ -160,7 +161,7 @@ class OrderView extends ViewPath {
                 order.finish = toPlace(order.finish);
 
                 if (!this.rpath && !this.options.path) 
-                    this.showPath(order.start, order.finish);
+                    this.showPath(order.start, order.finish, order.route);
             }
 
             this.options.order = order;
@@ -271,19 +272,28 @@ class SelectPathView extends ViewPath {
     }
 }
 
-var WAITOFFERS = 5000; // 5 сек
 class OrderAccepedView extends OrderView {
     pathToStartNotify;
     pathToStart;
     #offers;
     #time;
+    #allowOffers;
+    #offersTimerId;
+
+    get allowOffers() { return this.#allowOffers; }
+    set allowOffers(value) { 
+        if (this.#allowOffers = value) {
+            this.#time = Date.now();
+            this.#offers = [];
+            this.#offersTimerId = setInterval(this.checkBestOffer.bind(this), 1000);
+        } else clearInterval(this.#offersTimerId);
+    }
 
     constructor(options = {actions: {}}, afterDestroy = null) {
         super(options, afterDestroy);
-
-        this.#time = Date.now();
-        this.#offers = [];
         this.allowOffers = this.orderState == 'wait';
+
+        transport.requireDrivers = true;
     }
 
     resetLayer() {
@@ -296,7 +306,8 @@ class OrderAccepedView extends OrderView {
 
     changeOrder(order) {
         super.changeOrder(order);
-        v_map.visMainMarker(this.orderState != 'execution');
+        if (v_map)
+            v_map.visMainMarker(this.orderState != 'execution');
     }
 
     SetOrder(order) {
@@ -321,21 +332,10 @@ class OrderAccepedView extends OrderView {
         }
     }
 
-    offersProcess(list) {
+    checkBestOffer() {
 
-        for (let i in list) {
-            let notify = list[i];
-            if (notify.content_type == "offerToPerform") {
-                if ((notify.content_id == this.Order.id) && (this.offerIndexOf(notify.id) == -1))
-                    this.addOfferNotify(notify);
-                else transport.SendStatusNotify(this.pathToStartNotify, 'rejected');
-            }
-        }
+        if ((DeltaTime(this.#time) < -WAITOFFERS) && (this.#offers.length > 0)) {
 
-        let time_count = Date.now() - this.#time;
-        if ((time_count > WAITOFFERS) && (this.#offers.length > 0)) {
-
-            this.#time = Date.now();
             let nearIx = 0;
             let bestDistance = Number.MAX_VALUE;
             let start = toPlace(this.Order.start);
@@ -370,6 +370,20 @@ class OrderAccepedView extends OrderView {
             this.takeOffer(bestOffer);
             this.allowOffers = false;
         }
+    }
+
+    offersProcess(list) {
+
+        for (let i in list) {
+            let notify = list[i];
+            if (notify.content_type == "offerToPerform") {
+                if ((notify.content_id == this.Order.id) && (this.offerIndexOf(notify.id) == -1))
+                    this.addOfferNotify(notify);
+                else transport.SendStatusNotify(this.pathToStartNotify, 'rejected');
+            }
+        }
+
+        this.checkBestOffer();
     }
 
     offerIndexOf(notify_id) {
@@ -443,7 +457,8 @@ class OrderAccepedView extends OrderView {
                 if (this.Order.state == 'accepted') {
                     if (!this.pathToStartNotify) {
                         this.pathToStartNotify = list[i];
-                        this.drawPathToStart(list[i].text);
+                        if (v_map)
+                            this.drawPathToStart(list[i].text);
                     }
                 } else transport.SendStatusNotify(list[i], 'read');
     }
@@ -489,6 +504,7 @@ function BeginSelectPath() {
 
             selectPathDialog = viewManager.Create({
                 startPlace: place,
+                bottomAlign: true,
                 callback: (order)=>{
                     listener.remove();
                     BeginAcceptedOrder(jsdata.currentOrder = order, 
@@ -506,6 +522,7 @@ function BeginSelectPath() {
 function BeginAcceptedOrder(order, passedPathData = null) {
     let dialog = viewManager.Create({
         path: passedPathData,
+        bottomAlign: true,
         order: order,
         title: toLang('Order')
     }, OrderAccepedView, BeginSelectPath);
@@ -520,4 +537,14 @@ function CreateViewFromState(order) {
 function Mechanics() {
     v_map.driverManagerOn(true);
     CreateViewFromState(jsdata.currentOrder);
+}
+
+function createOrderList(layer, orders) {
+    for (let i=0; i<orders.length; i++) {
+        viewManager.Create({
+            parent: layer,
+            order: orders[i],
+            title: toLang('Order')
+        }, OrderAccepedView);
+    }
 }

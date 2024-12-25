@@ -16,26 +16,25 @@ if ($this->asDriver()) {
 	$currentTripCount = 0;
 	$orederModel = new OrderModel();
 
-	$orders = $orederModel->getItems(['o.user_id'=>$user['id'], 'state'=>['wait', 'accepted'], 'limit'=>3]);
+	$orders = $orederModel->getItems(['o.user_id'=>$user['id'], 'state'=>ACTIVEORDERLIST_ARR, 'limit'=>3]);
 	$currentList = BaseModel::FullItems($orders, ['route_id'=>new RouteModel()]);
 	$currentTripCount = count($currentList);
 
-	if ($currentTripCount == 0) {
+	$ordinaryTrips = (new OrdinaryTripsModel())->getItems(['limit'=>3]);
+	$ordTripCount = count($ordinaryTrips);
 
-		$ordinaryTrips = (new OrdinaryTripsModel())->getItems(['limit'=>3]);
+	Группировать по номеру маршрута
+	
+	$lastTrips = BaseModel::FullItems($orederModel->getItems(['o.user_id'=>$user['id'], 'state'=>'finished', 'limit'=>3]), ['route_id'=>new RouteModel()]);
+	
+	$lastTripCount = count($lastTrips);
 
-		$ordTripCount = count($ordinaryTrips);
-
-		$lastTrips = BaseModel::FullItems($orederModel->getItems(['o.user_id'=>$user['id'], 'state'=>'finished', 'limit'=>3]), ['route_id'=>new RouteModel()]);
+	if ($currentTripCount > 0)
+		html::AddJsCode('createOrderList($("#currentList"), '.json_encode($currentList).');');
 		
-		$lastTripCount = count($lastTrips);
-	} else {
-		html::AddJsData($currentList, 'currentTrips');
-		html::AddTemplate(html::RenderField(['type'=>'order']), 'order');
-	}
-
+	html::AddTemplate(html::RenderField(['type'=>'order']), 'order');
 	html::AddTemplate('
-	<div class="field" id="{name}" data-place=\'{place}\'>
+	<div class="field trip-item" id="{name}" data-place=\'{place}\'>
 	    <label for="{name}" class="title">{label}</label>
 	    <div class="container">
 	        <div class="selectView" data-callback-index="{name}">
@@ -48,14 +47,18 @@ if ($this->asDriver()) {
         '.html::RenderField(['type'=>'map', 'id'=>"map-{field_number}"], 'map').'
 	</div>', 'trip-item');
 
-	html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
+	//html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
 ?>
 <div class="pageContent trips">
-	<?if ($currentTripCount == 0) {?>
-	<div class="header"><p><?=lang('BeginPageDescription')?></p></div>
-	<?}?>
 	<div class="sliderView">
 		<div class="form slider">
+			<?if ($currentTripCount > 0) {?>
+			<div class="group">
+				<h2><?=lang('My current trips')?></h2>
+				<div id="currentList">
+				</div>
+			</div>
+			<?}?>
 			<?if ($ordTripCount > 0) {?>
 			<div class="group">
 				<h2><?=lang('Ordinary trips')?></h2>
@@ -66,26 +69,13 @@ if ($this->asDriver()) {
 			</div>
 			<?}?>
 			<?if ($lastTripCount > 0) {?>
+			<h3><?=lang('BeginPageDescription')?></h3>
 			<div class="group">
 				<h2><?=lang('My last trips')?></h2>
 				<?
 				for ($i=0; $i<$lastTripCount; $i++)
 					echo html::RenderField(['type'=>'trip_point'], $lastTrips[$i]['route']);
 				?>
-			</div>
-			<?}?>
-			<?if ($currentTripCount > 0) {?>
-			<div class="group">
-				<h2><?=lang('My current trip')?></h2>
-				<div id="currentList">
-				<?
-				/*
-				for ($i=0; $i<$currentTripCount; $i++)
-					echo html::RenderField(['type'=>'order-html'], 
-						array_merge($currentList[$i], $currentList[$i]['route']));
-						*/
-				?>
-				</div>
 			</div>
 			<?}?>
 		</div>

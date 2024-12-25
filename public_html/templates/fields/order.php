@@ -15,20 +15,20 @@
 	    		<span class="finish-place place">{PlaceName(data.finish)}</span>
 	    	</div>
 	    	</div>
-			<div class="param"><span><?=lang('Distance')?></span><span class="distance">{DistanceToStr(data.meters)}</span></div>
-			<div class="dynParam"><span><?=lang('Remaining distance')?></span><span class="remaindDistance">{toLang(data.remaindDistance)}</span></div>
-			<div class="dynParam"><span><?=lang('Departure time')?></span><span class="">{DepartureTime(data.pickUpTime)}</span></div>
+			<div class="param"><span class="name"><?=lang('Distance')?></span><span class="distance">{DistanceToStr(data.meters)}</span></div>
+			<div class="dynParam"><span class="name"><?=lang('Remaining distance')?></span><span class="remaindDistance">{toLang(data.remaindDistance)}</span></div>
+			<div class="dynParam"><span class="name"><?=lang('Departure time')?></span><span class="">{DepartureTime(data.pickUpTime)}</span></div>
     	</div>
 		<div class="block driver">
 			<h3><?=lang('Driver/auto')?></h3>
 			<div>
 				<div class="driver-info">
 					<div class="name">{driverName}</div>
-					<div class="param"><span><?=lang('Number')?></span><span>{number}</span></div>
-					<div class="param comfort"><span><?=lang('Comfort')?></span><span>{comfort}</span></div>
-					<div class="param seating"><span><?=lang('Seating')?></span><span>{seating}</span></div>
-					<div class="param carbody"><span><?=lang('Carbody')?></span><span>{car_body}</span></div>
-					<div class="param"><span><?=lang('Car color')?></span><span>{car_colorName}</span></div>
+					<div class="param"><span class="name"><?=lang('Number')?></span><span>{number}</span></div>
+					<div class="param comfort"><span class="name"><?=lang('Comfort')?></span><span>{comfort}</span></div>
+					<div class="param seating"><span class="name"><?=lang('Seating')?></span><span>{seating}</span></div>
+					<div class="param carbody"><span class="name"><?=lang('Carbody')?></span><span>{car_body}</span></div>
+					<div class="param"><span class="name"><?=lang('Car color')?></span><span>{car_colorName}</span></div>
 					<div class="param">
 						<div class="item-image" style="background-image: url(<?=BASEURL?>/css/images/{car_body}.png)" data-color="{car_color}">
 					</div>

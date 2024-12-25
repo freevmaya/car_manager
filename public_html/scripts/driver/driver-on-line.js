@@ -327,7 +327,7 @@ class OrderView extends BottomView {
     }
 
     offerToPerform(e) {
-        this.blockClickTemp(e, 10000);
+        this.blockClickTemp(e, WAITOFFERS * 1000);
 
         v_map.getRoutes(Extend({}, user, ['lat', 'lng']), this.options.order.start, this.options.order.travelMode, ((result)=>{
 

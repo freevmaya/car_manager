@@ -209,7 +209,7 @@ $(window).ready(() => {
                         {
                             name: 'start',
                             label: "Departure point",
-                            source: '.templates .field',
+                            source: '.templates .trip-item',
                             place: start,
                             readonly: readonly,
                             validator: requiredValidator,
@@ -217,7 +217,7 @@ $(window).ready(() => {
                             class: SelectPlaceField
                         },{
                             name: 'finish',
-                            source: '.templates .field',
+                            source: '.templates .trip-item',
                             label: "Point of arrival",
                             place: finish,
                             readonly: readonly,

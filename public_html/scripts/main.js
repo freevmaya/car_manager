@@ -223,19 +223,14 @@ class AjaxTransport extends EventProvider {
             }
 
             if (user.sendCoordinates || this.requireDrivers) {
-                this.enableGeo(true);
+                if (v_map) {
+                    this.enableGeo(true);
+                    data = $.extend(data, v_map.getMainPosition());
+                } else data = $.extend(data, toLatLng(user));
 
 
                 if (this.requireDrivers)
                     data.requireDrivers = true;
-
-                if (this.requireDrivers) {
-                    let mpos = v_map.getMainPosition();
-                    if (mpos) 
-                        data = $.extend(data, toLatLng(mpos));
-                } else if (this.#getPosition) {
-                    data = $.extend(data, this.#getPosition);
-                }
 
             } else this.enableGeo(false);
 
@@ -255,7 +250,7 @@ class AjaxTransport extends EventProvider {
     enableGeo(enable) {
         if (enable && !this.#geoId) {
             this.#geoId = watchPosition(this.receiveGeo.bind(this));
-        } else if (!enable && this.#geoId > 0) {
+        } else if (!enable && (this.#geoId > 0)) {
             clearWatchPosition(this.#geoId);
             this.#geoId = false;
         }
@@ -758,7 +753,9 @@ function getUserName(order) {
 }
 
 function DeltaTime(endTime) {
-    return (Date.parse(endTime) - Date.now()) / 1000;
+    if (isStr(endTime))
+        endTime = Date.parse(endTime); 
+    return (endTime - Date.now()) / 1000;
 }
 
 function TimeLeft(endTime) {

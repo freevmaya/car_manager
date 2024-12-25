@@ -1,7 +1,3 @@
-var windowsLayerId = 'windows';
-var modalLayerId = 'modal-windows';
-
-
 class ViewManager {
     openedViews = {};
 
@@ -128,8 +124,10 @@ class View extends BaseParentView {
 
     initMainView() {
         this.view = templateClone('.templates .' + this.options.template, this.options);
-        this.view.addClass('view');   
-        this.windows = $('#' + (this.options.modal ? modalLayerId : windowsLayerId));
+        this.view.addClass('view');
+
+        this.windows = this.options.parent ? this.options.parent : 
+                            $('#' + (this.options.modal ? modalLayerId : windowsLayerId));
         this.windows.append(this.view);
     }
 

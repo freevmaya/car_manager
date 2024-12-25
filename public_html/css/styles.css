@@ -92,7 +92,7 @@ h1, h2, h3, h4 {
     font-weight: 200;
 }
 
-h1, h2 {
+h1, h2, h3 {
     margin: 0.8em;
 }
 
@@ -218,7 +218,7 @@ h1, h2 {
     transition: 0.5s filter;
 }
 
-.modal #map, .modal #windows .view, .modal #toolbarMenu {
+.modal #map, .modal #windows .view, .modal #toolbarMenu, .modal .pageContent {
     filter: blur(0.2em) !important;
 }
 
@@ -272,10 +272,20 @@ h1, h2 {
     display: flex;
     flex-flow: column;
 
+    /*transition: width 0.5s ease-in-out;*/
+}
+
+.windows .view, .modal-windows .view {
     animation-name: showView;
     animation-duration: 0.5s;
+}
 
-    /*transition: width 0.5s ease-in-out;*/
+.pageContent .view {
+    overflow: hidden;
+
+    animation-name: appearedIn;
+    animation-duration: 1s;
+    animation-fill-mode: both;
 }
 
 .orderView .content table {
@@ -344,6 +354,17 @@ h1, h2 {
   }
   100% {
     scale: 1;
+    opacity: 1;
+    display: block;
+  }
+}
+
+@keyframes appearedIn {
+  0% {
+    opacity: 0;
+    display: none;
+  }
+  100% {
     opacity: 1;
     display: block;
   }
@@ -575,8 +596,8 @@ input:focus, select:focus {
     position: absolute;
     left: 0;
     right: 0;
-    top: 4em;
-    bottom: 4.5em;
+    top: 0;
+    bottom: 0;
 }
 
 /*#windows .sliderView {
@@ -589,7 +610,7 @@ input:focus, select:focus {
 }
 */
 
-.pageContent .footer {
+form > .footer {
     position: absolute;
     left: 0;
     right: 0;
@@ -881,7 +902,7 @@ select {
     border-radius: 0 0 50px 0;
 }
 
-.field .container {
+form .field .container {
     margin-left: 1em;
     /*padding: 1em;*/
 }
@@ -988,10 +1009,6 @@ select {
 
 .trips .selectView .button {
     width: 5em;
-}
-
-.trips .header {
-    margin: 2em;
 }
 
 .selectView .popup-button::before {
@@ -1268,6 +1285,8 @@ select {
 .driver_move .orderInfo .dynParam {
     display: table-row;
 }
+
+.accepted .order .dynParam,
 .execution .order .dynParam,
 .driver_move .order .dynParam {
     display: flex;
@@ -1284,7 +1303,7 @@ select {
     text-align: left;
     border-radius: 1em;
     padding: 1em;
-    max-width: 50%;
+    width: max-content;
 }
 
 .trips .data .block {
@@ -1297,10 +1316,7 @@ select {
 
 .view .data {
     display: flex;
-    /*
-    align-content: center;
-    flex-wrap: wrap;
-    */
+    justify-content: center;
 }
 
 .view.order .content{
@@ -1353,13 +1369,14 @@ select {
 }
 
 .data .block .name {
-    padding: 0.5em 0;
+    padding: 0.2em 0;
 }
 
-.data .block .param span {
+.data .block .param span,
+.data .block .dynParam span {
     display: flex;
     align-items: end;
-    padding: 0 0.2em;
+    padding: 0.2em 0.2em;
 }
 
 .data .param .item-image span {

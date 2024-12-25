@@ -31,22 +31,35 @@ class RouteModel extends BaseModel {
 		return $item;
 	}
 
+	protected static function formPlace($place) {
+
+		if ($place) {
+			if (is_string($place))
+				$place = json_decode($place, true);
+
+			if (isset($place['latLng'])) {
+				$place['lat'] = $place['latLng']['lat'];
+				$place['lng'] = $place['latLng']['lng'];
+
+				unset($place['latLng']);
+			}
+		}
+
+		trace($place);
+
+		return $place;
+	}
+
 	public function Update($value) {
 		GLOBAL $dbp;
 
 		$route_id = null;
 
-		$start = $value['start'];
-		$finish = $value['finish'];
+		$start = $value['start'] = RouteModel::formPlace($value['start']);
+		$finish = $value['finish'] = RouteModel::formPlace($value['finish']);
 
 		if (!isset($value['user_id']))
 			$value['user_id'] = Page::$current->getUser()['id'];
-
-		if (is_string($start))
-			$start = json_decode($start, true);
-
-		if (is_string($finish))
-			$finish = json_decode($finish, true);
 
 		if ($start && $finish) {
 
