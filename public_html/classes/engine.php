@@ -71,4 +71,6 @@ if (!function_exists('array_is_list')) {
     }
 }
 
+mysqli_debug("d:t:o,/tmp/client.trace");
+
 ?>

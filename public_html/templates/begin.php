@@ -22,8 +22,6 @@ if ($this->asDriver()) {
 
 	$ordinaryTrips = (new OrdinaryTripsModel())->getItems(['limit'=>3]);
 	$ordTripCount = count($ordinaryTrips);
-
-	Группировать по номеру маршрута
 	
 	$lastTrips = BaseModel::FullItems($orederModel->getItems(['o.user_id'=>$user['id'], 'state'=>'finished', 'limit'=>3]), ['route_id'=>new RouteModel()]);
 	

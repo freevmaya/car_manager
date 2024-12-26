@@ -2,27 +2,23 @@ class ValidatorList {
 	#form;
 	#submit;
 	#items = [];
+	#checkState = false;
 	checkForm() {
 		if (!this.#form) {
 			this.#form = $('form');
-			this.#form.on('submit', this.onSubmit.bind(this));
 			this.#submit = this.#form.find('*[type="submit"]');
 		}
 	}
 
-	onSubmit(e) {
-		let ainput = document.activeElement;
+	checkInput(ainput, afterCheck) {
 		if (ainput && (ainput.type == 'text')) {
 			let idx = this.indexOf(ainput.name);
 			if (idx > -1) {
-				this.#items[idx].doAfterChange(((value)=>{
-					if (value) this.#form.submit();
-				}).bind(this));
-				e.preventDefault();
-				return false;
+				this.#items[idx].doAfterChange(afterCheck);
+				return;
 			}
 		}
-		return this.isSendAllowed();
+		afterCheck(this.isSendAllowed());
 	}
 
 	indexOf(name) {
@@ -48,13 +44,6 @@ class ValidatorList {
 		this.#items.push(validator);
 		validator.parent = this;
 	}
-
-	refresh() {
-		if (this.#submit) {
-			if (this.isSendAllowed()) this.#submit.removeAttr('disabled');
-			else this.#submit.prop('disabled', true);
-		}
-	}
 }
 
 class BaseValidator {
@@ -78,7 +67,6 @@ class BaseValidator {
 	setAllowed(value) {
 		this._allowed = value;
 		this.refreshFieldMessage();
-		this.parent.refresh();
 	}
 
 	getAllowed() {

@@ -5,7 +5,6 @@ $user;
 class Page {
 	protected $title = "";
 	protected $model;
-	protected $dataId;
 
 	private $asDriver = -1;
 	private $haveActiveOrder = -1;
@@ -97,7 +96,6 @@ class Page {
 		
 		include_once(BASEDIR.'/languages/'.$language.'.php');
 
-		$this->dataId = $user['id'];
 		$this->model = $this->initModel();
 
 		if ($this->model && $this->isReciveData()) {
@@ -268,7 +266,7 @@ class Page {
 	}
 
 	public function getId() {
-		return $this->dataId;
+		throw new Exception("This method must be override");
 	}
 
 	protected function RenderContent($templateFile) {

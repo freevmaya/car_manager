@@ -9,12 +9,12 @@ class Driver extends Page {
 			return new CarModel();
 		}
 
-		$this->dataId = $user['id'];
 		return new DriverModel();
 	}
 
 	public function getId() {
-		return $this->dataId;
+		GLOBAL $user;
+		return ['user_id'=>$user['id']];
 	}
 }
 ?>

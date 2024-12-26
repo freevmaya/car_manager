@@ -18,7 +18,6 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 	$dbp = new mySQLProvider('localhost', _dbname_default, _dbuser, _dbpassword);
 
 	$simulateModel = new SimulatePassModel();
-	$driverModel = new DriverModel();
 	$routeModel = new RouteModel();
 	$userModel = new UserModel();
 	$nModel = new NotificationModel();

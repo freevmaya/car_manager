@@ -3,7 +3,6 @@
 	html::AddScriptFiles(['views.js', 'jquery-dateformat.min.js']);
 
 	$notifyModel = new NotificationModel();
-	$driverModel = new DriverModel();
 
 	html::addStyleFile(BASEURL.'/css/toolbar.css');
 	html::AddScriptFile("toolbar.js");

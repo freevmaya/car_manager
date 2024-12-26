@@ -9,6 +9,8 @@ html::AddJsData(json_encode(
     BaseModel::FullItems((new NotificationModel())->getItems($options), ['content_id'=>new OrderModel()])
 ), 'notificationList');
 
+html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId')
+
 ?>
 <!DOCTYPE html>
 <html lang="<?=$user['language_code']?>">
@@ -35,7 +37,6 @@ html::AddJsData(json_encode(
 
         var BASEURL = '<?=BASEURL?>';
         var lang = <?=preg_replace("/[\r\n]+/", '', json_encode($lang, JSON_PRETTY_PRINT))?>;
-        var ajaxRequestId = '<?=$this->createRequestId(get_class($this))?>';
         var transport = new AjaxTransport(1000);
         var app = new App();
         var fieldIdx = <?=html::fieldIdx()?>;

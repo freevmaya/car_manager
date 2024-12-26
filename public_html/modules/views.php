@@ -5,14 +5,14 @@ html::AddScriptFiles([
 ]);
 
 html::AddTemplate('<div class="view radius">
-	<div class="header"><button class="close button"></button></div>
+	<div class="header"><button class="close button-flat"></button></div>
 	<div class="content"></div>
 	<div class="footer btn-block"></div>
 </div>', 'view');
 
 /*
 html::AddTemplate('<div class="view shadow radius dialog">
-	<div class="header"><button class="close button"></button></div>
+	<div class="header"><button class="close button-flat"></button></div>
 	<div class="cols">
 		<div class="content"></div>
 		<div class="btn-block"></div>

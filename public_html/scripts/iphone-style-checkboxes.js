@@ -107,14 +107,17 @@
     iOSCheckbox.prototype.onMouseDown = function(event) {
       var x;
 
-      event.preventDefault();
-      if (this.isDisabled()) {
-        return;
-      }
-      x = event.pageX || event.originalEvent.changedTouches[0].pageX;
-      iOSCheckbox.currentlyClicking = this.handle;
-      iOSCheckbox.dragStartPosition = x;
-      return iOSCheckbox.handleLeftOffset = parseInt(this.handle.css('left'), 10) || 0;
+      if (event.button == 0) {
+
+        event.preventDefault();
+        if (this.isDisabled()) {
+          return;
+        }
+        x = event.pageX || event.originalEvent.changedTouches[0].pageX;
+        iOSCheckbox.currentlyClicking = this.handle;
+        iOSCheckbox.dragStartPosition = x;
+        return iOSCheckbox.handleLeftOffset = parseInt(this.handle.css('left'), 10) || 0;
+      } else return false;
     };
 
     iOSCheckbox.prototype.onDragMove = function(event, x) {
@@ -158,7 +161,11 @@
         p = (x - iOSCheckbox.dragStartPosition) / this.rightSide;
         this.elem.prop('checked', p >= 0.5).change();
       } else {
-        this.elem.prop('checked', !this.elem.prop('checked')).change();
+        console.log(this.elem.prop('checked'));
+        this.elem.prop('checked', !this.elem.prop('checked'));
+        setTimeout((()=>{
+          this.elem.change();
+        }).bind(this), 200);
       }
       iOSCheckbox.currentlyClicking = null;
       iOSCheckbox.dragging = null;

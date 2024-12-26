@@ -138,7 +138,8 @@ async function Ajax(params) {
             formData.append(key, (typeof data == 'string') ? data : JSON.stringify(data));
         }
 
-        formData.append('ajax-request-id', ajaxRequestId);
+        if (typeof(jsdata.ajaxRequestId) != 'undefined')
+            formData.append('ajax-request-id', jsdata.ajaxRequestId);
     }
 
     const request = new Request(BASEURL + "/ajax", {
@@ -223,7 +224,7 @@ class AjaxTransport extends EventProvider {
             }
 
             if (user.sendCoordinates || this.requireDrivers) {
-                if (v_map) {
+                if (typeof(v_map) != 'undefined') {
                     this.enableGeo(true);
                     data = $.extend(data, v_map.getMainPosition());
                 } else data = $.extend(data, toLatLng(user));

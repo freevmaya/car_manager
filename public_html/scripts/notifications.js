@@ -33,7 +33,7 @@ class NotifyItem {
 
     initView() {
         this.view = $('<div class="item radius shadow">');
-        this.view.append($('<button class="close button">').click(this.Close.bind(this)));
+        this.view.append($('<button class="close">').click(this.Close.bind(this)));
 
         if (this.data.content_type == "changeOrder") {
 

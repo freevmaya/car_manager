@@ -20,6 +20,26 @@ class Ajax extends Page {
 
 		return Page::$request;
 	}
+
+	protected function setValue($data) {
+		$result = false;
+		if ($nameModel 	= @$data['model']) {
+			$id 		= @$data['id'];
+			$model = new ($nameModel)();
+			if ($item = $model->getItem($data['id'])) {
+
+				$value = $data['value'];
+				$value = $value == 'on' ? 1 : ($value == 'off' ? 0 : $value);
+
+				$item[$data['name']] = $value;
+
+				//trace($item);
+				$result = $model->Update($item);
+			}
+		}
+		return $result;
+	}
+
 	protected function BeganRouteCar($data) {
 		GLOBAL $dbp;
 		
@@ -171,10 +191,6 @@ class Ajax extends Page {
 
 	protected function catchError($data) {
 		return (new ErrorsModel())->Add($data['message'], $data['stack']);
-	}
-
-	protected function GetDriver($data) {
-		return ["result"=>(new DriverModel())->getItem($data)];
 	}
 
 	protected function Go($data) {

@@ -34,9 +34,10 @@ class UserModel extends BaseModel {
 		GLOBAL $dbp;
 
 		if ($dbp->one("SELECT id FROM {$this->getTable()} WHERE `id` = {$values['id']}")) {
-			$dbp->bquery("UPDATE {$this->getTable()} SET `first_name` = ?, `last_name` = ?, `username` = ?, `phone` = ? WHERE `id` = ?", 'ssssi', 
+			return $dbp->bquery("UPDATE {$this->getTable()} SET `first_name` = ?, `last_name` = ?, `username` = ?, `phone` = ? WHERE `id` = ?", 'ssssi', 
 				[$values['first_name'], $values['last_name'], $values['username'], $values['phone'], $values['id']]);
-		} 
+		}
+		return false;
 	}
 
 	public function checkUnique($value) { 

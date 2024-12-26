@@ -15,31 +15,46 @@ class DriverModel extends BaseModel {
 		$active = isset($values['active']) ? 1 : 0;
 		$car_id = isset($values['car_id']) ? $values['car_id'] : null;
 
-		if ($dbp->line("SELECT `id` FROM {$this->getTable()} WHERE `user_id` = {$values['user_id']}")) {
+		if (isset($values['id'])) 
+			$field_indent = 'id';
+		else if (isset($values['user_id'])) 
+			$field_indent = 'user_id';
+		else return false;
+
+		$query = "SELECT `id` FROM {$this->getTable()} WHERE `{$field_indent}` = {$values[$field_indent]}";
+
+		if ($dbp->line($query)) {
 			$timeBlock = '';
 			if ($active)
 				$timeBlock = ',`activationTime` = NOW(), `expiredTime` = NOW() + '.$this->expiredInterval;
 
-			$query = "UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock} WHERE `user_id`= ?";
+			$query = "UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock} WHERE `{$field_indent}`= ?";
 
-			$dbp->bquery($query , 
+			return $dbp->bquery($query, 
 				'iii', 
-				[$car_id, $active, $values['user_id']]);
+				[$car_id, $active, $values[$field_indent]]);
 		} else {
-			$dbp->bquery("INSERT {$this->getTable()} (`user_id`, `car_id`, `active`, `activationTime`, `expiredTime`) VALUES (?, ?, ?, NOW(), NOW() + {$this->expiredInterval})", 
+			return $dbp->bquery("INSERT {$this->getTable()} (`user_id`, `car_id`, `active`, `activationTime`, `expiredTime`) VALUES (?, ?, ?, NOW(), NOW() + {$this->expiredInterval})", 
 				'iii', 
 				[$values['user_id'], $car_id, $active]);
 		}
 
-		//(new NotificationModel()).AddNo
+		return false;
 	}
 
 	public function getItem($data) {
 		GLOBAL $dbp;
 
+		$where = '';
 		if (is_numeric($data))
-			$user_id = $data;
-		else $user_id = @$data['user_id'];
+			$where = "WHERE d.id = {$data}";
+		else {
+			if (isset($data['user_id']))
+				$where = "WHERE u.id = {$data['user_id']}";
+			else if (isset($data['driver_id']))
+				$where = "WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.id={$data['driver_id']}";
+			else return null;
+		}
 
 		$query = "SELECT d.id, (d.active AND `expiredTime` >= NOW()) AS active, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, d.car_id, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
 
@@ -47,22 +62,10 @@ class DriverModel extends BaseModel {
 				"INNER JOIN users u ON d.user_id = u.id ".
 				"INNER JOIN car c ON d.car_id = c.id ".
 				"INNER JOIN car_bodies cb ON cb.id = c.car_body_id ".
-				"INNER JOIN car_color cc ON cc.id = c.color_id ";
+				"INNER JOIN car_color cc ON cc.id = c.color_id ".
+				$where;
 
-		$driver = null;
-		if ($user_id) {
-
-			$query .= "WHERE u.id = {$user_id}";
-
-			$driver = $dbp->line($query);
-		} else if (isset($data['driver_id'])) {
-
-			$query .= "WHERE `active` = 1 AND `expiredTime` >= NOW() AND u.`last_time` >= NOW() - {$this->lostConnectInterval} AND d.id={$data['driver_id']}";
-
-			$driver = $dbp->line($query);
-		}
-
-		return $driver;
+		return $dbp->line($query);
 	}
 
 	public function OrderDrivers($order_id) {
@@ -138,10 +141,11 @@ class DriverModel extends BaseModel {
 	}
 
 	public function getFields() {
+		GLOBAL $user;
+
 		return [
-			'user_id' => [
-				'type'=> 'hidden',
-				'default' => Page::$current->getUser()['id']
+			'id' => [
+				'type' => 'hidden'
 			],
 			'active' => [
 				'label' => 'Active',
@@ -150,7 +154,7 @@ class DriverModel extends BaseModel {
 			'car_id' => [
 				'type' => 'car',
 				'label' => 'Car',
-				'user_id'=> Page::$current->getUser()['id'],
+				'user_id'=> $user['id'],
 				'model' => 'CarModel',
 				'required' => true
 			]/*

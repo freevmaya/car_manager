@@ -41,18 +41,27 @@ class OrderModel extends BaseModel {
 	public function getItems($options) {
 		GLOBAL $dbp;
 
+		$options = array_merge(['order'=>'`id` DESC'], $options);
+
 		$where = BaseModel::GetConditions($options, ['state', 'o.user_id', 'driver_id', 'o.id']);
 		
 		$whereStr = implode(" AND ", $where);
 
 		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters, ROUND(r.meters / 1000, 1) AS distance ".(isset($options['routes'])?', r.routes':'').", driver.id AS driverId, driver.username AS driverName, c.number, c.comfort, c.seating, cb.symbol AS car_body, cc.rgb AS car_color, cc.name AS car_colorName ".
+		
 			"FROM {$this->getTable()} o INNER JOIN `users` u ON u.id = o.user_id INNER JOIN `route` r ON o.route_id = r.id ".
 			"LEFT JOIN driverOnTheLine ON driverOnTheLine.id=o.driver_id ".
 			"LEFT JOIN users driver ON driver.id=driverOnTheLine.user_id ".
 			"LEFT JOIN car c ON c.id=driverOnTheLine.car_id ".
 			"LEFT JOIN car_bodies cb ON cb.id=c.car_body_id ".
 			"LEFT JOIN car_color cc ON cc.id=c.color_id ".
-			"WHERE $whereStr ORDER BY `id` DESC";
+
+			"WHERE $whereStr";
+
+		if (isset($options['group']))
+			$query .= " GROUP BY {$options['group']}";
+			
+		$query .= " ORDER BY {$options['order']}";
 
 		if (isset($options['limit']))
 			$query .= " LIMIT 0, {$options['limit']}";

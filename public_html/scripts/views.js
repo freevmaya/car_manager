@@ -143,7 +143,7 @@ class View extends BaseParentView {
         this.initMainView();
 
         this.headerElement = this.view.find('.header');
-        this.closeBtn = this.headerElement.find('.close.button');
+        this.closeBtn = this.headerElement.find('.close');
         this.contentElement = this.view.find('.content');
         this.footerElement = this.view.find('.btn-block');
 

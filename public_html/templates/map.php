@@ -25,7 +25,7 @@
 				$orderModel->getItemsWithChanges(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR])
 			, 'taken_orders');
 		html::AddJsData(
-				(new DriverModel())->getItem($user['id'])
+				(new DriverModel())->getItem(['user_id'=>$user['id']])
 			, 'driver');
 
 		html::AddJsCode("
