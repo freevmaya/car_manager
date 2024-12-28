@@ -25,11 +25,18 @@ class Color {
     return `rgb(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)})`;
   }
 
+  #parseStr(str, regEx) {
+    let result = str.matchAll(regEx).toArray();
+    if ((result.length > 0) && (result[0].length > 2))
+      return result[0];
+    return false;
+  }
+
   setAsString(str) {
-    const regexp = /rgb\(([\d\s]+),([\d\s]+),([\d\s]+)\)/gm;
-    const result = str.matchAll(regexp).toArray();
-    if (result)
-      this.set(parseInt(result[0][1]), parseInt(result[0][2]), parseInt(result[0][3]));
+    let result = this.#parseStr(str, /rgb\(([\d\s]+),([\d\s]+),([\d\s]+)\)/gm);
+    if (!result) result = this.#parseStr(str, /#([\d\w]{2})([\d\w]{2})([\d\w]{2})/gm);
+    
+    this.set(parseInt(result[1]), parseInt(result[2]), parseInt(result[3]));
   }
 
   set(r, g, b) {

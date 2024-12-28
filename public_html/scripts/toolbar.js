@@ -20,6 +20,14 @@ class ToolbarUser {
 		toolbar = this;
 
 		this.appendReceiveNotifyList(jsdata.notificationList);
+		app.AddListener('CHANGED_FIELD', this.onChangedField.bind(this));
+	}
+
+	onChangedField(data) {
+		if ((data.model == 'DriverModel') && (data.name == 'active')) {
+			this.#view.toggleClass('passenger', !data.value)
+					.toggleClass('driver', data.value);
+		}
 	}
 
 	onUserClick() {

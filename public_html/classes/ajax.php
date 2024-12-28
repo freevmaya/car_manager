@@ -28,12 +28,7 @@ class Ajax extends Page {
 			$model = new ($nameModel)();
 			if ($item = $model->getItem($data['id'])) {
 
-				$value = $data['value'];
-				$value = $value == 'on' ? 1 : ($value == 'off' ? 0 : $value);
-
-				$item[$data['name']] = $value;
-
-				//trace($item);
+				$item[$data['name']] = $data['value'];
 				$result = $model->Update($item);
 			}
 		}

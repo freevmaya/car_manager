@@ -2,12 +2,74 @@
 
 abstract class BaseModel {
 	abstract protected function getTable();
-	public function Update($values) {}
-	public function getItem($id) {}
-	public function getItems($options) { return []; }
 	public function getFields() {return [];}
 	public function checkUnique($data) { return false; }
 	public function getTitle() { return Lang(get_class($this)); }
+
+	public function Update($values) {
+		GLOBAL $dbp;
+		$types = $this->dbTypes(array_keys($values));
+
+		$id = isset($values['id']) ? $values['id'] : null;
+
+		$values = $this->allowUpdateValues($values );
+
+		if ($id)
+			return $dbp->bquery($this->updateQuery($id, $values), $types, array_values($values));
+		else 
+			return $dbp->bquery($this->insertQuery($values), $types, array_values($values));
+	}
+
+	protected function allowUpdateValues($values) {
+		$fields = $this->getFields();
+		$result = [];
+		foreach ($values as $field=>$value)
+			if (isset($fields[$field]) && isset($fields[$field]['dbtype']))
+				$result[$field] = $value;
+
+		return $result;
+	}
+
+	protected function updateQuery($id, $values) {
+
+		$updateList = [];
+		foreach($this->getFields() as $fieldName=>$field)
+			if (($fieldName != 'id') && isset($values[$fieldName]))
+				$updateList[] = "`{$fieldName}`=?";
+
+		return "UPDATE `{$this->getTable()}` SET ".implode(',', $updateList)." WHERE id={$id}";
+	}
+
+	protected function insertQuery($values) {
+		unset($values['id']);
+
+		$fieldList = array_keys($values);
+		$valuesList = [];
+		foreach($fieldList as $fieldName) $valuesList[] = '?';
+
+		return "INSERT INTO {$this->getTable()} (".implode(',', $fieldList).") VALUES (".implode(',', $valuesList).")";
+	}
+
+	protected function dbTypes($fieldsList)
+	{
+		$fields = $this->getFields();
+		$types = '';
+		foreach ($fieldsList as $field)
+			if (($field != 'id') and isset($fields[$field]))
+				$types .= isset($fields[$field]['dbtype']) ? $fields[$field]['dbtype'] : 's';
+
+		return $types;
+	}
+
+	public function getItems($options) {
+		GLOBAL $dbp;
+		return $dbp->asArray("SELECT * FROM {$this->getTable()}");
+	}
+
+	public function getItem($id) {		
+		GLOBAL $dbp;
+		return $id ? $dbp->line("SELECT * FROM {$this->getTable()} WHERE id={$id}") : null;
+	}
 
 	public static  function AddWhere($whereList, $options, $paramName, $operand = '=') {
 		$optionCondition = '';
@@ -20,9 +82,9 @@ abstract class BaseModel {
 		return $whereList;
 	}
 
-	public static  function GetConditions($values, $paramsName, $operand = '=') {
+	public static  function GetConditions($values, $paramsNames, $operand = '=') {
 		$list = [];
-		foreach ($paramsName as $key=>$param)
+		foreach ($paramsNames as $key=>$param)
 			$list = BaseModel::AddWhere($list, $values, $param, $operand);
 
 		return $list;
@@ -43,7 +105,8 @@ abstract class BaseModel {
 		$result = [];
 
 		foreach ($items as $item)
-			$result[] = $item[$field];
+			if (isset($item[$field]))
+				$result[] = $item[$field];
 
 		return array_unique($result);
 	}

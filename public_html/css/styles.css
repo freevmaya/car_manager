@@ -718,6 +718,9 @@ form > .footer {
     display: flex;
     align-items: center;
     flex-direction: column;
+    margin-bottom: 1em;
+    border: 1px solid gray;
+    border-radius: 1em;
 }
 
 .chess {
@@ -978,6 +981,13 @@ form .field .container {
     display: none;
 }
 
+.items.cars .edit {
+    width: 16px;
+    height: 16px;
+    background-size: contain; 
+    cursor: pointer;
+}
+
 .dialog .selectView {
     margin-top: 0.5em;
 }
@@ -1025,10 +1035,15 @@ form .field .container {
     transition: 0.5s rotate;
 }
 
+.cars .option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .items .option {
     padding: 0.5em;
     width: 100%;
-    cursor: pointer;
 }
 
 .items .notifyItem {
@@ -1054,6 +1069,7 @@ form .field .container {
 
 .items .option .header {
     margin: 0.5em;
+    cursor: pointer;
 }
 
 .notifications .option .order {

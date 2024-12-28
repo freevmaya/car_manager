@@ -14,18 +14,22 @@ $(window).ready(()=>{
 					return input.prop('checked');
 				else return input.val();
 			}
+
 			function sendAsAjax(input) {
 				let jinput = $(input);
+				let data = {
+					id: itemId,
+					model: dataModel, 
+					name: jinput.attr('name'), 
+					value: getValue(jinput)
+				};
 
 				Ajax({
 					action: 'setValue',
-					data: {
-						id: itemId,
-						model: dataModel, 
-						name: jinput.attr('name'), 
-						value: jinput.val()}
+					data: data
 				}).then((response)=>{
 					app.SendEvent('TOAST', response ? 'The changes have applied' : 'Something wrong');
+					app.SendEvent('CHANGED_FIELD', data);
 				});
 			}
 

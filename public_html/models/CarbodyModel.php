@@ -4,9 +4,16 @@ class CarbodyModel extends BaseModel {
 		return 'car_bodies';
 	}
 
-	public function getItems($options) {
-		GLOBAL $dbp;
-		return $dbp->asArray("SELECT * FROM {$this->getTable()}");
+	public function getFields() {
+		return [
+			'id' => [
+				'type' => 'hidden',
+				'dbtype' => 'i'
+			],
+			'symbol' => [
+				'dbtype' => 's'
+			]
+		];
 	}
 }
 ?>

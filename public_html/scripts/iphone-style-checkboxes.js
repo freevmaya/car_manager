@@ -161,11 +161,7 @@
         p = (x - iOSCheckbox.dragStartPosition) / this.rightSide;
         this.elem.prop('checked', p >= 0.5).change();
       } else {
-        console.log(this.elem.prop('checked'));
-        this.elem.prop('checked', !this.elem.prop('checked'));
-        setTimeout((()=>{
-          this.elem.change();
-        }).bind(this), 200);
+        this.elem.prop('checked', !this.elem.prop('checked')).change();
       }
       iOSCheckbox.currentlyClicking = null;
       iOSCheckbox.dragging = null;

@@ -7,7 +7,12 @@
 	$id = @$value['item']['id'];
     $fieldIdx = html::fieldIdx();
 
-	html::AddJsCode("InitSelectView(".$fieldIdx.", '{$options['name']}', (elem, option)=>{
+	html::AddJsCode("
+
+	let vcolor = (new Color('{$rgb}')).grayscale().light() ? 'black' : 'white';
+	$('.field[data-id=\'{$fieldIdx}\']').find('.color-demo .value').css('color', vcolor);
+
+	InitSelectView(".$fieldIdx.", '{$options['name']}', (elem, option)=>{
 		let color = option.find('.img').css('background-color');
 		let vcolor = (new Color(color)).grayscale().light() ? 'black' : 'white';
 
@@ -21,11 +26,11 @@
 	<label for="<?=$options['name']?>"><?=lang($options['label'])?></label>
 	<div class="container">
         <div class="selectView" data-callback-index="<?=$fieldIdx?>">
-	        <div class="block color-demo">
+	        <div class="block color-demo" style="background-color: <?=$rgb?>;">
 	            <div class="value"><?=$value['item']['name']?></div>
 	        	<a class="button popup-button"></a>
 	        </div>
-	        <!--<div class="color-demo" style="background-color: <?=$rgb?>;"></div>-->
+
 	        <div class="items colors">
 	        	<?foreach ($value['items'] as $item) {?>
 	        	<div class="option" data-id="<?=$item['id']?>">

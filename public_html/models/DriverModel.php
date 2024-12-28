@@ -12,7 +12,7 @@ class DriverModel extends BaseModel {
 	public function Update($values) {
 		GLOBAL $dbp;
 		
-		$active = isset($values['active']) ? 1 : 0;
+		$active = (isset($values['active']) && $values['active']) ? 1 : 0;
 		$car_id = isset($values['car_id']) ? $values['car_id'] : null;
 
 		if (isset($values['id'])) 

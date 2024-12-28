@@ -3,7 +3,8 @@
 	html::AddScriptFile('views.js');
 
 	$symbol = $value['item']['symbol'];
-	$id = @$value['item']['car_body_id'];
+	$id = @$value['item']['id'];
+	
     $fieldIdx = html::fieldIdx();
 
 	html::AddJsCode("InitSelectView(".$fieldIdx.", '{$options['name']}', (elem, option)=>{
@@ -14,7 +15,7 @@
 <div class="field" data-id="<?=$fieldIdx?>">
 	<label for="<?=$options['name']?>"><?=lang($options['label'])?></label>
 	<div class="container">
-        <div class="item-image-box chess light">
+        <div class="item-image-box chess light round">
         	<?if ($symbol) {?>
             <div class="item-image" style="background-image: url(<?=BASEURL?>/css/images/<?=$symbol?>.png)"></div>
             <?}?>

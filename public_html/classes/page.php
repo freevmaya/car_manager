@@ -266,7 +266,7 @@ class Page {
 	}
 
 	public function getId() {
-		throw new Exception("This method must be override");
+		return isset(Page::$request['id']) ? Page::$request['id'] : 0;
 	}
 
 	protected function RenderContent($templateFile) {

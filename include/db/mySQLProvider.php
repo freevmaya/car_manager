@@ -28,16 +28,19 @@
 	    }
 
 	    public function bquery($query, $types, $params) {
+			$result = false;
 
 			try {
+				//trace($query);
 				$stmt = $this->mysqli->prepare($query);
-				$result = false;
 				$stmt->bind_param($types, ...$params);
+
 				$result = $stmt->execute();
 				$stmt->store_result();
+
 				$stmt->close();
 			} catch (Exception $e) {
-				$this->error('mysql_error='.$e->getMessage().' query='.$query);
+				trace('mysql_error='.$e->getMessage().' query='.$query);
 			}
 
 			return $result;

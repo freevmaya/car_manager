@@ -5,26 +5,10 @@ class CarModel extends BaseModel {
 		return 'car';
 	}
 
-	public function getItem($id) {
-		GLOBAL $dbp;
-		return $id ? $dbp->line("SELECT * FROM {$this->getTable()} WHERE id={$id}") : null;
-	}
-
 	public function getItems($options) {
 		GLOBAL $dbp;
-		return $dbp->asArray("SELECT * FROM {$this->getTable()} WHERE user_id={$options['user_id']}");
-	}
-
-	public function Update($values) {
-		GLOBAL $dbp;
-
-		if (!$values['id']) {
-			$dbp->bquery("INSERT {$this->getTable()} (`user_id`, `number`, `car_body_id`, `color_id`) VALUES (?, ?, ?, ?)", 
-				'isii', 
-				[$values['user_id'], $values['number'], $values['car_body_id'], $values['color_id']]);
-		} else {
-
-		}
+		$where = BaseModel::GetConditions($options, ['user_id', 'id']);
+		return $dbp->asArray("SELECT * FROM {$this->getTable()} WHERE ".implode(" AND ", $where));
 	}
 
 	public function getFields() {
@@ -34,14 +18,17 @@ class CarModel extends BaseModel {
 			],
 			'user_id' => [
 				'type' => 'hidden',
+				'dbtype' => 'i',
 				'default' => Page::$current->getUser()['id']
 			],
 			'number' => [
 				'label'=> 'Number',
+				'dbtype' => 's',
 				'validator'=> 'unique'
 			],
 			'car_body_id' => [
 				'model'=> 'CarbodyModel',
+				'dbtype' => 'i',
 				'label'=> 'Carbody',
 				'type'=> 'carbody',
 				'default' => ['symbol'=> 'default'],
@@ -49,6 +36,7 @@ class CarModel extends BaseModel {
 			],
 			'color_id' => [
 				'model'=> 'ColorModel',
+				'dbtype' => 'i',
 				'label'=> 'Color',
 				'type'=> 'color',
 				'default' => ['name'=> 'default', 'rgb' => '#AAA'],

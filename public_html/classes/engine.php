@@ -16,6 +16,7 @@ define('ACTIVEORDERLIST_ARR', ['wait', 'accepted', 'driver_move', 'wait_meeting'
 define('INACTIVEORDERLIST_ARR', ['rejected', 'cancel']);
 define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
 define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
+define('MAXEXPIRED_SEC', 60 * 60);
 
 include(BASEDIR."/classes/Utils.php");
 include(INCLUDE_PATH."/_edbu2.php");

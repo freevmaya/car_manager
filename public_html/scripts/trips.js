@@ -171,8 +171,6 @@ $(window).ready(() => {
                     action: ()=>{
                         let path = dialog.getValues();
 
-                        validatorList.refresh();
-
                         if (validatorList.isSendAllowed() && path.start && path.finish) {
 
                             Ajax({

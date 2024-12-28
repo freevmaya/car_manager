@@ -335,6 +335,10 @@ form > .footer{
     
 }
 
+.edit {
+    background-image: url(images/edit-32.png);
+}
+
 .items .notifyItem .trash {
     background-image: url(images/trash-black.png);
 }

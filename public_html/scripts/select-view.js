@@ -3,6 +3,7 @@ var SelectViewCallback = {};
 function InitSelectView(fieldId, indexField, onSelect, title='', actions=[]) {
 
 	let view;
+
 	$('*[data-id=' + fieldId + '] .popup-button').click(()=>{
 		view = viewManager.Create({modal: true,
 						title: title ? title : toLang('Select item'),
@@ -17,9 +18,10 @@ function InitSelectView(fieldId, indexField, onSelect, title='', actions=[]) {
 	function onClickItem(e)  {
 		let option = $(e.currentTarget);
 		let id = option.data('id');
+
 		let elem = $('*[data-id=' + fieldId + ']');
 
-		onSelect(elem, option);
+		onSelect(elem, option, e);
 		$('input[name="' + indexField + '"]').val(id).trigger('change');
 		view.Close();
 	}
