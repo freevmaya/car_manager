@@ -48,11 +48,6 @@
 			</div>
 			<div class="trash"></div>
 		</div>', 'notifyItem');
-
-	/*
-	html::AddJsCode('
-		templateClone($(".templates .orderCancelled"), {id: 123});
-	');*/
 ?>
 <div id="toolbarMenu">
 	<div class="toolbar top shadow">

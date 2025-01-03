@@ -32,8 +32,9 @@
 			new DMap($('#map'));
 		");
 
-		html::AddTemplate(file_get_contents(TEMPLATES_PATH.'/driver/orderInfo.php'), 'orderInfo');
-		html::AddTemplate(file_get_contents(TEMPLATES_PATH.'/driver/offerView.php'), 'offerView');
+		html::AddTemplateFile('driver/orderInfo.php', 'orderInfo');
+		html::AddTemplateFile('driver/offerView.php', 'offerView');
+		html::AddTemplateFile('driver/orderView.php', 'orderView');
 
 	} else {
 //------------------------------PASSENGER---------------------------------------------
@@ -56,7 +57,7 @@
 	    html::AddTemplate(html::RenderField(['type'=>'order'], $order), 'order');
 		html::AddTemplate(html::RenderField(['type'=>'target-view']), 'target-view');
 
-		//html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
+		html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
 	    
 		html::AddJsCode("new VMap($('#map'), Mechanics);");
 	}

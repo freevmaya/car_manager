@@ -85,6 +85,11 @@ class html {
 		return html::$field_id;
 	}
 
+	public static function AddTemplateFile($fileName, $key)
+	{
+		html::$templates[$key] = file_get_contents(TEMPLATES_PATH."/{$fileName}");
+	}
+
 	public static function AddTemplate($value, $key)
 	{
 		html::$templates[$key] = $value;
@@ -158,8 +163,18 @@ class html {
 
 	public static function RenderTemplates() {
 		$list = [];
-		foreach (html::$templates as $key=>$template)
+		$regExp = '/<([\w\s\d="-:;{}]+)>/';
+		foreach (html::$templates as $key=>$template) {
+
+			$matches = null;
+			preg_match($regExp, $template, $matches);
+			if (count($matches) > 0) {
+				$newm = substr($matches[0], 0, -1)." data-template-id=\"{$key}\">";
+				$template = str_replace($matches[0], $newm, $template);
+			}
+			trace($matches);
 			$list[] = $template;
+		}
 
 		return count($list) > 0 ? '<div class="templates">'.implode("\n", $list)."\n</div>" : '';
 	}

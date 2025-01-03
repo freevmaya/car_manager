@@ -93,7 +93,7 @@ h1, h2, h3, h4 {
 }
 
 h1, h2, h3 {
-    margin: 0.8em;
+    margin: 0.3em;
 }
 
 .mainmenu .btn {
@@ -277,7 +277,7 @@ h1, h2, h3 {
 
 .windows .view, .modal-windows .view {
     animation-name: showView;
-    animation-duration: 0.5s;
+    animation-duration: 1s;
 }
 
 .pageContent .view {
@@ -385,6 +385,12 @@ h1, h2, h3 {
 
 .view > .header {
     display: flex;
+    align-content: space-between;
+}
+
+.view > .header > div:nth-child(1) {
+    flex-grow: 1;
+    margin: 0.5em;
 }
 
 .view > .empty {
@@ -392,17 +398,6 @@ h1, h2, h3 {
     display: block;
     z-index: 10;
 }
-
-/*
-.view > .title::after {
-    content: " ";
-    height: 2em;
-    pointer-events: none;
-    animation-name: showTitle;
-    animation-duration: 1s;
-    animation-fill-mode: forwards;
-}
-*/
 
 .hr {
     width: 0;
@@ -438,6 +433,7 @@ h1, h2, h3 {
     text-transform: uppercase;
     font-weight: 100;
     padding-left: 0.5em;
+    margin: 0;
 }
 
 .view .content {
@@ -1161,7 +1157,7 @@ form .field .container {
 }
 
 .btn-block .button, .button-flat {
-    min-width: 3em;
+    min-width: 2em;
 }
 
 .button:active {
@@ -1221,6 +1217,11 @@ form .field .container {
     display: none;
 }
 
+.view.order .data {
+    overflow-x: scroll;
+    justify-content: left;
+}
+
 .offerView td {
     padding: 0.2em;
 }
@@ -1256,28 +1257,34 @@ form .field .container {
 }
 
 .place {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
 }
 
 .orderDetail .place {
     max-width: 10em;
 }
 
+.overflow-dot {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.orderView .header > div {
+    display: flex;
+    flex-direction: column;
+
+}
+
+.orderView .header > div > div {
+    text-wrap-mode: nowrap;
+}
+
 .orderView .header span {
     max-width: 20em;
-    height: 32px;
-    margin-right: 0.5em;
-    align-content: center;
-    display: inline-block;
 }
 
 .orderView .header {
     text-align: center;
-    text-align: center;
-    margin: 0.5em;
 }
 
 .data .block .param,
@@ -1320,8 +1327,8 @@ form .field .container {
 
 .data .block {
     text-align: left;
-    border-radius: 1em;
-    padding: 1em;
+    border-radius: 0.5em;
+    padding: 0.6em;
     width: max-content;
 }
 
@@ -1344,6 +1351,14 @@ form .field .container {
 
 .view.order .block {
     transition: width 0.5s, height 0.5s;
+    max-width: 50%;
+}
+
+.header .separator {
+    border: 1px solid #8080806b;
+    width: 20%;
+    margin: 3px;
+    align-self: center;
 }
 
 .order.finished .driver {

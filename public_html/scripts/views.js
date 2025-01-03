@@ -109,6 +109,7 @@ class BaseParentView {
 
 class View extends BaseParentView {
     view;
+    closeBtn;
     headerElement;
     contentElement;
     footerElement;
@@ -120,15 +121,8 @@ class View extends BaseParentView {
         setTimeout(this.afterConstructor.bind(this), 5);
     }
 
-    afterConstructor() {}
-
-    initMainView() {
-        this.view = templateClone('.templates .' + this.options.template, this.options);
-        this.view.addClass('view');
-
-        this.windows = this.options.parent ? this.options.parent : 
-                            $('#' + (this.options.modal ? modalLayerId : windowsLayerId));
-        this.windows.append(this.view);
+    afterConstructor() {
+        $(window).on('resize', this.onResize.bind(this));
     }
 
     onCloseBtnClick() {
@@ -140,10 +134,12 @@ class View extends BaseParentView {
     }
 
     initView() {
-        this.initMainView();
 
-        this.headerElement = this.view.find('.header');
-        this.closeBtn = this.headerElement.find('.close');
+        this.view = templateClone(this.options.template, this.options);
+        this.windows = this.options.parent ? this.options.parent : $('#' + (this.options.modal ? modalLayerId : windowsLayerId));
+        this.windows.append(this.view);
+
+        this.closeBtn = (this.headerElement = this.view.find('.header')).find('.close');
         this.contentElement = this.view.find('.content');
         this.footerElement = this.view.find('.btn-block');
 
@@ -155,12 +151,11 @@ class View extends BaseParentView {
         let tlt = this.options.title;
         if (tlt) {
             if (!this.titleElement)
-                this.headerElement.prepend(this.titleElement = $('<h3></h3>'));
+                this.titleElement = this.headerElement.find('h3');
             if (isStr(tlt))
                 this.titleElement.text(toLang(tlt));
             else this.titleElement.append(tlt);
-            $('<div class="hr">').insertAfter(this.headerElement);
-        } else this.headerElement.addClass('empty');
+        }
 
         let actions = this.options.actions;
         for (let action in actions) {
@@ -170,9 +165,7 @@ class View extends BaseParentView {
             this.footerElement.append(btn);
         }
 
-        $(window).on('resize', this.onResize.bind(this));
-
-        this.initContent();
+        this.SetContent(this.options.content);
         
         setTimeout(this.toAlign.bind(this), 10);
         setTimeout(this.checkOverflow.bind(this), 500);
@@ -180,10 +173,6 @@ class View extends BaseParentView {
 
     SetContent(content) {
         ViewManager.setContent(this, this.options.content = content, this.options.clone);
-    }
-
-    initContent() {
-        this.SetContent(this.options.content);
     }
 
     setOptions(options) {

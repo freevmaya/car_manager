@@ -85,7 +85,7 @@ class ToolbarUser {
 		for (let i in this.#notifyList) {
 			let item = this.#notifyList[i];
 
-			let option = templateClone($('.templates .notifyItem'), item);
+			let option = templateClone('notifyItem', item);
 			option.find('.trash').click(this.trashClick.bind(this));
 			option.data('order_id', item.order_id);
 			option.find('.header').click(this.headerClick.bind(this));
@@ -117,7 +117,7 @@ class ToolbarUser {
 			let remaindDistance = takenOrders ? takenOrders.remaindDistance() : 0;
 			let view = viewManager.Create({modal: true,
                 title: 'OrderCreated',
-                content: templateClone('.templates .offerView', order),
+                content: templateClone('offerView', order),
                 actions:
 	                {
 	                	'Offer to perform': ()=>{

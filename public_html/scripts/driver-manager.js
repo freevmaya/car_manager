@@ -101,7 +101,7 @@ class DriverManager {
 									        }});
 					}).bind(this));
 
-					content = templateClone($('.templates .driver-order'), order)[0].outerHTML;
+					content = templateClone('driver-order', order)[0].outerHTML;
 				} else content = "Busy"
 
 				console.log(order);
@@ -110,7 +110,7 @@ class DriverManager {
 			this.hidePath();
 			this.infoWindow.close();
 		    this.infoWindow.setContent(
-		    	templateClone($('.templates .driver-window'), $.extend({content: content}, m.driver))[0].outerHTML
+		    	templateClone('driver-window', $.extend({content: content}, m.driver))[0].outerHTML
 		    );
 		    this.infoWindow.open(v_map.map, m);
 		});

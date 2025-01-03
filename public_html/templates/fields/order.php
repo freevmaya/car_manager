@@ -10,9 +10,9 @@
 		<div class="block route">
 			<h3><?=lang('Route')?></h3>
 			<div class="name">
-			<div class="value trip">
-	    		<span class="start-place place">{PlaceName(data.start)}</span>
-	    		<span class="finish-place place">{PlaceName(data.finish)}</span>
+			<div class="overflow-dot value trip">
+	    		<span class="overflow-dot start-place place">{PlaceName(data.start)}</span>
+	    		<span class="overflow-dot finish-place place">{PlaceName(data.finish)}</span>
 	    	</div>
 	    	</div>
 			<div class="param"><span class="name"><?=lang('Distance')?></span><span class="distance">{DistanceToStr(data.meters)}</span></div>

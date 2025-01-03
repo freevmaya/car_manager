@@ -13,9 +13,9 @@
 		<div class="block route">
 			<h3><?=lang('Route')?></h3>
 			<div class="name">
-			<div class="value trip">
-	    		<span class="start-place place"><?=$value['startPlace']?></span>
-	    		<span class="finish-place place"><?=$value['finishPlace']?></span>
+			<div class="overlow-dot value trip">
+	    		<span class="overlow-dot start-place place"><?=$value['startPlace']?></span>
+	    		<span class="overlow-dot finish-place place"><?=$value['finishPlace']?></span>
 	    	</div>
 	    	</div>
 			<div class="param"><span><?=lang('Distance')?></span><span class="distance"><?=$value['meters']?></span></div>

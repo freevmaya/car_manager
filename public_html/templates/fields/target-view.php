@@ -1,5 +1,5 @@
-<div class="shadow radius target-view" data-id="<?=html::fieldIdx()?>">
-	<div class="header"><button class="close button-flat"></button></div>
+<div class="view shadow radius target-view" data-id="<?=html::fieldIdx()?>">
+	<div class="header empty"><button class="close button-flat"></button></div>
 	<div class="cols">
 		<div class="content">
 			<div class="field InfoField field-1" data-id="startPlace">

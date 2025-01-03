@@ -29,6 +29,8 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <script type="text/javascript">
 
         window.addEventListener("error", (e) => {
+
+            //console.error(e);
             Ajax({
                 action: 'catchError',
                 data: {message: e.message, stack: e.error.stack}
@@ -40,7 +42,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
         var transport = new AjaxTransport(1000);
         var app = new App();
         var fieldIdx = <?=html::fieldIdx()?>;
-        var travelMode = 'DRIVING';
+        var travelMode = '<?=TRAVELMODE?>';
 
         function watchPosition(action) {
             <?if (DEV) {

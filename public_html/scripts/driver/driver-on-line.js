@@ -60,9 +60,26 @@ class TakenOrders {
         this.showImportantOrder();
     }
 
-    showImportantOrder() {
+    showOrderInList() {
         for (let i=0; i<this.#orders.length; i++)
-            if (['execution', 'driver_move', 'wait_meeting'].includes(this.#orders[i].state)) {
+            if (['execution', 'execution', 'driver_move', 'wait_meeting'].includes(this.#orders[i].state)) {
+
+                let idx = v_map.MarkerManager.IndexOfByOrder(this.#orders[i].id);
+                this.ShowInfoOrder(v_map.MarkerManager.markers.users[idx]);
+                return;
+            }
+    }
+
+    showImportantOrder() {
+
+        let importanList = ['accepted', 'wait_meeting', 'driver_move', 'execution'];
+
+        this.#orders.sort((order1, order2)=>{
+            return importanList.indexOf(order1.state) - importanList.indexOf(order2.state);
+        });
+
+        for (let i=0; i<this.#orders.length; i++)
+            if (importanList.includes(this.#orders[i].state)) {
 
                 let idx = v_map.MarkerManager.IndexOfByOrder(this.#orders[i].id);
                 this.ShowInfoOrder(v_map.MarkerManager.markers.users[idx]);
@@ -174,16 +191,15 @@ class TakenOrders {
 
             v_map.getRoutes(order.start, order.finish, travelMode, (function(result) {
                 this.selOrderView = viewManager.Create({
-                    title: $('<span class="place">' + PlaceName(order.start) + '</span><span class="to"></span><span class="place">' + 
-                                        PlaceName(order.finish) + '</span>'),
                     bottomAlign: true,
+                    template: 'orderView',
                     order: order,
                     path: result,
                     marker: marker,
                     content: [
                         {
                             label: "InfoPath",
-                            content: templateClone($('.templates .orderInfo'), order),// $(DataView.getOrderInfo(order, true)),
+                            content: templateClone('orderInfo', order),// $(DataView.getOrderInfo(order, true)),
                             class: HtmlField
                         }
                     ],
@@ -246,7 +262,10 @@ class OrderView extends BottomView {
 
     initView() {
         super.initView();
-        this.view.addClass("orderView");
+
+        this.headerElement.find('.start').text(PlaceName(this.Order.start));
+        this.headerElement.find('.finish').text(PlaceName(this.Order.finish));
+
         if (this.isMyOrder)
             this.view.addClass("taken-order");
     }
@@ -268,7 +287,7 @@ class OrderView extends BottomView {
     SetState(state) {
         let lastState = this.Order.state;
 
-        this.view.removeClass('wait accepted driver_move wait_meeting execution finished');
+        this.view.removeClass('wait accepted driver_move wait_meeting execution finished expired');
         this.view.addClass(this.Order.state = state);
         this.SetStateText(state);
 

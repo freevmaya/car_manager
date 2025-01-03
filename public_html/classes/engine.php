@@ -17,6 +17,7 @@ define('INACTIVEORDERLIST_ARR', ['rejected', 'cancel', 'finished']);
 define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
 define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
 define('MAXEXPIRED_SEC', 60 * 60);
+define('TRAVELMODE', 'DRIVING');
 
 include(BASEDIR."/classes/Utils.php");
 include(INCLUDE_PATH."/_edbu2.php");

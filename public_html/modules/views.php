@@ -4,11 +4,7 @@ html::AddScriptFiles([
 	"views.js"
 ]);
 
-html::AddTemplate('<div class="view radius">
-	<div class="header"><button class="close button-flat"></button></div>
-	<div class="content"></div>
-	<div class="footer btn-block"></div>
-</div>', 'view');
+html::AddTemplateFile('default-view.php', 'view');
 
 /*
 html::AddTemplate('<div class="view shadow radius dialog">

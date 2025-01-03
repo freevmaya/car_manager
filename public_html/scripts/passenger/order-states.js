@@ -298,7 +298,7 @@ class OrderAccepedView extends OrderView {
 
     resetLayer() {
         this.contentElement.empty();
-        this.orderLayer = templateClone($('.templates .order'), this.Order);
+        this.orderLayer = templateClone('order', this.Order);
         this.contentElement
             .append(this.orderLayer);
         if (this.Order.car_color) this.refreshColor();
@@ -403,7 +403,7 @@ class OrderAccepedView extends OrderView {
         let infoBlock = this.orderLayer.find('.driver-info');
 
         infoBlock.empty();
-        infoBlock.append(templateClone($('.templates .driver'), notify.driver));
+        infoBlock.append(templateClone('driver', notify.driver));
 
         this.refreshColor();
         let d = notify.driver;
