@@ -15,9 +15,9 @@ class DMap extends VMap {
         }, {markerManagerClass: MarkerOrderManager});
     }
 
-    createTracer(order, routes) {
+    createTracer(order, routes, options) {
         this.removeTracer();
-        this.tracer = new Tracer(routes, this.superSetPosition.bind(this), 100);
+        this.tracer = new Tracer(routes, this.superSetPosition.bind(this), 200, options);
         this.tracer.order = order;
         this.tracer.ReceivePoint(new google.maps.LatLng(this.getMainPosition()));
         return this.tracer;
@@ -209,7 +209,7 @@ class TakenOrders {
                         'Reject': 'this.reject.bind(this)',
                         'Go': 'this.letsGot.bind(this)'
                     }
-                }, OrderView, (()=>{
+                }, TracerOrderView, (()=>{
                     this.selOrderView = null;
                 }).bind(this));
 
@@ -234,8 +234,10 @@ class OrderView extends BottomView {
     #pathOrder;
     #isDrive;
     #updateListenerId;
+
     get Order() { return this.options.order; };
     get isMyOrder() { return this.Order.driver_id == jsdata.driver.id; };
+    get currentTracer() { return this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null); }
     get isDrive() { return this.#isDrive; };
     set isDrive(value) { 
         if (this.#isDrive != value) {
@@ -251,10 +253,6 @@ class OrderView extends BottomView {
             else v_map.RemoveListener('UPDATE', this.#updateListenerId);
         }
     };
-
-    get currentTracer() {
-        return this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null);
-    }
 
     constructor(elem, callback = null, options) {
         super(elem, callback, options);
@@ -302,21 +300,20 @@ class OrderView extends BottomView {
 
         if (state == 'driver_move')
             this.showPathToStart();
-        else if ((state == 'execution') && this.isMyOrder) {
-            this.#tracerOrder = v_map.createTracer(this.Order, this.options.path.routes);
-
-            this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
-            this.#tracerOrder.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
-        } else if (state == 'accepted') this.checkNearPassenger();
+        else if ((state == 'execution') && this.isMyOrder) 
+            this.traceOrderPath();
+        else if (state == 'accepted') this.checkNearPassenger();
 
         setTimeout(this.resizeMap.bind(this), 500);
 
         this.isDrive = (state == 'driver_move') || (state == 'execution');
     }
 
-    onChangeStep() {
-        let tracer = this.currentTracer;
-        this.view.find('.stepInfo .instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
+    traceOrderPath() {
+        this.#tracerOrder = v_map.createTracer(this.Order, this.options.path.routes, 
+                {startTime: Date.parse(this.Order.pickUpTime).valueOf()});
+
+        this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
     }
 
     onUpdateMap() {
@@ -327,10 +324,9 @@ class OrderView extends BottomView {
             this.view.find('.orderDetail .remaindTime').text(tracer.RemaindTime.toHHMMSS());
             this.view.find('.orderDetail .avgSpeed').text(round(tracer.AvgSpeed * 3.6, 1) + "km/h");
 
-            let remaindDistance = tracer.Step ? (tracer.Step.finishDistance - tracer.RouteDistance) : 0;
-            let elem = this.view.find('.stepInfo .remaindDistance');
-            elem.text(DistanceToStr(remaindDistance));
-            elem.toggleClass('dist-warning', remaindDistance < 100);
+            this.headerElement.find('.tracerBar > div').css('width', (tracer.RouteDistance / tracer.TotalLength * 100) + '%');
+            this.headerElement.find('.startTime').text($.format.date(tracer.StartTime, HMFormat));
+            this.headerElement.find('.finishTime').text($.format.date(tracer.FinishTime, HMFormat));
         }
     }
 
@@ -475,6 +471,42 @@ class OrderView extends BottomView {
                 data: {id: this.Order.id, state: 'wait_meeting'}
             });
             this.closePathToStart();
+        }
+    }
+}
+
+class TracerOrderView extends OrderView {
+
+    #speedInfo;
+    #stepInfo;
+    initView() {
+        super.initView();
+
+        this.#speedInfo = this.view.find('.speedInfo');
+        this.#stepInfo = this.view.find('.stepInfo');
+
+        this.#speedInfo.parent($('body'));
+        this.#stepInfo.parent($('body'));
+    }
+
+    traceOrderPath() {
+        super.traceOrderPath();
+        this.#tracerOrder.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+    }
+
+    onChangeStep() {
+        super.onChangeStep();
+        let tracer = this.currentTracer;
+        this.#speedInfo.find('.instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
+    }
+
+    onUpdateMap() {
+        super.onUpdateMap();
+        let tracer = this.currentTracer;
+        if (tracer) {
+            let elem = this.#speedInfo.find('.remaindDistance');
+            elem.text(DistanceToStr(remaindDistance));
+            elem.toggleClass('dist-warning', remaindDistance < 100);
         }
     }
 }

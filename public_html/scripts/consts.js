@@ -3,6 +3,7 @@ var dateShortFormat = "dd.MM.yy HH:mm";
 var dateLongFormat  = "dd.MM.yyyy HH:mm";
 var dateOnlyFormat  = "dd.MM.yyyy";
 var HMSFormat  = "HH:mm:ss";
+var HMFormat  = "HH:mm";
 
 var STATELIST = ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'expired', 'rejected', 'cancel'];
 

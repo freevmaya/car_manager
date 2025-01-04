@@ -372,3 +372,27 @@ form > .footer{
 .view .settings {
     background-image: url(images/settings-white.png);
 }
+
+.orderView.execution .stepInfo {
+    background: #00000099;
+}
+
+.gm-control-active {
+    background: #424242 !important
+}
+
+.gm-control-active:hover {
+    background: #000 !important;
+}
+
+.orderInfo .stepInfo {
+    padding-left: 1em;
+}
+
+.orderView.execution .stepInfo,
+.orderView.driver_move .stepInfo,
+.orderView.execution .speedInfo,
+.orderView.driver_move .speedInfo {
+    color: #cccccc;
+    background: #00000099;
+}

@@ -6,9 +6,10 @@ class Tracer extends EventProvider {
     #options = {
         magnetDistance: 100, // 100 метров от пути
         waitTooFar: 30,
-        speedMax: 30,
+        speedMax: 10,
         tearedTime: 2 * 60,
-        tearedDistance: 100
+        tearedDistance: 100,
+        startTime: Date.now()
     };
     #geoPos;
     #routePos;
@@ -34,6 +35,9 @@ class Tracer extends EventProvider {
 
     get AvgSpeed() { return this.#avgSpeed; };
     get RouteDistance() { return this.#routeDistance; };
+    get StartTime() { return this.#options.startTime; };
+    get FinishTime() { return this.StartTime + this.TakeTime * this.TotalLength / this.RouteDistance; };
+    get TotalLength() { return this.#totalLength; };
     get RemaindDistance() { return this.#totalLength - this.#routeDistance; };
     get RemaindTime() { return this.RemaindDistance / this.AvgSpeed; };
     get Legs() { return this.#routes[this.#routeIndex].legs[this.#curLeg]; };
@@ -41,6 +45,7 @@ class Tracer extends EventProvider {
     get Step() { return this.correctStepIndex(this.#curStepIndex) > -1 ? this.Legs.steps[this.#curStepIndex] : null; }
     get NextStep() { return this.correctStepIndex(this.#curStepIndex + 1) ? this.Legs.steps[this.#curStepIndex + 1] : null; }
     get StepIndex() { return this.#curStepIndex; }
+    get TakeTime() { return Date.now() - this.#options.startTime; }
 
     constructor(routes, callback, periodTime, options=null) {
 
@@ -49,6 +54,7 @@ class Tracer extends EventProvider {
         this.#options = $.extend(this.#options, options);
         this.#routes = routes;
         this.#time = Date.now();
+
         this.#callback = callback;
         this.#intervalId = setInterval(this.update.bind(this), periodTime);
 

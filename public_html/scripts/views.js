@@ -204,11 +204,13 @@ class View extends BaseParentView {
     }
 
     checkOverflow() {
+        /*
         let elem = this.contentElement[0];
         if (elem.offsetHeight < elem.scrollHeight)
             this.contentElement.css('overflow-y', 'scroll');
         if (elem.offsetWidth < elem.scrollWidth)
             this.contentElement.css('overflow-x', 'scroll');
+            */
     }
 
     onResize() {

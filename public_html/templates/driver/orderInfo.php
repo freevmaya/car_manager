@@ -16,19 +16,19 @@
 			<tr class="stayParam">
 				<td>{toLang("Seats")}:</td><td>{seats}</td>
 			</tr>
-			<tr class="dynParam">
+			<tr class="dynParam overflow-dot">
 				<td>{toLang("Remaining distance")}:</td><td class="remaindDistance">{remaindDistance}</td>
 			</tr>
-			<tr class="dynParam">
+			<tr class="dynParam overflow-dot">
 				<td>{toLang("Time left")}:</td><td class="remaindTime">0</td>
 			</tr>
-			<tr class="dynParam">
+			<tr class="dynParam radius speedInfo">
 				<td>{toLang("Average speed")}:</td><td class="avgSpeed">0</td>
 			</tr>
 		</table>
 		<div class="dynParam">
-			<div class="stepInfo">
-				<div class="instruction"></div>
+			<div class="stepInfo radius shadow expandable">
+				<div class="instruction overflow-dot"></div>
 				<div class="remaindDistance"></div>
 			</div>
 		</div>

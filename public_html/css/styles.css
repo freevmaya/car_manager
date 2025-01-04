@@ -214,8 +214,8 @@ h1, h2, h3 {
     pointer-events: all;
 }
 
-#map, #windows .view, #toolbarMenu {
-    transition: 0.5s filter;
+#map, .view, #toolbarMenu {
+    transition: 0.5s filter, 0.5s height, 0.5s width;
 }
 
 .modal #map, .modal #windows .view, .modal #toolbarMenu, .modal .pageContent {
@@ -507,6 +507,7 @@ h1, h2, h3 {
 
 .target-view .btn-block {
     flex-shrink: 0;
+    padding-top: 2em;
 }
 
 .target-view .btn-block {
@@ -1243,17 +1244,40 @@ form .field .container {
 }
 
 .stepInfo .remaindDistance {
-    padding: 0.5em;
-    text-align: center;
     font-size: 2em;
+}
+
+.stepInfo.expand {
+    width: auto !important;
+    right: 1em;
+}
+
+.stepInfo.expand .remaindDistance {
+    text-align: center;
+}
+
+.gm-control-active {
+    border-radius: 2em;
+}
+
+.gmnoprint > div {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+.orderView .instruction {
+    font-size: 0.8em;
+}
+
+.orderView .instruction > div {
+    font-size: 0.8em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dist-warning {
     color: white;
-}
-
-.orderView .content {
-    align-items: center;
 }
 
 .place {
@@ -1267,6 +1291,10 @@ form .field .container {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.orderView .content {
+    align-items: center;
 }
 
 .orderView .header > div {
@@ -1318,6 +1346,71 @@ form .field .container {
     display: flex;
 }
 
+.tracerInfo {
+    display: none;
+}
+
+.orderView.execution .stepInfo,
+.orderView.driver_move .stepInfo,
+.orderView.execution .speedInfo,
+.orderView.driver_move .speedInfo {
+    position: fixed;
+    left: 1em;
+    height: fit-content;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    align-content: space-between;
+    flex-wrap: wrap;
+    padding: 1em;
+    min-width: 15%;
+    width: 8em;
+}
+
+.orderView.collaps .routeInfo {
+    display: none;
+}
+
+.orderView.collaps .tracerInfo{
+    flex-grow: 1;
+    margin: 0.5em;
+    display: block;
+}
+
+.orderView.expand .tracerInfo{
+    display: none;
+}
+
+.orderView.execution .stepInfo,
+.orderView.driver_move .stepInfo {
+    top: 8em;
+}
+
+.orderView.execution .speedInfo,
+.orderView.driver_move .speedInfo {
+    top: 4em;
+}
+
+.orderView.execution .stepInfo > div,
+.orderView.driver_move .stepInfo > div {
+    width: 100%;
+}
+
+.orderView.execution,
+.orderView.driver_move {
+    height: 2.8em;
+}
+
+.orderView.expand.execution,
+.orderView.expand.driver_move {
+    height: fit-content;
+}
+
+.orderView.execution .speedInfo td:nth-child(1) ,
+.orderView.driver_move .speedInfo td:nth-child(1) {
+    display: none;
+}
+
 .header .to {
     width: 32px;
     height: 32px;
@@ -1355,10 +1448,7 @@ form .field .container {
 }
 
 .header .separator {
-    border: 1px solid #8080806b;
-    width: 20%;
     margin: 3px;
-    align-self: center;
 }
 
 .order.finished .driver {
@@ -1456,7 +1546,24 @@ form .field .container {
     display: none;
 }
 
+.tracerBar {
+    height: 5px;
+    background: #979797;
+}
 
+.tracerBar > div {
+    height: 4px;
+    background: ghostwhite;
+    width: 30%;
+}
+
+.timeLine {
+    height: 1em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
 
 /*-----------------Загрузка----------------*/
 
@@ -1611,4 +1718,10 @@ form .field .container {
     -moz-transform:scale(.3);
         background-color:rgba(255,255,255,0.04);
     }
+}
+
+/*----------------------------EXTENDS----------------------------*/
+
+.expandable {
+    cursor: pointer;
 }

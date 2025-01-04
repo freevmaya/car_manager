@@ -574,7 +574,7 @@ function templateClone(tmpl, data) {
         }
         return v;
     });
-    return $(html);
+    return $(html).Expandable();
 }
 
 function isFunc(f) {
@@ -592,12 +592,6 @@ function isEmpty(v) {
 function isNumeric(str) {
   if (typeof str != "string") return false;
   return !isNaN(str) && !isNaN(parseFloat(str));
-}
-
-function PrepareInput() {
-    $('input.phone').each((i, item) => {
-        $(item).inputmask($(item).data('mask'));
-    });
 }
 
 
@@ -939,8 +933,41 @@ function checkCondition(checkFunc, action, data=null) {
     }, 50);
 }
 
+function InitExpandable(parent) {
+
+    function layer() {
+
+        let layer;
+        if (layer = this.data('expandable-layer'))
+            layer = eval(layer);
+        else layer = this;
+        return layer;
+    }
+
+    function onClick() {
+        layer.bind(this)()
+            .toggleClass('expand')
+            .toggleClass('collaps');
+    }
+
+    parent.find('.expandable').each((i, e) => {
+        let This = $(e);
+        layer.bind(This)().addClass('collaps');
+        This.click(onClick.bind(This));
+    });
+    return parent;
+}
+
+function PrepareInput() {
+    $('input.phone').each((i, item) => {
+        $(item).inputmask($(item).data('mask'));
+    });
+}
+
 $(window).ready(()=>{
+
     PrepareInput();
+    InitExpandable($(window));
 });
 
 (function( $ ){
@@ -951,5 +978,9 @@ $(window).ready(()=>{
     $.fn.setStateClass = function(state) {
         this.removeClass(STATELIST);
         this.addClass(state);
+    }
+
+    $.fn.Expandable = function() {
+        return InitExpandable(this);
     }
 })( jQuery );
