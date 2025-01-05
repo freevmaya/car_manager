@@ -983,4 +983,11 @@ $(window).ready(()=>{
     $.fn.Expandable = function() {
         return InitExpandable(this);
     }
+
+    $.fn.moveTo = function(selector){
+        return this.each(function(){
+            $(this).detach().appendTo(selector);
+        });
+    };
+
 })( jQuery );

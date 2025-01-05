@@ -139,17 +139,21 @@ class VMap extends EventProvider {
 		}
 	}
 
+	defaultOptions() {
+		return {
+			main_marker: true, 
+			start_position: user.lat ? toLatLng(user) : false,
+			markerManagerClass: MarkerManager,
+			driverManagerClass: DriverManager
+		};
+	}
+
 	constructor(elem, callback = null, options) {
 		super();
 		v_map = this;
 		this.#mapAngle = this.#toAngle = 0;
 		this.#view = elem;
-		this.#options = $.extend({
-			main_marker: true, 
-			start_position: user.lat ? toLatLng(user) : false,
-			markerManagerClass: MarkerManager,
-			driverManagerClass: DriverManager,
-		}, options);
+		this.#options = $.extend(this.defaultOptions(), options);
 
 		if (this.#options.start_position)
 			this.initMap(this.#options.start_position).then(callback);

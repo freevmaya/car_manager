@@ -1350,11 +1350,8 @@ form .field .container {
     display: none;
 }
 
-.orderView.execution .stepInfo,
-.orderView.driver_move .stepInfo,
-.orderView.execution .speedInfo,
-.orderView.driver_move .speedInfo {
-    position: fixed;
+.vidget {
+    position: absolute;
     left: 1em;
     height: fit-content;
     display: flex;
@@ -1365,6 +1362,19 @@ form .field .container {
     padding: 1em;
     min-width: 15%;
     width: 8em;
+    z-index: 2;
+}
+
+.speedInfo {
+    top: 4em;
+}
+
+.stepInfo {
+    top: 8em;
+}
+
+.stepInfo > div,.stepInfo > div {
+    width: 100%;
 }
 
 .orderView.collaps .routeInfo {
@@ -1379,21 +1389,6 @@ form .field .container {
 
 .orderView.expand .tracerInfo{
     display: none;
-}
-
-.orderView.execution .stepInfo,
-.orderView.driver_move .stepInfo {
-    top: 8em;
-}
-
-.orderView.execution .speedInfo,
-.orderView.driver_move .speedInfo {
-    top: 4em;
-}
-
-.orderView.execution .stepInfo > div,
-.orderView.driver_move .stepInfo > div {
-    width: 100%;
 }
 
 .orderView.execution,

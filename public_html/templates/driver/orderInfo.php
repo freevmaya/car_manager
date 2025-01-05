@@ -22,15 +22,13 @@
 			<tr class="dynParam overflow-dot">
 				<td>{toLang("Time left")}:</td><td class="remaindTime">0</td>
 			</tr>
-			<tr class="dynParam radius speedInfo">
-				<td>{toLang("Average speed")}:</td><td class="avgSpeed">0</td>
-			</tr>
 		</table>
-		<div class="dynParam">
-			<div class="stepInfo radius shadow expandable">
-				<div class="instruction overflow-dot"></div>
-				<div class="remaindDistance"></div>
-			</div>
+		<div class="vidget speedInfo radius shadow">
+			<div class="avgSpeed">0</div>
+		</div>
+		<div class="vidget stepInfo radius shadow expandable">
+			<div class="instruction overflow-dot"></div>
+			<div class="remaindDistance"></div>
 		</div>
 	</div>
 </div>

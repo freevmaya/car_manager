@@ -52,21 +52,28 @@ class Tracer extends EventProvider {
         super();
 
         this.#options = $.extend(this.#options, options);
-        this.#routes = routes;
         this.#time = Date.now();
 
         this.#callback = callback;
         this.#intervalId = setInterval(this.update.bind(this), periodTime);
 
         this.#periodTime = periodTime;
-        this.#lengthList = [];
-        this.#totalLength = CalcPathLength(this.#routes, this.#routeIndex, this.#lengthList);
+        this.SetRoutes(routes);
+        this.ToStart();
+        this.updateSteps();
+    }
+
+    ToStart() {
         this.#routePos = this.#routes[this.#routeIndex].overview_path[0];
         this.#routeDistance = 0;
         this.#curLeg = 0;
         this.#curStep = null;
+    }
 
-        this.updateSteps();
+    SetRoutes(routes) {
+        this.#routes = routes;
+        this.#lengthList = [];
+        this.#totalLength = CalcPathLength(this.#routes, this.#routeIndex, this.#lengthList);
     }
 
     correctStepIndex(idx) {

@@ -389,10 +389,7 @@ form > .footer{
     padding-left: 1em;
 }
 
-.orderView.execution .stepInfo,
-.orderView.driver_move .stepInfo,
-.orderView.execution .speedInfo,
-.orderView.driver_move .speedInfo {
+.vidget {
     color: #cccccc;
     background: #00000099;
 }

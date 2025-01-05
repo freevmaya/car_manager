@@ -234,12 +234,21 @@ class OrderView extends BottomView {
     #pathOrder;
     #isDrive;
     #updateListenerId;
+    #mapClickListener;
 
     get Order() { return this.options.order; };
     get isMyOrder() { return this.Order.driver_id == jsdata.driver.id; };
     get currentTracer() { return this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null); }
     get isDrive() { return this.#isDrive; };
-    set isDrive(value) { 
+    set isDrive(value) { this.setIsDrive(value); };
+
+    constructor(elem, callback = null, options) {
+        super(elem, callback, options);
+
+        this.#mapClickListener = v_map.map.addListener("click", this.onClickMap.bind(this));
+    }
+
+    setIsDrive(value) {
         if (this.#isDrive != value) {
             this.#isDrive = value;
             $(v_map.MainMarker.content)
@@ -252,10 +261,10 @@ class OrderView extends BottomView {
                 this.#updateListenerId = v_map.AddListener('UPDATE', this.onUpdateMap.bind(this));
             else v_map.RemoveListener('UPDATE', this.#updateListenerId);
         }
-    };
+    }
 
-    constructor(elem, callback = null, options) {
-        super(elem, callback, options);
+    onClickMap(e) {
+        console.log(e);
     }
 
     initView() {
@@ -295,8 +304,10 @@ class OrderView extends BottomView {
 
         this.closePathOrder();
 
-        if ((state != 'finished') && !this.#pathOrder)
-            this.#pathOrder = v_map.DrawPath(this.options.path, this.isMyOrder ? currentPathOptions : defaultPathOptions);
+        if ((state != 'finished') && !this.#pathOrder) {
+            this.#pathOrder = v_map.DrawPath(this.options.path, this.isMyOrder ? driverPathOptions : defaultPathOptions);
+            this.#pathOrder.addListener("directions_changed", this.onChangeOrderPath.bind(this));
+        }
 
         if (state == 'driver_move')
             this.showPathToStart();
@@ -309,11 +320,18 @@ class OrderView extends BottomView {
         this.isDrive = (state == 'driver_move') || (state == 'execution');
     }
 
+    onChangeOrderPath(e) {
+        const directions = this.#pathOrder.getDirections();
+        if (this.#tracerOrder)
+            this.#tracerOrder.SetRoutes(directions.routes);
+    }
+
     traceOrderPath() {
         this.#tracerOrder = v_map.createTracer(this.Order, this.options.path.routes, 
                 {startTime: Date.parse(this.Order.pickUpTime).valueOf()});
 
         this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
+        this.currentTracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
     }
 
     onUpdateMap() {
@@ -322,7 +340,6 @@ class OrderView extends BottomView {
         if (tracer) {
             this.view.find('.orderDetail .remaindDistance').text(DistanceToStr(tracer.RemaindDistance));
             this.view.find('.orderDetail .remaindTime').text(tracer.RemaindTime.toHHMMSS());
-            this.view.find('.orderDetail .avgSpeed').text(round(tracer.AvgSpeed * 3.6, 1) + "km/h");
 
             this.headerElement.find('.tracerBar > div').css('width', (tracer.RouteDistance / tracer.TotalLength * 100) + '%');
             this.headerElement.find('.startTime').text($.format.date(tracer.StartTime, HMFormat));
@@ -333,6 +350,8 @@ class OrderView extends BottomView {
     destroy() {
         if (this.Order.state != 'finished')
             this.options.marker.setMap(v_map.map);
+
+        this.#mapClickListener.remove();
 
         this.isDrive = false;
 
@@ -414,6 +433,8 @@ class OrderView extends BottomView {
         }
     }
 
+    onChangeStep() {}
+
     #moveToStart() {
         this.showPathToStart((()=>{
 
@@ -479,35 +500,51 @@ class TracerOrderView extends OrderView {
 
     #speedInfo;
     #stepInfo;
-    initView() {
-        super.initView();
+    afterConstructor() {
 
         this.#speedInfo = this.view.find('.speedInfo');
         this.#stepInfo = this.view.find('.stepInfo');
 
-        this.#speedInfo.parent($('body'));
-        this.#stepInfo.parent($('body'));
+        this.#speedInfo.moveTo(this.windows);
+        this.#stepInfo.moveTo(this.windows);
+
+        super.afterConstructor();
     }
 
-    traceOrderPath() {
-        super.traceOrderPath();
-        this.#tracerOrder.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+    setIsDrive(value) {
+        super.setIsDrive(value);
+
+        let cssStyle = value ? 'block' : 'none';
+        this.#speedInfo.css('display', cssStyle);
+        this.#stepInfo.css('display', cssStyle);
+
+        this.view.toggleClass('expand', !value).toggleClass('collaps', value);
     }
 
     onChangeStep() {
-        super.onChangeStep();
         let tracer = this.currentTracer;
-        this.#speedInfo.find('.instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
+        this.#stepInfo.find('.instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
     }
 
     onUpdateMap() {
         super.onUpdateMap();
         let tracer = this.currentTracer;
         if (tracer) {
-            let elem = this.#speedInfo.find('.remaindDistance');
+
+            let remaindDistance = tracer.Step ? (tracer.Step.finishDistance - tracer.RouteDistance) : 0;
+            let elem = this.#stepInfo.find('.remaindDistance');
             elem.text(DistanceToStr(remaindDistance));
             elem.toggleClass('dist-warning', remaindDistance < 100);
+
+            this.#speedInfo.find('.avgSpeed').text(round(tracer.AvgSpeed * 3.6, 1) + "km/h");
         }
+    }
+
+    Close() {
+        super.Close();
+
+        this.#speedInfo.remove();
+        this.#stepInfo.remove();
     }
 }
 
