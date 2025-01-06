@@ -306,19 +306,12 @@ class VMap extends EventProvider {
 	}
 
 	getRoutes(startPlace, finishPlace, a_travelMode, callback) {
-		function preparePlace(p) {
-			let result = p.location ? (p.id ? { placeId: p.id } : p.location) : 
-						(p.placeId ? { placeId: p.placeId } : (p.latLng ? latLngToString(p.latLng) :  
-								(p.lat ? latLngToString(p) : p)));
-
-			return result;
-		}
 
 		//this.getPath(null, {start: startPlace, finish: finishPlace });
 
 		let request = {
-            origin: preparePlace(startPlace),
-            destination: preparePlace(finishPlace),
+            origin: VMap.preparePlace(startPlace),
+            destination: VMap.preparePlace(finishPlace),
             travelMode: a_travelMode
         }
 
@@ -389,4 +382,12 @@ class VMap extends EventProvider {
 			clearInterval(this.#updateTimerId);
 		this.#view.empty();
 	}
+}
+
+VMap.preparePlace = function(p) {
+	let result = p.location ? (p.id ? { placeId: p.id } : p.location) : 
+				(p.placeId ? { placeId: p.placeId } : (p.latLng ? latLngToString(p.latLng) :  
+						(p.lat ? latLngToString(p) : p)));
+
+	return result;
 }

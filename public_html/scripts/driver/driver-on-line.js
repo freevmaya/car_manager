@@ -189,12 +189,10 @@ class TakenOrders {
         let order = marker.order;
         function showPathAndInfo() {
 
-            v_map.getRoutes(order.start, order.finish, travelMode, (function(result) {
                 this.selOrderView = viewManager.Create({
                     bottomAlign: true,
                     template: 'orderView',
                     order: order,
-                    path: result,
                     marker: marker,
                     content: [
                         {
@@ -212,8 +210,6 @@ class TakenOrders {
                 }, TracerOrderView, (()=>{
                     this.selOrderView = null;
                 }).bind(this));
-
-            }).bind(this));
         }
 
         if (this.selOrderView) 
@@ -231,10 +227,14 @@ class OrderView extends BottomView {
     #tracerOrder;
     #tracerToStart;
     #pathToStart;
-    #pathOrder;
+    #pathRender;
     #isDrive;
     #updateListenerId;
     #mapClickListener;
+    #path;
+
+    get Path() {return this.#path; };
+    set Path(value) { this.setPath(value); };
 
     get Order() { return this.options.order; };
     get isMyOrder() { return this.Order.driver_id == jsdata.driver.id; };
@@ -245,7 +245,30 @@ class OrderView extends BottomView {
     constructor(elem, callback = null, options) {
         super(elem, callback, options);
 
+        this.pathRequest();
         this.#mapClickListener = v_map.map.addListener("click", this.onClickMap.bind(this));
+    }
+
+    pathRequest(v_request) {
+
+        let request = $.extend({
+            origin: VMap.preparePlace(this.Order.start),
+            destination: VMap.preparePlace(this.Order.finish),
+            travelMode: travelMode
+        }, v_request);
+
+        if (!isEmpty(request.origin) && !isEmpty(request.destination)) {
+            v_map.DirectionsService.route(request, ((result, status) => {
+                if (status == 'OK')
+                    this.setPath(result);
+                else console.log(request);
+            }).bind(this));
+        }
+    }
+
+    setPath(value) {
+        this.#path = value;
+        this.reDrawPath();
     }
 
     setIsDrive(value) {
@@ -263,8 +286,24 @@ class OrderView extends BottomView {
         }
     }
 
+    addPointToPath(latLng) {
+        let wlist = this.Path.request.waypoints ? this.Path.request.waypoints : [];
+        wlist.push({location: latLng});
+        this.pathRequest($.extend({
+            waypoints: wlist,
+            optimizeWaypoints: true
+        }, this.Path.request));
+    }
+
     onClickMap(e) {
-        console.log(e);
+        if (this.#tracerOrder) {
+            let inPath = {};
+            let p = Tracer.CalcPointInPath(this.Path.routes[0].overview_path, e.latLng, inPath);
+
+            if (inPath.distanceToLine > this.#tracerOrder.Options.magnetDistance) {
+                this.addPointToPath(e.latLng);
+            }
+        }
     }
 
     initView() {
@@ -302,17 +341,8 @@ class OrderView extends BottomView {
             .removeClass(lastState)
             .addClass(state);
 
-        this.closePathOrder();
-
-        if ((state != 'finished') && !this.#pathOrder) {
-            this.#pathOrder = v_map.DrawPath(this.options.path, this.isMyOrder ? driverPathOptions : defaultPathOptions);
-            this.#pathOrder.addListener("directions_changed", this.onChangeOrderPath.bind(this));
-        }
-
         if (state == 'driver_move')
             this.showPathToStart();
-        else if ((state == 'execution') && this.isMyOrder) 
-            this.traceOrderPath();
         else if (state == 'accepted') this.checkNearPassenger();
 
         setTimeout(this.resizeMap.bind(this), 500);
@@ -321,17 +351,38 @@ class OrderView extends BottomView {
     }
 
     onChangeOrderPath(e) {
-        const directions = this.#pathOrder.getDirections();
+        const directions = this.#pathRender.getDirections();
         if (this.#tracerOrder)
             this.#tracerOrder.SetRoutes(directions.routes);
     }
 
-    traceOrderPath() {
-        this.#tracerOrder = v_map.createTracer(this.Order, this.options.path.routes, 
-                {startTime: Date.parse(this.Order.pickUpTime).valueOf()});
+    reDrawPath() {
+            
+        this.closePathOrder();
+        if (this.Path) {
 
-        this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
-        this.currentTracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+            if (this.Order.state != 'finished') {
+                this.#pathRender = v_map.DrawPath(this.Path, this.isMyOrder ? driverPathOptions : defaultPathOptions);
+                this.#pathRender.addListener("directions_changed", this.onChangeOrderPath.bind(this));
+
+                this.traceOrderPath();
+            }
+        }
+    }
+
+    traceOrderPath() {
+        if ((this.Order.state == 'execution') && this.isMyOrder) {
+            if (this.Path) {
+
+                if (!this.#tracerOrder) {
+                    this.#tracerOrder = v_map.createTracer(this.Order, this.Path.routes, 
+                            {startTime: Date.parse(this.Order.pickUpTime).valueOf()});
+
+                    this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
+                    this.currentTracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+                } else this.#tracerOrder.SetRoutes(this.Path.routes);
+            }
+        }
     }
 
     onUpdateMap() {
@@ -388,9 +439,9 @@ class OrderView extends BottomView {
     }
 
     closePathOrder() {
-        if (this.#pathOrder) {
-            this.#pathOrder.setMap(null);
-            this.#pathOrder = null;
+        if (this.#pathRender) {
+            this.#pathRender.setMap(null);
+            this.#pathRender = null;
         }
 
         if (this.#tracerOrder) {
@@ -476,7 +527,7 @@ class OrderView extends BottomView {
     }
 
     onFinishPathOrder(tracer) {
-        if (this.#pathOrder) {
+        if (this.#pathRender) {
             Ajax({
                 action: 'SetState',
                 data: {id: this.Order.id, state: 'finished'}
@@ -541,10 +592,10 @@ class TracerOrderView extends OrderView {
     }
 
     Close() {
-        super.Close();
 
         this.#speedInfo.remove();
         this.#stepInfo.remove();
+        return super.Close();
     }
 }
 

@@ -23,7 +23,7 @@ var currentPathOptions = {
 var driverPathOptions = {
     preserveViewport: false,
     suppressMarkers: false,
-    draggable: true,
+    //draggable: true,
     markerOptions: {
         clickable: true,
         opacity: 0.5
