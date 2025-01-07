@@ -11,6 +11,8 @@
 	if ($this->asDriver) {
 //------------------------------DRIVER---------------------------------------------
 
+		html::AddScriptFile("driver/orderView.js");
+		html::AddScriptFile("driver/tracerOrderView.js");
 		html::AddScriptFile("driver/driver-on-line.js");
 
 		$wait_orders = $orderModel->getItems(['state'=>'wait']);

@@ -73,9 +73,7 @@ class Tracer extends EventProvider {
         this.#routes = routes;
         this.#lengthList = [];
         this.#totalLength = CalcPathLength(this.#routes, this.#routeIndex, this.#lengthList);
-        this.updateSteps(); 
-
-        //При изменении пути почему то не кореектно отображаются шаги, фиксануть!
+        this.updateSteps();
     }
 
     forEachSteps(func) {
