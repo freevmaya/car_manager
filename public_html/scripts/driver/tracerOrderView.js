@@ -16,6 +16,8 @@ class TracerOrderView extends OrderView {
     get isDrive() { return this.#isDrive; };
     set isDrive(value) { this.setIsDrive(value); };
 
+    get Order() { return this.options.orders.TopOrder; }
+
     afterConstructor() {
 
         this.#speedInfo = this.view.find('.speedInfo');
@@ -29,6 +31,13 @@ class TracerOrderView extends OrderView {
         super.afterConstructor();
     }
 
+    createMainPath() {
+
+        console.log(this.options.orders.getPath());
+        //this.pathRequest(null, this.setPath.bind(this));
+    }
+
+    /*
     onClickMap(e) {
         if (this.#tracerOrder) {
             let inPath = {};
@@ -38,6 +47,11 @@ class TracerOrderView extends OrderView {
                 this.addPointToPath(e.latLng);
             }
         }
+    }*/
+
+    visibleMarker(visibility) {
+        if (this.options.marker)
+            this.options.marker.setMap(visibility ? null : v_map.map);
     }
 
     initView() {
@@ -232,10 +246,7 @@ class TracerOrderView extends OrderView {
     }
 
     closePathOrder() {
-        if (this.pathRender) {
-            this.pathRender.setMap(null);
-            this.pathRender = null;
-        }
+        super.closePathOrder();
 
         if (this.#tracerOrder) {
             v_map.removeTracer(this.#tracerOrder);
@@ -264,15 +275,8 @@ class TracerOrderView extends OrderView {
     }
 
     destroy() {
-        if (this.Order.state != 'finished')
-            this.options.marker.setMap(v_map.map);
-
-        //this.#mapClickListener.remove();
-
         this.isDrive = false;
-
         this.closePathToStart();
-        this.closePathOrder();
         super.destroy();
     }
 

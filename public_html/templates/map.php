@@ -7,10 +7,12 @@
 		html::AddScriptFile("passenger/dev.js");
 
 	$orderModel = new OrderModel();
+	$routeModel = new RouteModel();
 
 	if ($this->asDriver) {
 //------------------------------DRIVER---------------------------------------------
 
+		html::AddScriptFile("graph.js");
 		html::AddScriptFile("driver/orderView.js");
 		html::AddScriptFile("driver/tracerOrderView.js");
 		html::AddScriptFile("driver/driver-on-line.js");
@@ -37,6 +39,7 @@
 		html::AddTemplateFile('driver/orderInfo.php', 'orderInfo');
 		html::AddTemplateFile('driver/offerView.php', 'offerView');
 		html::AddTemplateFile('driver/orderView.php', 'orderView');
+		html::AddTemplateFile('driver/takenOrderView.php', 'takenOrderView');
 
 	} else {
 //------------------------------PASSENGER---------------------------------------------

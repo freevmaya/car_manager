@@ -172,7 +172,6 @@ class html {
 				$newm = substr($matches[0], 0, -1)." data-template-id=\"{$key}\">";
 				$template = str_replace($matches[0], $newm, $template);
 			}
-			trace($matches);
 			$list[] = $template;
 		}
 

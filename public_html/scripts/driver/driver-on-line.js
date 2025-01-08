@@ -53,10 +53,50 @@ class TakenOrders {
     #orders;
     #timerId;
     selOrderView;
+
+    get TopOrder() { return this.#orders.length > 0 ? this.#orders[0] : null; }
+
     constructor(taken_orders) {
         this.#orders = taken_orders;
+        this.resortOrders();
         this.beginCheckOrders();
         this.showImportantOrder();
+    }
+
+    resortOrders() {
+
+        let importanList = ['accepted', 'wait_meeting', 'driver_move', 'execution'];
+
+        this.#orders.sort((order1, order2)=>{
+            return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
+        });
+
+    }
+
+    getPath() {
+        let points = {};
+        let graph = {
+            0: {}
+        };
+
+        let aidx = 0;
+        points[aidx] = v_map.getMainPosition();
+
+        for (let i=0; i<this.#orders.length; i++) {
+            aidx++;
+            graph[0][aidx] = 1;
+            points[aidx] = toLatLng(this.#orders[i].start);
+            aidx++;
+            points[aidx] = toLatLng(this.#orders[i].finish);
+            graph[aidx - 1] = {};
+            graph[aidx - 1][aidx] = parseInt(this.#orders[i].meters);
+        }
+
+        console.log(graph);
+
+        let pathlist = points;
+
+        return pathlist;
     }
 
     showOrderInList() {
@@ -70,20 +110,22 @@ class TakenOrders {
     }
 
     showImportantOrder() {
-
-        let importanList = ['accepted', 'wait_meeting', 'driver_move', 'execution'];
-
-        this.#orders.sort((order1, order2)=>{
-            return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
-        });
-
-        for (let i=0; i<this.#orders.length; i++)
-            if (importanList.includes(this.#orders[i].state)) {
-
-                let idx = v_map.MarkerManager.IndexOfByOrder(this.#orders[i].id);
-                this.ShowInfoOrder(v_map.MarkerManager.markers.users[idx]);
-                return;
+        this.takenOrdersView = viewManager.Create({
+            bottomAlign: true,
+            template: 'takenOrderView',
+            orders: this,
+            content: [
+                {
+                    label: "InfoPath",
+                    content: templateClone('orderInfo', this.TopOrder),// $(DataView.getOrderInfo(order, true)),
+                    class: HtmlField
+                }
+            ],
+            actions:  {
             }
+        }, TracerOrderView, (()=>{
+            this.takenOrdersView = null;
+        }).bind(this));
     }
 
     beginCheckOrders() {
@@ -196,17 +238,14 @@ class TakenOrders {
                     content: [
                         {
                             label: "InfoPath",
-                            content: templateClone('orderInfo', order),// $(DataView.getOrderInfo(order, true)),
+                            content: templateClone('offerView', order),// $(DataView.getOrderInfo(order, true)),
                             class: HtmlField
                         }
                     ],
                     actions:  {
-                        'Offer to perform': 'this.offerToPerform.bind(this)',
-                        'Move to start': 'this.moveToStart.bind(this)',
-                        'Reject': 'this.reject.bind(this)',
-                        'Go': 'this.letsGot.bind(this)'
+                        'Offer to perform': 'this.offerToPerform.bind(this)'
                     }
-                }, TracerOrderView, (()=>{
+                }, OrderView, (()=>{
                     this.selOrderView = null;
                 }).bind(this));
         }

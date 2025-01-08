@@ -9,8 +9,7 @@ class OrderView extends BottomView {
 
     constructor(elem, callback = null, options) {
         super(elem, callback, options);
-
-        this.pathRequest();
+        this.createMainPath();
     }
 
     getOrder() {
@@ -22,7 +21,11 @@ class OrderView extends BottomView {
         this.SetState(this.Order.state);
     }
 
-    pathRequest(v_request) {
+    createMainPath() {
+        this.pathRequest(null, this.setPath.bind(this));
+    }
+
+    pathRequest(v_request, callback = null) {
 
         let request = $.extend({
             origin: VMap.preparePlace(this.Order.start),
@@ -33,7 +36,7 @@ class OrderView extends BottomView {
         if (!isEmpty(request.origin) && !isEmpty(request.destination)) {
             v_map.DirectionsService.route(request, ((result, status) => {
                 if (status == 'OK')
-                    this.setPath(result);
+                    callback(result);
                 else console.log(request);
             }).bind(this));
         }
@@ -44,6 +47,7 @@ class OrderView extends BottomView {
         this.reDrawPath();
     }
 
+    /*
     addPointToPath(latLng) {
         let wlist = this.Path.request.waypoints ? this.Path.request.waypoints : [];
         wlist.push({location: latLng});
@@ -52,6 +56,7 @@ class OrderView extends BottomView {
             optimizeWaypoints: true
         }, this.Path.request));
     }
+    */
 
     initView() {
         super.initView();
@@ -62,7 +67,15 @@ class OrderView extends BottomView {
 
     setOptions(options) {
         super.setOptions(options);
-        this.options.marker.setMap(null);
+        this.visibleMarker(false);
+    }
+
+    visibleMarker(visibility) {
+
+         let idx = v_map.MarkerManager.IndexOfByOrder(this.Order.id);
+        if (idx > -1)
+            v_map.MarkerManager.markers.users[idx].setMap(visibility ? v_map.map : null);
+
     }
 
     SetStateText(state, ext=null) {
@@ -85,6 +98,13 @@ class OrderView extends BottomView {
         this.closePathOrder();
         if (this.Path) 
             this.pathRender = v_map.DrawPath(this.Path, defaultPathOptions);
+    }
+
+    closePathOrder() {
+        if (this.pathRender) {
+            this.pathRender.setMap(null);
+            this.pathRender = null;
+        }
     }
 
     offerToPerform(e) {
@@ -114,5 +134,12 @@ class OrderView extends BottomView {
             action: 'SetState',
             data: {id: this.Order.id, state: 'execution'}
         });
+    }
+
+    destroy() {
+        if (this.Order.state != 'finished')
+            this.visibleMarker(true);
+        this.closePathOrder();
+        super.destroy();
     }
 }
