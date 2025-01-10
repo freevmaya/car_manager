@@ -1,4 +1,61 @@
-function calcPaths(graph) {
+class GraphGenerator {
+	graph;
+	points;
+
+	constructor(startPoint) {
+		this.points = [startPoint];
+		this.graph = {
+			0: {}
+		}
+	}
+
+	addVar(name, value, obj = null) {
+		if (!obj) obj = {};
+		obj[name] = value;
+		return obj;
+	}
+
+	AddOrders(orders) {
+
+		for (let i=0; i<orders.length; i++)
+			this.#addOrder(orders[i]);
+
+		for (let i=2; i<this.points.length; i+=2)
+			for (let n=2; n<this.points.length; n+=2) {
+				if (n != i)
+					this.graph[i] = this.addVar(n - 1, Distance(this.points[i], this.points[n - 1]), this.graph[i]);
+		}
+	}
+
+	#addOrder(order) {
+
+		let idx1 = this.points.length;
+		let idx2 = this.points.length + 1;
+
+		this.points.push($.extend(toLatLng(order.start), {order: order}));
+		this.points.push($.extend(toLatLng(order.finish), {order: order}));
+
+		this.graph['0'][idx1] = Distance(this.points[0], this.points[idx1]);
+		this.graph[idx1] = this.addVar(idx2, parseInt(order.meters));
+	}
+
+	getPath() {
+		let orderedPaths = calcPaths(this.graph, '0');
+
+		console.log(this.graph);
+		console.log(orderedPaths);
+
+		let shortPath = orderedPaths[0][0];
+
+		let result = [];
+		for (let i=0; i<shortPath.length; i++)
+			result.push(this.points[shortPath[i]]);
+
+		return result;
+	}
+}
+
+function calcPaths(graph, startIndex = 'a') {
 	
 	function hasAllChars(line) {
 		let result = true;
@@ -13,7 +70,8 @@ function calcPaths(graph) {
 
 	function passLevel(idx, line = null, distance = 0) {
 
-		if (!line) line = idx;
+		if (!line) line = [idx];
+		else line.push(idx);
 
 		Object.keys(graph[idx]).forEach((i) => {
 			let edge1 = idx + '-' + i;
@@ -22,7 +80,7 @@ function calcPaths(graph) {
 				visited.push(edge1);
 
 				let dist = distance + graph[idx][i];
-				passLevel(i, line + i, dist);
+				passLevel(i, Array.from(line), dist);
 
 				if (hasAllChars(line))
 					lines.push([line, dist]);
@@ -32,7 +90,7 @@ function calcPaths(graph) {
 		});
 	}
 
-	passLevel('a');
+	passLevel(startIndex);
 
 
 	lines.sort((v1, v2)=>{

@@ -3,9 +3,6 @@
 	include_once(TEMPLATES_PATH.'/toolbar.php');
 	include_once(TEMPLATES_PATH.'/map/map-index.php');
 
-	if (DEV)
-		html::AddScriptFile("passenger/dev.js");
-
 	$orderModel = new OrderModel();
 	$routeModel = new RouteModel();
 

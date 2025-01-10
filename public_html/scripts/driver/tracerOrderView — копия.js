@@ -9,19 +9,14 @@ class TracerOrderView extends OrderView {
 
     #tracerOrder;
     #tracerToStart;
-
-    #orderPath;
-    #orderPathRender;
-
     #pathToStart;
     #isDrive;
 
     get currentTracer() { return this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null); }
     get isDrive() { return this.#isDrive; };
     set isDrive(value) { this.setIsDrive(value); };
-    
+
     get Order() { return this.options.orders.TopOrder; }
-    get Orders() { return this.options.orders; }
 
     afterConstructor() {
 
@@ -31,59 +26,26 @@ class TracerOrderView extends OrderView {
         this.#speedInfo.moveTo(this.windows);
         this.#stepInfo.moveTo(this.windows);
 
-        this.contentElement.css('display', 'none');
+        //this.#mapClickListener = v_map.map.addListener("click", this.onClickMap.bind(this));
+
         super.afterConstructor();
-
-        if (DEV)
-            this.#mapClickListener = v_map.map.addListener("click", ((e)=>{
-                this.createMainPath(e.latLng);
-            }).bind(this));
     }
 
-    createMainPath(mainPoint) {
-
-        let points = this.Orders.getPath(mainPoint);
-
-        let waypoints = [];
-
-        for (let i=1; i<points.length - 1; i++)
-            waypoints.push({location: points[i]});
-
-        let request = {
-            origin: points[0],
-            waypoints: waypoints,
-            destination: points[points.length - 1],
-            travelMode: this.Order.travelMode
-        };
-
-        v_map.DirectionsService.route(request, ((result, status) => {
-            if (status == 'OK')
-                this.setPath(result);
-            else console.log(request);
-        }).bind(this));
+    createMainPath() {
+        this.pathRequest(null, this.setPath.bind(this));
     }
 
-    showOrder(order_id) {
-        let order = this.Orders.getOrder(order_id);
-        this.pathRequest({
-            origin: VMap.preparePlace(order.start),
-            destination: VMap.preparePlace(order.finish),
-        }, this.showOrderPath.bind(this));
-    }
+    /*
+    onClickMap(e) {
+        if (this.#tracerOrder) {
+            let inPath = {};
+            let p = Tracer.CalcPointInPath(this.Path.routes[0].overview_path, e.latLng, inPath);
 
-    showOrderPath(value) {
-        this.closeOrderPath();
-        this.#orderPath = value;
-        this.#orderPathRender = v_map.DrawPath(this.#orderPath, driverOrderPathOptions);
-    }
-
-    closeOrderPath() {
-        if (this.#orderPathRender) {
-            this.#orderPathRender.setMap(null);
-            this.#orderPathRender = null;
-            this.#orderPath = null;
+            if (inPath.distanceToLine > this.#tracerOrder.Options.magnetDistance) {
+                this.addPointToPath(e.latLng);
+            }
         }
-    }
+    }*/
 
     visibleMarker(visibility) {
         if (this.options.marker)
@@ -107,10 +69,10 @@ class TracerOrderView extends OrderView {
             .addClass(state);
 
         if (state == 'driver_move')
-            this.reDrawPath();
+            this.showPathToStart();
         else if (state == 'accepted') this.checkNearPassenger();
 
-        ViewManager.resizeMap();
+        setTimeout(ViewManager.resizeMap, 500);
 
         this.isDrive = (state == 'driver_move') || (state == 'execution');
     }
@@ -168,8 +130,6 @@ class TracerOrderView extends OrderView {
                 this.traceOrderPath();
             }
         }
-
-        this.showPathToStart();
     }
 
     onUpdateMap() {
@@ -197,14 +157,12 @@ class TracerOrderView extends OrderView {
     }
 
     traceOrderPath() {
-        if (['execution', 'driver_move'].includes(this.Order.state)) {
+        if (this.Order.state == 'execution') {
             if (this.Path) {
-
-                let startTime = this.Order.state == 'driver_move' ? Date.now() : Date.parse(this.Order.pickUpTime).valueOf();
 
                 if (!this.#tracerOrder) {
                     this.#tracerOrder = v_map.createTracer(this.Order, this.Path.routes, 
-                            {startTime: startTime});
+                            {startTime: Date.parse(this.Order.pickUpTime).valueOf()});
 
                     this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
                     this.currentTracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
@@ -218,12 +176,11 @@ class TracerOrderView extends OrderView {
 
         let distance = Distance(v_map.getMainPosition(), this.Order.start);
 
-        if (this.Order.state == 'driver_move') {
+        if (!this.checkNearPassenger()) {
 
             v_map.getRoutes(v_map.getMainPosition(), this.Order.start, this.Order.travelMode, ((result)=>{
                 this.#pathToStart = v_map.DrawPath(result, pathToStartOptions);
                 if (afterShow) afterShow();
-                /*
 
                 if (this.isMyOrder) {
                     this.#tracerToStart = v_map.createTracer(this.Order, result.routes);
@@ -231,18 +188,21 @@ class TracerOrderView extends OrderView {
                     this.#tracerToStart.AddListener('FINISHPATH', this.onFinishPathToStart.bind(this));
                     this.#tracerToStart.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
                 }
-                */
             }).bind(this));
         }
     }
 
     #moveToStart() {
-        Ajax({
-            action: 'SetState',
-            data: {id: this.Order.id, state: 'driver_move'}
-        }).then(((response)=>{
-            if (response.result != 'ok')
-                this.trouble(response);
+        this.showPathToStart((()=>{
+
+            Ajax({
+                action: 'SetState',
+                data: {id: this.Order.id, state: 'driver_move'}
+            }).then(((response)=>{
+                if (response.result != 'ok')
+                    this.trouble(response);
+            }).bind(this));
+            
         }).bind(this));
     }
 
@@ -314,7 +274,6 @@ class TracerOrderView extends OrderView {
 
     destroy() {
         this.isDrive = false;
-        this.closeOrderPath();
         this.closePathToStart();
         super.destroy();
     }

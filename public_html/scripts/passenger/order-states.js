@@ -266,7 +266,7 @@ class SelectPathView extends ViewPath {
             this.fillText(finishPlace, 'finishPlace');
             this.footerElement.find('button').prop('disabled', false);
             
-            this.resizeMap();
+            ViewManager.resizeMap();
 
         }).bind(this));
     }
@@ -324,7 +324,7 @@ class OrderAccepedView extends OrderView {
             .find('.state').text(toLang(this.orderState))
             .find('.distance').text(DistanceToStr(this.Order.meters));
 
-        this.resizeMap();
+        ViewManager.resizeMap();
 
         if ((this.LastState == 'accepted') && (this.pathToStartNotify)) {
             this.closePathToStart();

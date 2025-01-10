@@ -4,8 +4,5 @@
 		{
 			"path": ".",
 		},
-		{
-			"path": "C:\\OpenServer\\domains\\image-generator.local\\public_html"
-		},
 	],
 }

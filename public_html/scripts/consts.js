@@ -22,14 +22,23 @@ var currentPathOptions = {
 
 var driverPathOptions = {
     preserveViewport: false,
-    suppressMarkers: false,
+    suppressMarkers: true,
     //draggable: true,
     markerOptions: {
         clickable: true,
         opacity: 0.5
     },
     polylineOptions: {
-        strokeColor: 'green'
+        strokeColor: '#AA0',
+        strokeWeight: 3
+    }
+}
+
+var driverOrderPathOptions = {
+    preserveViewport: false,
+    suppressMarkers: true,
+    polylineOptions: {
+        strokeColor: 'red'
     }
 }
 
@@ -49,7 +58,7 @@ var defaultPathOptions = {
         opacity: 0.5
     },
     polylineOptions: {
-        strokeColor: 'rgba(0.6,0.6,0,0.5)'
+        strokeColor: 'green'
     }
 }
 

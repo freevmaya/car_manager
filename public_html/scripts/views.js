@@ -15,6 +15,26 @@ class ViewManager {
             return this.openedViews[i];
         return null;
     }
+
+    
+}
+
+ViewManager.resizeMap = function(layer = '#windows') {
+
+    function maxHeight() {
+        let result = 0;
+        $(layer + ' .view').each((i, v)=>{
+            v = $(v);
+            if (v.hasClass('bottom'))
+                result = Math.max($(v).outerHeight(), result);
+        })
+        return result;
+    }
+
+    setTimeout((()=>{
+        let h = v_map.View.height();
+        v_map.View.children().css('height', Math.round((h - maxHeight()) / h * 100) + '%');
+    }).bind(this), 300); 
 }
 
 ViewManager.setContent = function($this, content, clone = false)  {
@@ -181,14 +201,6 @@ class View extends BaseParentView {
         if (this.options.modal) this.blockBackground(true);
     }
 
-    resizeMap() {
-        if (v_map && this.options.bottomAlign)
-            setTimeout((()=>{
-                let h = v_map.View.height();
-                v_map.View.children().css('height', Math.round((h - this.view.outerHeight()) / h * 100) + '%');
-            }).bind(this), 300); 
-    }
-
     toAlign() {
         let size = { x: $(window).width(), y: $(window).height() };
         if (!this.options.topAlign) {
@@ -197,7 +209,7 @@ class View extends BaseParentView {
                     .addClass('bottom')
                     .addClass('radiusTop');
 
-                this.resizeMap();
+                ViewManager.resizeMap();
             }
             //else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);
         }
@@ -256,9 +268,7 @@ class BottomView extends View {
     }
 
     Close() {
-
-        if (typeof v_map !== 'undefined')
-            v_map.View.children().css('height', '100%');
+        ViewManager.resizeMap();
         return super.Close();
     }
 }

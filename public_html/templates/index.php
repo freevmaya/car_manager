@@ -23,6 +23,9 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>   
     <script src="<?=SCRIPTURL?>/consts.js<?=$anti_cache?>"></script>    
     <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>
+    <?
+    if (DEV) echo "<script src=\"".SCRIPTURL."/dev.js{$anti_cache}\"></script>\n";
+    ?>
     <?=html::RenderJSFiles();?>
     <?=html::RenderStyleFiles();?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>
@@ -37,6 +40,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
             });
         });
 
+        var DEV = <?=DEV?>;
         var BASEURL = '<?=BASEURL?>';
         var lang = <?=preg_replace("/[\r\n]+/", '', json_encode($lang, JSON_PRETTY_PRINT))?>;
         var transport = new AjaxTransport(1000);

@@ -5,11 +5,6 @@ class DMap extends VMap {
     tracer;
     constructor(elem) {
         super(elem, ()=>{
-
-            transport.AddListener('notificationList', 
-                    v_map.MarkerManager.onNotificationList.bind(v_map.MarkerManager));
-
-            v_map.MarkerManager.AddOrders($.extend([], jsdata.all_orders, jsdata.taken_orders));
             takenOrders = new TakenOrders(jsdata.taken_orders);
 
         }, {markerManagerClass: MarkerOrderManager});
@@ -49,54 +44,59 @@ class DMap extends VMap {
 }
 
 
-class TakenOrders {
+class TakenOrders extends EventProvider {
     #orders;
     #timerId;
     selOrderView;
 
     get TopOrder() { return this.#orders.length > 0 ? this.#orders[0] : null; }
+    get ExecutionOrder() { return this.#orders.find((o) => o.state == 'execution'); }
+    get DriverMoveOrder() { return this.#orders.find((o) => o.state == 'driver_move'); }
+    get WaitMeetingOrder() { return this.#orders.find((o) => o.state == 'wait_meeting'); }
 
     constructor(taken_orders) {
+
+        super();
         this.#orders = taken_orders;
         this.resortOrders();
         this.beginCheckOrders();
         this.showImportantOrder();
+
+        transport.AddListener('notificationList', this.onNotificationList.bind(this));
+    }
+
+    onNotificationList(e) {
+        let list = e.value;
+        for (let i in list) {
+            let item = list[i];
+
+            if (item.content_type == "changeOrder") {
+                let part_order = JSON.parse(item.text);
+                this.SetState(item.content_id, part_order.state);
+                transport.SendStatusNotify(item, 'read');
+            }
+        }
     }
 
     resortOrders() {
 
-        let importanList = ['accepted', 'wait_meeting', 'driver_move', 'execution'];
+        let importanList = ['accepted', 'driver_move', 'wait_meeting', 'execution'];
 
         this.#orders.sort((order1, order2)=>{
             return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
         });
 
+        this.SendEvent('CHANGE', this);
     }
 
-    getPath() {
-        let points = {};
-        let graph = {
-            0: {}
-        };
+    getPath(mainPoint) {
 
-        let aidx = 0;
-        points[aidx] = v_map.getMainPosition();
+        let generator = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
+        generator.AddOrders(this.#orders);
 
-        for (let i=0; i<this.#orders.length; i++) {
-            aidx++;
-            graph[0][aidx] = 1;
-            points[aidx] = toLatLng(this.#orders[i].start);
-            aidx++;
-            points[aidx] = toLatLng(this.#orders[i].finish);
-            graph[aidx - 1] = {};
-            graph[aidx - 1][aidx] = parseInt(this.#orders[i].meters);
-        }
+        let result = generator.getPath();
 
-        console.log(graph);
-
-        let pathlist = points;
-
-        return pathlist;
+        return result;
     }
 
     showOrderInList() {
@@ -109,23 +109,23 @@ class TakenOrders {
             }
     }
 
-    showImportantOrder() {
-        this.takenOrdersView = viewManager.Create({
-            bottomAlign: true,
-            template: 'takenOrderView',
-            orders: this,
-            content: [
-                {
-                    label: "InfoPath",
-                    content: templateClone('orderInfo', this.TopOrder),// $(DataView.getOrderInfo(order, true)),
-                    class: HtmlField
+    showImportantOrder(order_id = null) {
+        if (!this.takenOrdersView) {
+            this.takenOrdersView = viewManager.Create({
+                bottomAlign: true,
+                template: 'takenOrderView',
+                orders: this,
+                actions:  {
+                    'Offer to perform': 'this.offerToPerform.bind(this)',
+                    'Move to start': 'this.moveToStart.bind(this)'
                 }
-            ],
-            actions:  {
-            }
-        }, TracerOrderView, (()=>{
-            this.takenOrdersView = null;
-        }).bind(this));
+            }, TracerOrderView, (()=>{
+                this.takenOrdersView = null;
+            }).bind(this));
+        }
+
+        if (this.takenOrdersView && order_id) 
+            this.takenOrdersView.showOrder(order_id);
     }
 
     beginCheckOrders() {
@@ -144,11 +144,16 @@ class TakenOrders {
         if (idx > -1) {
             let order = this.#orders[idx];
             order.state = state;
+            this.resortOrders();
+
             if (!order.changeList) order.changeList = [];
             order.changeList.push({time: Date.now(), text: JSON.stringify({state: state})});
 
             if (state == 'wait_meeting')
                 this.beginCheckOrders();
+
+            if (this.takenOrdersView && (this.takenOrdersView.Order.id == order_id))
+                this.takenOrdersView.SetState(state);
         }
     }
 
@@ -223,36 +228,52 @@ class TakenOrders {
             }
     }
 
+    contains(orderId) {
+        return this.getOrder(orderId) != undefined;
+    }
+
+    getOrder(orderId) {
+        return this.#orders.find(
+            (order) => order.id == orderId
+        );
+    }
+
     ShowInfoOrder(markerOrOrderId) {
 
         let marker = isNumeric(markerOrOrderId) ? v_map.MarkerManager.MarkerByOrderId(markerOrOrderId) : markerOrOrderId;
         if (!marker) return;
         let order = marker.order;
-        function showPathAndInfo() {
 
-                this.selOrderView = viewManager.Create({
-                    bottomAlign: true,
-                    template: 'orderView',
-                    order: order,
-                    marker: marker,
-                    content: [
-                        {
-                            label: "InfoPath",
-                            content: templateClone('offerView', order),// $(DataView.getOrderInfo(order, true)),
-                            class: HtmlField
+        if (this.contains(order.id))
+            this.showImportantOrder(order.id);
+        else {
+
+            function showPathAndInfo() {
+
+                    this.selOrderView = viewManager.Create({
+                        bottomAlign: true,
+                        template: 'orderView',
+                        order: order,
+                        marker: marker,
+                        content: [
+                            {
+                                label: "InfoPath",
+                                content: templateClone('offerView', order),// $(DataView.getOrderInfo(order, true)),
+                                class: HtmlField
+                            }
+                        ],
+                        actions:  {
+                            'Offer to perform': 'this.offerToPerform.bind(this)'
                         }
-                    ],
-                    actions:  {
-                        'Offer to perform': 'this.offerToPerform.bind(this)'
-                    }
-                }, OrderView, (()=>{
-                    this.selOrderView = null;
-                }).bind(this));
-        }
+                    }, OrderView, (()=>{
+                        this.selOrderView = null;
+                    }).bind(this));
+            }
 
-        if (this.selOrderView) 
-            this.selOrderView.Close().then(showPathAndInfo.bind(this));
-        else showPathAndInfo.bind(this)();
+            if (this.selOrderView) 
+                this.selOrderView.Close().then(showPathAndInfo.bind(this));
+            else showPathAndInfo.bind(this)();
+        }
     }
 
     destroy() {
@@ -261,6 +282,13 @@ class TakenOrders {
 }
 
 class MarkerOrderManager extends MarkerManager {
+    constructor(mapControl) {
+        super(mapControl);
+
+        transport.AddListener('notificationList', this.onNotificationList.bind(this));
+        this.AddOrders($.extend([], jsdata.all_orders, jsdata.taken_orders));
+    }
+
     onNotificationList(e) {
         let list = e.value;
         for (let i in list) {
@@ -276,21 +304,12 @@ class MarkerOrderManager extends MarkerManager {
                 switch (part_order.state) {
 
                     case "wait":
-
-                        if (!(takenOrders.selOrderView && takenOrders.selOrderView.isDrive)) {
-                            let idx = this.IndexOfByOrder(item.content_id);
-
-                            if (idx > -1)
-                                this.Shake(this.markers.users[idx]);
-                            else {
-                                Ajax({
-                                    action: 'GetOrder',
-                                    data: item.content_id
-                                }).then(((order)=>{
-                                    this.AddOrder(order, true);
-                                }).bind(this));
-                            }
-                        }
+                        Ajax({
+                            action: 'GetOrder',
+                            data: item.content_id
+                        }).then(((order)=>{
+                            this.AddOrder(order, true);
+                        }).bind(this));
                         break;
 
                     case "cancel":

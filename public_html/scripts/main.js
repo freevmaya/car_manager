@@ -278,8 +278,14 @@ class AjaxTransport extends EventProvider {
         this.initTimer();
     }
 
+    getStatusToReturn(id, a_status) {
+        return this.statusesToReturn.find((e) => (e.id == id) && (e.state == a_status));
+    }
+
     SendStatusNotify(data, a_status = 'receive') {
-        this.statusesToReturn.push({ id: typeof(data) == 'object' ? data.id : data, state: a_status });
+        let id = typeof(data) == 'object' ? data.id : data;
+        if (!this.getStatusToReturn(id, a_status))
+            this.statusesToReturn.push({ id: id, state: a_status });
     }
 
     Reply(notifyId, data) {
@@ -989,5 +995,15 @@ $(window).ready(()=>{
             $(this).detach().appendTo(selector);
         });
     };
+
+    Function.prototype.delay = function(time, This) {
+        let method = this;
+
+        return (...params)=>{
+            setTimeout(()=>{
+                method.bind(This)(...params);
+            }, time);
+        }
+    }
 
 })( jQuery );
