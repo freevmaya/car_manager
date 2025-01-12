@@ -42,8 +42,8 @@ class GraphGenerator {
 	getPath() {
 		let orderedPaths = calcPaths(this.graph, '0');
 
-		console.log(this.graph);
-		console.log(orderedPaths);
+		//console.log(this.graph);
+		//console.log(orderedPaths);
 
 		let shortPath = orderedPaths[0][0];
 
@@ -55,35 +55,47 @@ class GraphGenerator {
 	}
 }
 
-function calcPaths(graph, startIndex = 'a') {
+function calcPaths(graph, startIndex = '0') {
+
+	let keys = Object.keys(graph);
+	let keys1 = Array.from(keys).splice(1);
 	
-	function hasAllChars(line) {
-		let result = true;
-		Object.keys(graph).forEach((i) => {
-			result = result && line.includes(i);
-		});
-		return result;
+	function checkChars(line) {
+
+		if (line.length == keys1.length) {
+			let midx = -1;
+			for (let i=0; i<keys1.length; i++) {
+				let k = keys1[i];
+				if (!line.includes(k)) 
+					return false;
+
+				/*
+				if (midx < line[i])
+					midx = parseInt(line[i]);
+				else return false;
+				*/
+			};
+			return true;
+		}
+
+		return false;
 	}
 
 	let visited = [];
 	let lines = [];
 
-	function passLevel(idx, line = null, distance = 0) {
-
-		if (!line) line = [idx];
-		else line.push(idx);
+	function passLevel(idx, distance = 0) {
 
 		Object.keys(graph[idx]).forEach((i) => {
-			let edge1 = idx + '-' + i;
-			let edge2 = i + '-' + idx;
-			if (!(visited.includes(edge1) || visited.includes(edge2))) {
-				visited.push(edge1);
+
+			if (!(visited.includes(i))) {
+				visited.push(i);
 
 				let dist = distance + graph[idx][i];
-				passLevel(i, Array.from(line), dist);
+				passLevel(i, dist);
 
-				if (hasAllChars(line))
-					lines.push([line, dist]);
+				if (checkChars(visited))
+					lines.push({distance: dist, list: Array.from(visited)});
 
 				visited.pop();
 			}
@@ -94,22 +106,20 @@ function calcPaths(graph, startIndex = 'a') {
 
 
 	lines.sort((v1, v2)=>{
-		return v1[1] - v2[1];
+		return v1.distance - v2.distance;
 	});
 	return lines;
 }
 
-/*
 let graph = {
-  a: { b: 1, c: 1 , d: 2 },
-  b: { e: 2 },
-  c: { f: 3 },
-  d: { g: 4 },
-  e: { c: 2.5, d: 3 },
-  f: { b: 3.5, d: 6 },
-  g: { c: 6, b: 7}
+  0: { 1: 0.5, 3: 1, 5: 1 },
+  1: { 2: 2, 3: 1, 5: 2.5 },
+  2: { 3: 3, 4: 1, 6: 2 },
+  3: { 4: 4, 1: 1, 5: 2 },
+  4: { 1: 2.5, 5: 3, 2: 1, 6: 2 },
+  5: { 6: 3.5, 3: 1, 1: 2.1 },
+  6: { 1: 6, 3: 7, 4: 1.2, 2: 3.2}
 }
 
 let result = calcPaths(graph);
 console.log(result);
-*/

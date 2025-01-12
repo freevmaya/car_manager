@@ -48,17 +48,16 @@ class TakenOrders extends EventProvider {
     #orders;
     #timerId;
     selOrderView;
+    #path;
 
     get TopOrder() { return this.#orders.length > 0 ? this.#orders[0] : null; }
-    get ExecutionOrder() { return this.#orders.find((o) => o.state == 'execution'); }
-    get DriverMoveOrder() { return this.#orders.find((o) => o.state == 'driver_move'); }
-    get WaitMeetingOrder() { return this.#orders.find((o) => o.state == 'wait_meeting'); }
+    get Path() { return this.#path; }
 
     constructor(taken_orders) {
 
         super();
         this.#orders = taken_orders;
-        this.resortOrders();
+        this.ResetPath();
         this.beginCheckOrders();
         this.showImportantOrder();
 
@@ -78,25 +77,23 @@ class TakenOrders extends EventProvider {
         }
     }
 
-    resortOrders() {
-
-        let importanList = ['accepted', 'driver_move', 'wait_meeting', 'execution'];
-
-        this.#orders.sort((order1, order2)=>{
-            return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
-        });
-
-        this.SendEvent('CHANGE', this);
-    }
-
-    getPath(mainPoint) {
+    ResetPath(mainPoint) {
 
         let generator = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
         generator.AddOrders(this.#orders);
 
-        let result = generator.getPath();
+        this.#path = generator.getPath();
+        for (let i=1; i<this.#path.length; i++)
+            this.#path[i].order.sort = i;
 
-        return result;
+        this.#orders.sort((order1, order2)=>{
+            return order1.sort - order2.sort;
+            //return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
+        });
+
+        this.SendEvent('CHANGE', this);
+
+        return this.#path;
     }
 
     showOrderInList() {
@@ -125,7 +122,7 @@ class TakenOrders extends EventProvider {
         }
 
         if (this.takenOrdersView && order_id) 
-            this.takenOrdersView.showOrder(order_id);
+            this.takenOrdersView.togglePathOrder(order_id);
     }
 
     beginCheckOrders() {
@@ -144,7 +141,7 @@ class TakenOrders extends EventProvider {
         if (idx > -1) {
             let order = this.#orders[idx];
             order.state = state;
-            this.resortOrders();
+            this.ResetPath();
 
             if (!order.changeList) order.changeList = [];
             order.changeList.push({time: Date.now(), text: JSON.stringify({state: state})});

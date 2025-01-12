@@ -42,7 +42,7 @@ class TracerOrderView extends OrderView {
 
     createMainPath(mainPoint) {
 
-        let points = this.Orders.getPath(mainPoint);
+        let points = this.Orders.ResetPath(mainPoint);
 
         let waypoints = [];
 
@@ -63,17 +63,23 @@ class TracerOrderView extends OrderView {
         }).bind(this));
     }
 
-    showOrder(order_id) {
-        let order = this.Orders.getOrder(order_id);
-        this.pathRequest({
-            origin: VMap.preparePlace(order.start),
-            destination: VMap.preparePlace(order.finish),
-        }, this.showOrderPath.bind(this));
+    togglePathOrder(order_id) {
+
+        if (this.#orderPath && (this.#orderPath.orderId == order_id))
+            this.closeOrderPath();
+        else {
+            let order = this.Orders.getOrder(order_id);
+            this.pathRequest({
+                origin: VMap.preparePlace(order.start),
+                destination: VMap.preparePlace(order.finish),
+            }, this.showOrderPath.bind(this, order_id));
+        }
     }
 
-    showOrderPath(value) {
+    showOrderPath(order_id, value) {
         this.closeOrderPath();
         this.#orderPath = value;
+        this.#orderPath.orderId = order_id;
         this.#orderPathRender = v_map.DrawPath(this.#orderPath, driverOrderPathOptions);
     }
 

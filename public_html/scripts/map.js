@@ -222,30 +222,33 @@ class VMap extends EventProvider {
 
 		this.#map.addListener('mousedown', this.onDown.bind(this));
 		this.#map.addListener('mouseup', this.onUp.bind(this));
-		this.#map.addListener('mousemove', this.onMouseMove.bind(this));
 	}
 
-	onMouseMove(e) {
-	}
-
-	onDown(e) {
-		this.#mouseDown = true;
-		this.#followCenter = false;
+	#clearMdTid() {
 		if (this.#mouseDownTimerId)
 			clearTimeout(this.#mouseDownTimerId);
 	}
 
-	onUp(e) {
-			
-		this.#mouseDown = false;
-
+	#beginMdTid() {
 		if (this.CameraFollowPath) {
+			this.#clearMdTid();
 			this.#mouseDownTimerId = setTimeout((()=>{
 				this.#mouseDownTimerId = false;
 				this.#followCenter = this.CameraFollowPath;
 				this.#mapLatLng = this.map.center;
 			}).bind(this), 2000);
 		}
+	}
+
+	onDown(e) {
+		this.#clearMdTid();
+		this.#mouseDown = true;
+		this.#followCenter = false;
+	}
+
+	onUp(e) {
+		this.#mouseDown = false;
+		this.#beginMdTid();
 	}
 
 	driverManagerOn(value) {

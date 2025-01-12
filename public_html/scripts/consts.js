@@ -38,7 +38,8 @@ var driverOrderPathOptions = {
     preserveViewport: false,
     suppressMarkers: true,
     polylineOptions: {
-        strokeColor: 'red'
+        strokeColor: 'red',
+        strokeWeight: 5
     }
 }
 
@@ -46,7 +47,7 @@ var pathToStartOptions = {
     preserveViewport: false,
     suppressMarkers: true,
     polylineOptions: {
-        strokeColor: 'red'
+        strokeColor: 'yellow'
     }
 }
 
