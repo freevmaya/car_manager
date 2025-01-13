@@ -45,6 +45,7 @@ class OrderView extends BottomView {
     setPath(value) {
         this.#path = value;
         this.reDrawPath();
+        this.resetForState();
     }
 
     /*

@@ -5,7 +5,9 @@ var dateOnlyFormat  = "dd.MM.yyyy";
 var HMSFormat  = "HH:mm:ss";
 var HMFormat  = "HH:mm";
 
-var STATELIST = ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'expired', 'rejected', 'cancel'];
+var STATELIST = ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'finished', 'expired', 'rejected', 'cancel'];
+
+var STATES = 'wait accepted driver_move wait_meeting execution finished expired rejected cancel';
 
 
 var currentPathOptions = {

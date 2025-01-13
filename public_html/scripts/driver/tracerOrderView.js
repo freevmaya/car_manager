@@ -8,15 +8,12 @@ class TracerOrderView extends OrderView {
     #mapClickListener;
 
     #tracerOrder;
-    #tracerToStart;
 
     #orderPath;
     #orderPathRender;
-
-    #pathToStart;
     #isDrive;
 
-    get currentTracer() { return this.#tracerOrder ? this.#tracerOrder : (this.#tracerToStart ? this.#tracerToStart : null); }
+    get currentTracer() { return this.#tracerOrder; }
     get isDrive() { return this.#isDrive; };
     set isDrive(value) { this.setIsDrive(value); };
     
@@ -42,15 +39,17 @@ class TracerOrderView extends OrderView {
 
     createMainPath(mainPoint) {
 
+        mainPoint = mainPoint ? mainPoint : v_map.getMainPosition();
+
         let points = this.Orders.ResetPath(mainPoint);
 
         let waypoints = [];
 
-        for (let i=1; i<points.length - 1; i++)
+        for (let i = 0; i<points.length - 1; i++)
             waypoints.push({location: points[i]});
 
         let request = {
-            origin: points[0],
+            origin: mainPoint,
             waypoints: waypoints,
             destination: points[points.length - 1],
             travelMode: this.Order.travelMode
@@ -101,15 +100,14 @@ class TracerOrderView extends OrderView {
         this.view.addClass("taken-order");
     }
 
-    SetState(state) {
-        let lastState = this.Order.state;
-
-        this.view.removeClass('wait accepted driver_move wait_meeting execution finished expired');
-        this.view.addClass(this.Order.state = state);
+    resetForState() {
+        let state = this.Order.state;
+        this.view.removeClass(STATES);
+        this.view.addClass(state);
         this.SetStateText(state);
 
         this.view
-            .removeClass(lastState)
+            .removeClass(STATES)
             .addClass(state);
 
         if (state == 'driver_move')
@@ -119,6 +117,10 @@ class TracerOrderView extends OrderView {
         ViewManager.resizeMap();
 
         this.isDrive = (state == 'driver_move') || (state == 'execution');
+    }
+
+    SetState(state) {
+        this.resetForState();
     }
 
     setIsDrive(value) {
@@ -174,8 +176,6 @@ class TracerOrderView extends OrderView {
                 this.traceOrderPath();
             }
         }
-
-        this.showPathToStart();
     }
 
     onUpdateMap() {
@@ -219,29 +219,6 @@ class TracerOrderView extends OrderView {
         }
     }
 
-    showPathToStart(afterShow) {
-        this.closePathToStart();
-
-        let distance = Distance(v_map.getMainPosition(), this.Order.start);
-
-        if (this.Order.state == 'driver_move') {
-
-            v_map.getRoutes(v_map.getMainPosition(), this.Order.start, this.Order.travelMode, ((result)=>{
-                this.#pathToStart = v_map.DrawPath(result, pathToStartOptions);
-                if (afterShow) afterShow();
-                /*
-
-                if (this.isMyOrder) {
-                    this.#tracerToStart = v_map.createTracer(this.Order, result.routes);
-
-                    this.#tracerToStart.AddListener('FINISHPATH', this.onFinishPathToStart.bind(this));
-                    this.#tracerToStart.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
-                }
-                */
-            }).bind(this));
-        }
-    }
-
     #moveToStart() {
         Ajax({
             action: 'SetState',
@@ -277,18 +254,6 @@ class TracerOrderView extends OrderView {
         return false;
     }
 
-    closePathToStart() {
-        if (this.#pathToStart) {
-            this.#pathToStart.setMap(null);
-            this.#pathToStart = null;
-        }
-
-        if (this.#tracerToStart) {
-            v_map.removeTracer(this.#tracerToStart);
-            this.#tracerToStart = null;
-        }
-    }
-
     closePathOrder() {
         super.closePathOrder();
 
@@ -308,20 +273,9 @@ class TracerOrderView extends OrderView {
         }
     }
 
-    onFinishPathToStart(tracer) {
-        if (this.#pathToStart) {
-            Ajax({
-                action: 'SetState',
-                data: {id: this.Order.id, state: 'wait_meeting'}
-            });
-            this.closePathToStart();
-        }
-    }
-
     destroy() {
         this.isDrive = false;
         this.closeOrderPath();
-        this.closePathToStart();
         super.destroy();
     }
 
