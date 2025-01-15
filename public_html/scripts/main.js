@@ -701,6 +701,10 @@ function Lng(p) {
     return isFunc(p.lng) ? p.lng() : p.lng;
 }
 
+function LatLngEquals(p1, p2) {
+    return Distance(p1, p2) <= MAXDISTANCEEQUALS;
+}
+
 function Distance(p1, p2) {  // generally used geo measurement function
 
     let lat1 = Lat(p1);

@@ -111,6 +111,10 @@ class Tracer extends EventProvider {
         this.#lastPos = this.#routePos;
     }
 
+    Pause() {
+        this.#avgSpeed = 0;
+    }
+
     #checkCurStep() {
 
         let lastStep = this.#curStep;

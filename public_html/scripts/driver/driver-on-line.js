@@ -43,20 +43,34 @@ class DMap extends VMap {
     }
 }
 
+class Order {
+    constructor(data) {
+        $.extend(this, data);
+    }
+
+    isStartPoint(latLng) {
+        return LatLngEquals(latLng, this.start);
+    }
+}
+
 
 class TakenOrders extends EventProvider {
     #orders;
     #timerId;
     selOrderView;
     #path;
+    #taken_orders;
 
     get TopOrder() { return this.#orders.length > 0 ? this.#orders[0] : null; }
     get Path() { return this.#path; }
+    get length() { return this.#orders.length; }
 
     constructor(taken_orders) {
 
         super();
-        this.#orders = taken_orders;
+
+        this.#taken_orders = taken_orders;
+
         this.ResetPath();
         this.beginCheckOrders();
         this.showImportantOrder();
@@ -79,17 +93,25 @@ class TakenOrders extends EventProvider {
 
     ResetPath(mainPoint) {
 
-        let generator = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
-        generator.AddOrders(this.#orders);
+        this.#orders = [];
+        this.#taken_orders.forEach(((o)=>{
+            if (ACTIVESTATES.includes(o.state))
+                this.#orders.push(new Order(o));
+        }).bind(this));
 
-        this.#path = generator.getPath();
-        for (let i=1; i<this.#path.length; i++)
-            this.#path[i].order.sort = i;
+        if (this.#orders.length > 0) {
+            let generator = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
+            generator.AddOrders(this.#orders);
 
-        this.#orders.sort((order1, order2)=>{
-            return order1.sort - order2.sort;
-            //return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
-        });
+            this.#path = generator.getPath();
+            for (let i=1; i<this.#path.length; i++)
+                this.#path[i].order.sort = i;
+
+            this.#orders.sort((order1, order2)=>{
+                return order1.sort - order2.sort;
+                //return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
+            });
+        }
 
         this.SendEvent('CHANGE', this);
 
@@ -112,10 +134,7 @@ class TakenOrders extends EventProvider {
                 bottomAlign: true,
                 template: 'takenOrderView',
                 orders: this,
-                actions:  {
-                    'Offer to perform': 'this.offerToPerform.bind(this)',
-                    'Move to start': 'this.moveToStart.bind(this)'
-                }
+                actions:  {}
             }, TracerOrderView, (()=>{
                 this.takenOrdersView = null;
             }).bind(this));
@@ -148,9 +167,6 @@ class TakenOrders extends EventProvider {
 
             if (state == 'wait_meeting')
                 this.beginCheckOrders();
-
-            if (this.takenOrdersView && (this.takenOrdersView.Order.id == order_id))
-                this.takenOrdersView.SetState(state);
         }
     }
 

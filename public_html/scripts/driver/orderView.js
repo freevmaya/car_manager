@@ -1,16 +1,53 @@
-class OrderView extends BottomView {
+class PathView extends BottomView {
 
     pathRender;
     #path;
 
     get Path() {return this.#path; };
     set Path(value) { this.setPath(value); };
-    get Order() { return this.getOrder(); };
 
-    constructor(elem, callback = null, options) {
-        super(elem, callback, options);
+    afterConstructor() {
+        super.afterConstructor();
         this.createMainPath();
     }
+
+    setPath(value) {
+        this.#path = value;
+        this.reDrawPath();
+    }
+
+    reDrawPath() {
+        this.closePathOrder();
+        if (this.Path) 
+            this.pathRender = v_map.DrawPath(this.Path, defaultPathOptions);
+    }
+
+    closePathOrder() {
+        if (this.pathRender) {
+            this.pathRender.setMap(null);
+            this.pathRender = null;
+        }
+    }
+
+    pathRequest(request, callback = null) {
+
+        request = $.extend({
+            travelMode: travelMode
+        }, request);
+
+        if (!isEmpty(request.origin) && !isEmpty(request.destination)) {
+            v_map.DirectionsService.route(request, ((result, status) => {
+                if (status == 'OK')
+                    callback(result);
+                else console.log(request);
+            }).bind(this));
+        }
+    }
+
+}
+
+class OrderView extends PathView {
+    get Order() { return this.getOrder(); };
 
     getOrder() {
         return this.options.order;
@@ -25,29 +62,6 @@ class OrderView extends BottomView {
         this.pathRequest(null, this.setPath.bind(this));
     }
 
-    pathRequest(v_request, callback = null) {
-
-        let request = $.extend({
-            origin: VMap.preparePlace(this.Order.start),
-            destination: VMap.preparePlace(this.Order.finish),
-            travelMode: travelMode
-        }, v_request);
-
-        if (!isEmpty(request.origin) && !isEmpty(request.destination)) {
-            v_map.DirectionsService.route(request, ((result, status) => {
-                if (status == 'OK')
-                    callback(result);
-                else console.log(request);
-            }).bind(this));
-        }
-    }
-
-    setPath(value) {
-        this.#path = value;
-        this.reDrawPath();
-        this.resetForState();
-    }
-
     /*
     addPointToPath(latLng) {
         let wlist = this.Path.request.waypoints ? this.Path.request.waypoints : [];
@@ -59,11 +73,21 @@ class OrderView extends BottomView {
     }
     */
 
+
+
     initView() {
         super.initView();
 
         this.headerElement.find('.start').text(PlaceName(this.Order.start));
         this.headerElement.find('.finish').text(PlaceName(this.Order.finish));
+    }
+
+    pathRequest(v_request, callback = null) {
+
+        super.pathRequest($.extend({
+            origin: VMap.preparePlace(this.Order.start),
+            destination: VMap.preparePlace(this.Order.finish)
+        }, v_request));
     }
 
     setOptions(options) {
@@ -93,19 +117,6 @@ class OrderView extends BottomView {
         this.view
             .removeClass(lastState)
             .addClass(state);
-    }
-
-    reDrawPath() {
-        this.closePathOrder();
-        if (this.Path) 
-            this.pathRender = v_map.DrawPath(this.Path, defaultPathOptions);
-    }
-
-    closePathOrder() {
-        if (this.pathRender) {
-            this.pathRender.setMap(null);
-            this.pathRender = null;
-        }
     }
 
     offerToPerform(e) {

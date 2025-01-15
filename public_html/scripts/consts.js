@@ -8,6 +8,7 @@ var HMFormat  = "HH:mm";
 var STATELIST = ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'finished', 'expired', 'rejected', 'cancel'];
 
 var STATES = 'wait accepted driver_move wait_meeting execution finished expired rejected cancel';
+var ACTIVESTATES = ['accepted', 'driver_move', 'wait_meeting', 'execution'];
 
 
 var currentPathOptions = {
@@ -65,6 +66,7 @@ var defaultPathOptions = {
     }
 }
 
+const MAXDISTANCEEQUALS = 20;
 const MAXDISTANCEFORMEETING = 20;
 const MAXPERIODWAITMEETING = 2 * 60;
 const SLOWSPEED_KM_H = 40;

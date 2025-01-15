@@ -1,4 +1,4 @@
-class TracerOrderView extends OrderView {
+class TracerOrderView extends PathView {
 
     #speedInfo;
     #stepInfo;
@@ -7,17 +7,18 @@ class TracerOrderView extends OrderView {
     #updateTimelineId;
     #mapClickListener;
 
-    #tracerOrder;
+    #tracer;
 
     #orderPath;
     #orderPathRender;
+    #points;
     #isDrive;
 
-    get currentTracer() { return this.#tracerOrder; }
+    get currentTracer() { return this.#tracer; }
     get isDrive() { return this.#isDrive; };
     set isDrive(value) { this.setIsDrive(value); };
     
-    get Order() { return this.options.orders.TopOrder; }
+    get Order() { return null; }
     get Orders() { return this.options.orders; }
 
     afterConstructor() {
@@ -33,33 +34,38 @@ class TracerOrderView extends OrderView {
 
         if (DEV)
             this.#mapClickListener = v_map.map.addListener("click", ((e)=>{
-                this.createMainPath(e.latLng);
+                if (e.domEvent.ctrlKey) {
+                    this.createMainPath(e.latLng);
+                    this.#tracer.ReceivePoint(e.latLng);
+                }
             }).bind(this));
     }
 
     createMainPath(mainPoint) {
 
-        mainPoint = mainPoint ? mainPoint : v_map.getMainPosition();
+        if (this.Orders.length > 0) {
+            mainPoint = mainPoint ? mainPoint : v_map.getMainPosition();
 
-        let points = this.Orders.ResetPath(mainPoint);
+            this.#points = this.Orders.ResetPath(mainPoint);
 
-        let waypoints = [];
+            let waypoints = [];
 
-        for (let i = 0; i<points.length - 1; i++)
-            waypoints.push({location: points[i]});
+            for (let i = 0; i<this.#points.length - 1; i++)
+                waypoints.push({location: this.#points[i], stopover: true});
 
-        let request = {
-            origin: mainPoint,
-            waypoints: waypoints,
-            destination: points[points.length - 1],
-            travelMode: this.Order.travelMode
-        };
+            let request = {
+                origin: mainPoint,
+                waypoints: waypoints,
+                destination: this.#points[this.#points.length - 1],
+                travelMode: travelMode
+            };
 
-        v_map.DirectionsService.route(request, ((result, status) => {
-            if (status == 'OK')
-                this.setPath(result);
-            else console.log(request);
-        }).bind(this));
+            v_map.DirectionsService.route(request, ((result, status) => {
+                if (status == 'OK')
+                    this.setPath(result);
+                else console.log(request);
+            }).bind(this));
+        }
     }
 
     togglePathOrder(order_id) {
@@ -100,6 +106,7 @@ class TracerOrderView extends OrderView {
         this.view.addClass("taken-order");
     }
 
+    /*
     resetForState() {
         let state = this.Order.state;
         this.view.removeClass(STATES);
@@ -117,10 +124,10 @@ class TracerOrderView extends OrderView {
         ViewManager.resizeMap();
 
         this.isDrive = (state == 'driver_move') || (state == 'execution');
-    }
+    }*/
 
     SetState(state) {
-        this.resetForState();
+        //this.resetForState();
     }
 
     setIsDrive(value) {
@@ -153,29 +160,59 @@ class TracerOrderView extends OrderView {
     onChangeStep() {
         let tracer = this.currentTracer;
         this.#stepInfo.find('.instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
+
+        for (let i=0; i<this.#points.length; i++) {
+            let order = this.#points[i].order;
+
+            if (LatLngEquals(this.#points[i], tracer.Step.start_point)) {
+
+                let state = order.isStartPoint(this.#points[i]) ? 'wait_meeting' : 'finished';
+
+                if (state != order.state) {
+                    if (state == 'wait_meeting')
+                        tracer.Pause();
+
+                    Ajax({
+                        action: 'SetState',
+                        data: {id: order.id, state}
+                    });
+                }
+            }
+
+            if (tracer.NextStep && LatLngEquals(this.#points[i], tracer.NextStep.start_point) && 
+                        order.isStartPoint(tracer.NextStep.start_point)) {
+
+                let state = 'driver_move';
+
+                if (state != order.state)
+                    Ajax({
+                        action: 'SetState',
+                        data: {id: order.id, state}
+                    });
+            }
+        }
     }
 
     onChangeOrderPath(e) {
         const directions = this.pathRender.getDirections();
-        if (this.#tracerOrder)
-            this.#tracerOrder.SetRoutes(directions.routes);
+        if (this.#tracer)
+            this.#tracer.SetRoutes(directions.routes);
     }
 
     reDrawPath() {
 
-        let options = $.extend({}, driverPathOptions, {preserveViewport: this.pathRender != null});
+        let options = $.extend({}, driverPathOptions, {
+            preserveViewport: this.pathRender != null
+        });
             
         this.closePathOrder();
         if (this.Path) {
 
             this.pathRender = v_map.DrawPath(this.Path, options);
-
-            if (this.Order.state != 'finished') {
-                this.pathRender.addListener("directions_changed", this.onChangeOrderPath.bind(this));
-
-                this.traceOrderPath();
-            }
+            this.pathRender.addListener("directions_changed", this.onChangeOrderPath.bind(this));
+            this.traceOrderPath();
         }
+        //this.resetForState();
     }
 
     onUpdateMap() {
@@ -203,20 +240,22 @@ class TracerOrderView extends OrderView {
     }
 
     traceOrderPath() {
-        if (['execution', 'driver_move'].includes(this.Order.state)) {
+        //if (['execution', 'driver_move'].includes(this.Order.state)) {
             if (this.Path) {
 
-                let startTime = this.Order.state == 'driver_move' ? Date.now() : Date.parse(this.Order.pickUpTime).valueOf();
+                let startTime = Date.now();
 
-                if (!this.#tracerOrder) {
-                    this.#tracerOrder = v_map.createTracer(this.Order, this.Path.routes, 
+                if (!this.#tracer) {
+                    this.#tracer = v_map.createTracer(this.Order, this.Path.routes, 
                             {startTime: startTime});
 
-                    this.#tracerOrder.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
+                    this.#tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
                     this.currentTracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
-                } else this.#tracerOrder.SetRoutes(this.Path.routes);
+                } else this.#tracer.SetRoutes(this.Path.routes);
+
+                this.isDrive = true;
             }
-        }
+        //}
     }
 
     #moveToStart() {
@@ -257,9 +296,9 @@ class TracerOrderView extends OrderView {
     closePathOrder() {
         super.closePathOrder();
 
-        if (this.#tracerOrder) {
-            v_map.removeTracer(this.#tracerOrder);
-            this.#tracerOrder = null;
+        if (this.#tracer) {
+            v_map.removeTracer(this.#tracer);
+            this.#tracer = null;
         }
     }
 
