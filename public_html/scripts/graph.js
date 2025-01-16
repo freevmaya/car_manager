@@ -41,6 +41,7 @@ class GraphGenerator {
 
 		this.graph['0'][idx1] = Distance(this.points[0], this.points[idx1]);
 		this.graph[idx1] = this.addVar(idx2, parseInt(order.meters));
+		this.graph[idx2] = {};
 
 		this.directions.push([idx1, idx2]);
 	}
@@ -63,14 +64,21 @@ class GraphGenerator {
 function calcPaths(graph, directions = null, nearest = true) {
 
 	let keys = Object.keys(graph);
-	let keys1 = Array.from(keys).splice(1);
+
+	function calculateLength(line) {
+		let result = 0;
+		for (let i=0; i<line.length - 1; i++)
+			result += graph[line[i]][line[i + 1]];
+
+		return result;
+	}
 	
 	function checkChars(line) {
 
-		if (line.length == keys1.length) {
+		if (line.length == keys.length) {
 			let midx = -1;
-			for (let i=0; i<keys1.length; i++) {
-				let k = keys1[i];
+			for (let i=0; i<keys.length; i++) {
+				let k = keys[i];
 				if (!line.includes(k)) 
 					return false;
 			};
@@ -105,29 +113,28 @@ function calcPaths(graph, directions = null, nearest = true) {
 	let visited = [];
 	let lines = [];
 
-	function passLevel(idx, distance = 0) {
+	function passLevel(idx) {
 
-		if (graph[idx])
-			Object.keys(graph[idx]).forEach((i) => {
+		if (!(visited.includes(idx))) {
+			visited.push(idx);
+			if (graph[idx]) {
+				Object.keys(graph[idx]).forEach((i) => {
 
-				if (!(visited.includes(i))) {
-					visited.push(i);
+						passLevel(i);
 
-					let dist = distance + graph[idx][i];
-					passLevel(i, dist);
+						if (checkChars(visited)) {
+							let route = Array.from(visited);
+							let takeTime = calcTakeTime(route);
+							lines.push({distance: calculateLength(route), route: route, takeTime: takeTime, totalTime: takeTime.reduce((a, b) => a + b, 0)});
+						}
+				});
+			}
 
-					if (checkChars(visited)) {
-						let route = Array.from(visited);
-						let takeTime = calcTakeTime(route);
-						lines.push({distance: dist, route: route, takeTime: takeTime, totalTime: takeTime.reduce((a, b) => a + b, 0)});
-					}
-
-					visited.pop();
-				}
-			});
+			visited.pop();
+		}
 	}
 
-	passLevel(0);
+	passLevel('0');
 
 	if (nearest)
 		lines.sort((v1, v2)=>{
@@ -141,7 +148,6 @@ function calcPaths(graph, directions = null, nearest = true) {
 }
 
 /*
-
 let graph = {
   0: { 1: 1, 3: 1, 5: 1 },
   1: { 2: 2, 3: 1, 5: 2 },
@@ -159,5 +165,4 @@ let directions = [
 ]
 
 let result = calcPaths(graph, directions);
-console.log(result);
-*/
+console.log(result);*/

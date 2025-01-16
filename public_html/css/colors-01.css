@@ -165,6 +165,10 @@ html {
     background-image: url('images/user-marker.png');
 }
 
+.user-current.expired {
+    opacity: 0.5;
+}
+
 .notifications .item {
     background: #333;
 }

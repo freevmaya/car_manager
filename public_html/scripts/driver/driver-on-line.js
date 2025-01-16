@@ -69,7 +69,11 @@ class TakenOrders extends EventProvider {
 
         super();
 
-        this.#taken_orders = taken_orders;
+        this.#taken_orders = [];
+        taken_orders.forEach(((o)=>{
+            if (ACTIVESTATES.includes(o.state))
+                this.#taken_orders.push(new Order(o));
+        }).bind(this));
 
         this.ResetPath();
         this.beginCheckOrders();
@@ -91,13 +95,19 @@ class TakenOrders extends EventProvider {
         }
     }
 
-    ResetPath(mainPoint) {
+    RefreshOrders() {
 
         this.#orders = [];
         this.#taken_orders.forEach(((o)=>{
             if (ACTIVESTATES.includes(o.state))
-                this.#orders.push(new Order(o));
+                this.#orders.push(o);
         }).bind(this));
+
+    }
+
+    ResetPath(mainPoint) {
+
+        this.RefreshOrders();
 
         if (this.#orders.length > 0) {
             let generator = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
@@ -465,7 +475,7 @@ class MarkerOrderManager extends MarkerManager {
         let extConten = DeltaTime(order.pickUpTime) <= NOWDELTASEC ? null : 
                             $('<span>' + DepartureTime(order.pickUpTime) + '</span>');
 
-        let m = this.CreateUserMarker(latLng, 'user-' + order.user_id, (()=>{
+        let m = this.CreateUserMarker(latLng, 'order/user: ' + (order.id + '/' + order.user_id), (()=>{
             takenOrders.ShowInfoOrder(m);
         }).bind(this), 
                 (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 

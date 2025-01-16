@@ -100,7 +100,7 @@ class OrderModel extends BaseModel {
 				$route = (new RouteModel())->getItem($data['route_id']);
 				$latLng = json_decode($route['start'], true);
 
-				$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners, $seats);
+				$drivers = (new DriverModel())->SuitableDrivers($latLng['lat'], $latLng['lng'], null, $distanceToListeners);// , $seats); // разкоментировать если требуется учитывать количество свободных мест в машине
 
 				if (count($drivers) > 0)
 					$users = array_merge($users, BaseModel::getListValues($drivers, 'user_id'));

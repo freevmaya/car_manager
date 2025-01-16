@@ -18,7 +18,7 @@ class PathView extends BottomView {
 
     reDrawPath() {
         this.closePathOrder();
-        if (this.Path) 
+        if (this.Path)  
             this.pathRender = v_map.DrawPath(this.Path, defaultPathOptions);
     }
 
@@ -87,7 +87,7 @@ class OrderView extends PathView {
         super.pathRequest($.extend({
             origin: VMap.preparePlace(this.Order.start),
             destination: VMap.preparePlace(this.Order.finish)
-        }, v_request));
+        }, v_request), callback);
     }
 
     setOptions(options) {

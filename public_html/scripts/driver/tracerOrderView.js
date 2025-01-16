@@ -48,23 +48,31 @@ class TracerOrderView extends PathView {
 
             this.#points = this.Orders.ResetPath(mainPoint);
 
-            let waypoints = [];
+            if (this.#points.length > 1) {
 
-            for (let i = 0; i<this.#points.length - 1; i++)
-                waypoints.push({location: this.#points[i], stopover: true});
+                let waypoints = [];
 
-            let request = {
-                origin: mainPoint,
-                waypoints: waypoints,
-                destination: this.#points[this.#points.length - 1],
-                travelMode: travelMode
-            };
+                for (let i = 1; i<this.#points.length - 1; i++)
+                    waypoints.push({location: this.#points[i], stopover: true});
 
-            v_map.DirectionsService.route(request, ((result, status) => {
-                if (status == 'OK')
-                    this.setPath(result);
-                else console.log(request);
-            }).bind(this));
+                for (let i=0; i<waypoints.length; i++) {
+                    v_map.MarkerManager.CreateMarkerDbg(waypoints[i].location);
+                }
+
+
+                let request = {
+                    origin: this.#points[0],
+                    waypoints: waypoints,
+                    destination: this.#points[this.#points.length - 1],
+                    travelMode: travelMode
+                };
+
+                v_map.DirectionsService.route(request, ((result, status) => {
+                    if (status == 'OK')
+                        this.setPath(result);
+                    else console.log(request);
+                }).bind(this));
+            }
         }
     }
 
@@ -169,13 +177,14 @@ class TracerOrderView extends PathView {
                 let state = order.isStartPoint(this.#points[i]) ? 'wait_meeting' : 'finished';
 
                 if (state != order.state) {
-                    if (state == 'wait_meeting')
-                        tracer.Pause();
 
                     Ajax({
                         action: 'SetState',
                         data: {id: order.id, state}
-                    });
+                    }, ((e)=>{
+                        if ((e.result == 'ok') && (state == 'wait_meeting'))
+                            tracer.Pause();
+                    }).bind(this));
                 }
             }
 
@@ -207,7 +216,6 @@ class TracerOrderView extends PathView {
             
         this.closePathOrder();
         if (this.Path) {
-
             this.pathRender = v_map.DrawPath(this.Path, options);
             this.pathRender.addListener("directions_changed", this.onChangeOrderPath.bind(this));
             this.traceOrderPath();

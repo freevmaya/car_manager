@@ -34,7 +34,7 @@ ViewManager.resizeMap = function(layer = '#windows') {
     setTimeout((()=>{
         let h = v_map.View.height();
         v_map.View.children().css('height', Math.round((h - maxHeight()) / h * 100) + '%');
-    }).bind(this), 300); 
+    }).bind(this), 500); 
 }
 
 ViewManager.setContent = function($this, content, clone = false)  {

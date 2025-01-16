@@ -45,8 +45,6 @@ class RouteModel extends BaseModel {
 			}
 		}
 
-		trace($place);
-
 		return $place;
 	}
 
@@ -58,38 +56,42 @@ class RouteModel extends BaseModel {
 		$start = $value['start'] = RouteModel::formPlace($value['start']);
 		$finish = $value['finish'] = RouteModel::formPlace($value['finish']);
 
-		if (!isset($value['user_id']))
-			$value['user_id'] = Page::$current->getUser()['id'];
+		if (($start['lat'] != $finish['lat']) && ($start['lng'] != $finish['lng'])) {
 
-		if ($start && $finish) {
+			if (!isset($value['user_id']))
+				$value['user_id'] = Page::$current->getUser()['id'];
 
-			$place = new PlaceModel();
+			if ($start && $finish) {
 
-			$value['startPlaceId'] = $place->InsertFromRoute($start);
-			$value['finishPlaceId'] = $place->InsertFromRoute($finish);
+				$place = new PlaceModel();
 
-			if ($value['startPlaceId'] && $value['finishPlaceId']) {
-				$route_id = $dbp->one("SELECT id FROM {$this->getTable()} WHERE startPlaceId = '{$value['startPlaceId']}' AND finishPlaceId = '{$value['finishPlaceId']}'");
+				$value['startPlaceId'] = $place->InsertFromRoute($start);
+				$value['finishPlaceId'] = $place->InsertFromRoute($finish);
+
+				if ($value['startPlaceId'] && $value['finishPlaceId']) {
+					$route_id = $dbp->one("SELECT id FROM {$this->getTable()} WHERE startPlaceId = '{$value['startPlaceId']}' AND finishPlaceId = '{$value['finishPlaceId']}'");
+				}
 			}
-		}
 
-		if (!$route_id) {
+			if (!$route_id) {
 
-			if ($value['meters'] > 0) {
+				if ($value['meters'] > 0) {
 
-				unset($start['displayName']);
-				unset($start['formattedAddress']);
+					unset($start['displayName']);
+					unset($start['formattedAddress']);
 
-				unset($finish['displayName']);
-				unset($finish['formattedAddress']);
+					unset($finish['displayName']);
+					unset($finish['formattedAddress']);
 
-				$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`, `routes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-				'isssssds', 
-				BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters', 'routes'], [0, '{}', '{}', null, null, TRAVELMODE, 0, null]));
-				return $dbp->lastID();
-			} else die ('Distance cannot be zero!');
-			
-		}
+					$dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `start`, `finish`, `startPlaceId`, `finishPlaceId`, `travelMode`, `meters`, `routes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+					'isssssds', 
+					BaseModel::getValues($value, ['user_id', 'start', 'finish', 'startPlaceId', 'finishPlaceId', 'travelMode', 'meters', 'routes'], [0, '{}', '{}', null, null, TRAVELMODE, 0, null]));
+					return $dbp->lastID();
+				} else die ('Distance cannot be zero!');
+				
+			}
+		} else throw new Exception("The starting point and the finishing point cannot be equal.", 1);
+		
 
 		return $route_id;
 	}

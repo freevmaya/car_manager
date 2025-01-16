@@ -29,6 +29,13 @@ class MarkerManager {
 		return marker;
 	}
 
+	CreateMarkerDbg(position, timeout=10000) {
+		let marker = this.CreateMarker(position, null, 'debug');
+		setTimeout(()=>{
+			marker.setMap(null);
+		}, timeout);
+	}
+
 	CreateCar(id, position, title, onClick = null, markerClass='marker auto') {
 		let result = this.CreateMarker(position, title, markerClass, onClick);
 		result.id = id;
