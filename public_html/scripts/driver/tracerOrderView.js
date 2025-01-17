@@ -14,7 +14,7 @@ class TracerOrderView extends PathView {
     #points;
     #isDrive;
 
-    get currentTracer() { return this.#tracer; }
+    get Tracer() { return this.#tracer; }
     get isDrive() { return this.#isDrive; };
     set isDrive(value) { this.setIsDrive(value); };
     
@@ -54,11 +54,6 @@ class TracerOrderView extends PathView {
 
                 for (let i = 1; i<this.#points.length - 1; i++)
                     waypoints.push({location: this.#points[i], stopover: true});
-
-                for (let i=0; i<waypoints.length; i++) {
-                    v_map.MarkerManager.CreateMarkerDbg(waypoints[i].location);
-                }
-
 
                 let request = {
                     origin: this.#points[0],
@@ -166,40 +161,19 @@ class TracerOrderView extends PathView {
     }
 
     onChangeStep() {
-        let tracer = this.currentTracer;
+        let tracer = this.Tracer;
         this.#stepInfo.find('.instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
 
-        for (let i=0; i<this.#points.length; i++) {
-            let order = this.#points[i].order;
+        if (tracer.Step)
+            for (let i=0; i<this.#points.length; i++) {
+                let order = this.#points[i].order;
 
-            if (LatLngEquals(this.#points[i], tracer.Step.start_point)) {
+                if (order && (order.state == 'accepted') && LatLngEquals(this.#points[i], tracer.Step.start_point))
+                    order.SetState('wait_meeting', tracer.Pause.bind(tracer));
 
-                let state = order.isStartPoint(this.#points[i]) ? 'wait_meeting' : 'finished';
-
-                if (state != order.state) {
-
-                    Ajax({
-                        action: 'SetState',
-                        data: {id: order.id, state}
-                    }, ((e)=>{
-                        if ((e.result == 'ok') && (state == 'wait_meeting'))
-                            tracer.Pause();
-                    }).bind(this));
-                }
+                if (order && (order.state == 'execution') && LatLngEquals(this.#points[i], tracer.Step.end_point))
+                    order.SetState('finished');
             }
-
-            if (tracer.NextStep && LatLngEquals(this.#points[i], tracer.NextStep.start_point) && 
-                        order.isStartPoint(tracer.NextStep.start_point)) {
-
-                let state = 'driver_move';
-
-                if (state != order.state)
-                    Ajax({
-                        action: 'SetState',
-                        data: {id: order.id, state}
-                    });
-            }
-        }
     }
 
     onChangeOrderPath(e) {
@@ -225,7 +199,7 @@ class TracerOrderView extends PathView {
 
     onUpdateMap() {
 
-        let tracer = this.currentTracer;
+        let tracer = this.Tracer;
         if (tracer) {
 
             this.view.find('.orderDetail .remaindDistance').text(DistanceToStr(tracer.RemaindDistance));
@@ -241,10 +215,12 @@ class TracerOrderView extends PathView {
     }
 
     doUpdateTimeLine() {
-        let tracer = this.currentTracer;
-        this.headerElement.find('.tracerBar > div').css('width', (tracer.RouteDistance / tracer.TotalLength * 100) + '%');
-        this.headerElement.find('.startTime').text($.format.date(tracer.StartTime, HMFormat));
-        this.headerElement.find('.finishTime').text($.format.date(tracer.FinishTime, HMFormat));
+        let tracer = this.Tracer;
+        if (tracer) {
+            this.headerElement.find('.tracerBar > div').css('width', (tracer.RouteDistance / tracer.TotalLength * 100) + '%');
+            this.headerElement.find('.startTime').text($.format.date(tracer.StartTime, HMFormat));
+            this.headerElement.find('.finishTime').text($.format.date(tracer.FinishTime, HMFormat));
+        }
     }
 
     traceOrderPath() {
@@ -258,7 +234,7 @@ class TracerOrderView extends PathView {
                             {startTime: startTime});
 
                     this.#tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
-                    this.currentTracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+                    this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
                 } else this.#tracer.SetRoutes(this.Path.routes);
 
                 this.isDrive = true;
@@ -311,11 +287,9 @@ class TracerOrderView extends PathView {
     }
 
     onFinishPathOrder(tracer) {
-        if (this.pathRender) {
-            Ajax({
-                action: 'SetState',
-                data: {id: this.Order.id, state: 'finished'}
-            });
+        let order = this.#points[this.#points.length - 1].order;
+        if (this.pathRender && order && ACTIVESTATES.includes(order.state)) {
+            order.SetState('finished');
             this.closePathOrder();
         }
     }

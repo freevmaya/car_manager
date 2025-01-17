@@ -1524,20 +1524,11 @@ form .field .container {
     display: block;
 }
 
-.taken-order .btn-block .button:nth-child(1) {
-    display: none !important;
-}
-
-.taken-order.accepted .btn-block .button:nth-child(2) {
+.orderView.accepted .btn-block .button:nth-child(1) {
     display: block;
 }
 
-.taken-order.expired .btn-block .button:nth-child(3),
-.taken-order.expired .btn-block .button:nth-child(4) {
-    display: block;
-}
-
-.taken-order.wait_meeting .btn-block .button:nth-child(4) {
+.orderView.expired .btn-block .button:nth-child(1) {
     display: block;
 }
 

@@ -108,15 +108,21 @@ class OrderView extends PathView {
     }
 
     SetState(state) {
-        let lastState = this.Order.state;
 
         this.view.removeClass('wait accepted driver_move wait_meeting execution finished expired');
         this.view.addClass(this.Order.state = state);
         this.SetStateText(state);
+    }
 
-        this.view
-            .removeClass(lastState)
-            .addClass(state);
+    continueOrder(e) {
+        this.blockClickTemp(e, WAITOFFERS * 1000);
+        Ajax({
+            action: 'SetState',
+            data: {id: this.Order.id, state: 'accepted'}
+        }).then(((response)=>{
+            if (response.result != 'ok')
+                this.trouble(response);
+        }).bind(this));
     }
 
     offerToPerform(e) {

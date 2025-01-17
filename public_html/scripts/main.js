@@ -1,3 +1,27 @@
+class Order {
+    constructor(data) {
+        $.extend(this, data);
+    }
+
+    isStartPoint(latLng) {
+        return LatLngEquals(latLng, this.start);
+    }
+
+    SetState(value, after=null) {
+        if (this.state != value) {
+            Ajax({
+                action: 'SetState',
+                data: {id: this.id, state: value}
+            }, ((e)=>{
+                if (e.result == 'ok') {
+                    if (after != null) after();
+                    this.state = value;
+                }
+            }).bind(this));
+        }
+    }
+}
+
 class EventProvider {
     #incIndex;  
     constructor() {
@@ -126,7 +150,7 @@ class App {
     }
 }
 
-async function Ajax(params) {
+async function Ajax(params, after = null) {
 
     var formData;
     if (getClassName(params) == 'FormData') 
@@ -152,7 +176,9 @@ async function Ajax(params) {
             throw new Error(`Response status: ${response.status}`);
         }
 
-        return await response.json();
+        let result = await response.json();
+        if (after != null) after(result);
+        return result;
     } catch (error) {
         //console.error(error.message);
     }
@@ -823,11 +849,11 @@ function afterMap(action) {
     }, 100);
 }
 
-function getRoutePoint(routes, idx=0, routeIndex=0) {
-    if (idx < 0)
-        idx = routes.routes[routeIndex].overview_path.length + idx;
-
-    return routes.routes[routeIndex].overview_path[idx];
+function getRoutePoint(routes, idx=0) {
+    if (idx < 0) {
+        let route = routes.routes[routes.routes.length - 1];
+        return route.overview_path[route.overview_path.length + idx];
+    } else return routes.routes[0].overview_path[idx];
 }
 
 function DrawPath(map, routeData, options = null) {
@@ -910,15 +936,15 @@ function GetPath(routes, startPlace, finishPlace) {
         return obj;
     }
 
-    function placeExt(place) {
-        return Extend(addPlaceId(toLatLng(getRoutePoint(routes, 0)), place), place, ['displayName', 'formattedAddress']);
+    function placeExt(latLng, place) {
+        return Extend(addPlaceId(latLng, place), place, ['displayName', 'formattedAddress']);
     }
 
     if (routes) {
 
         return {
-                start: placeExt(startPlace),
-                finish: placeExt(finishPlace),
+                start: placeExt(toLatLng(getRoutePoint(routes, 0)), startPlace),
+                finish: placeExt(toLatLng(getRoutePoint(routes, -1)), finishPlace),
                 meters: Math.round(CalcPathLength(routes)),
                 travelMode: travelMode,
                 routes: GetOverviewPath(routes)

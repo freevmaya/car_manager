@@ -43,16 +43,6 @@ class DMap extends VMap {
     }
 }
 
-class Order {
-    constructor(data) {
-        $.extend(this, data);
-    }
-
-    isStartPoint(latLng) {
-        return LatLngEquals(latLng, this.start);
-    }
-}
-
 
 class TakenOrders extends EventProvider {
     #orders;
@@ -205,7 +195,7 @@ class TakenOrders extends EventProvider {
 
     timeState(order, state) {
         if (order.changeList)
-            for (let i=0; i<order.changeList.length; i++) {
+            for (let i=order.changeList.length - 1; i >= 0; i--) {
                 let order_part = JSON.parse(order.changeList[i].text);
                 if (order_part.state == state)
                     return order.changeList[i].time;
@@ -271,26 +261,36 @@ class TakenOrders extends EventProvider {
             this.showImportantOrder(order.id);
         else {
 
+            let actions = {};
+
+            if (['expired', 'accepted'].includes(order.state) && (parseInt(order.driver_id) == user.asDriver))
+                $.extend(actions, {
+                    'Continue': 'this.continueOrder.bind(this)'
+                });
+
+            if (order.state == 'wait')
+                $.extend(actions, {
+                    'Offer to perform': 'this.offerToPerform.bind(this)'
+                });
+
             function showPathAndInfo() {
 
-                    this.selOrderView = viewManager.Create({
-                        bottomAlign: true,
-                        template: 'orderView',
-                        order: order,
-                        marker: marker,
-                        content: [
-                            {
-                                label: "InfoPath",
-                                content: templateClone('offerView', order),// $(DataView.getOrderInfo(order, true)),
-                                class: HtmlField
-                            }
-                        ],
-                        actions:  {
-                            'Offer to perform': 'this.offerToPerform.bind(this)'
+                this.selOrderView = viewManager.Create({
+                    bottomAlign: true,
+                    template: 'orderView',
+                    order: order,
+                    marker: marker,
+                    content: [
+                        {
+                            label: "InfoPath",
+                            content: templateClone('offerView', order),// $(DataView.getOrderInfo(order, true)),
+                            class: HtmlField
                         }
-                    }, OrderView, (()=>{
-                        this.selOrderView = null;
-                    }).bind(this));
+                    ],
+                    actions: actions
+                }, OrderView, (()=>{
+                    this.selOrderView = null;
+                }).bind(this));
             }
 
             if (this.selOrderView) 

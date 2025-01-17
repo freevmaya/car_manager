@@ -66,9 +66,9 @@ var defaultPathOptions = {
     }
 }
 
-const MAXDISTANCEEQUALS = 20;
+const MAXDISTANCEEQUALS = 2;
 const MAXDISTANCEFORMEETING = 20;
-const MAXPERIODWAITMEETING = 2 * 60;
+const MAXPERIODWAITMEETING = 5 * 60;
 const SLOWSPEED_KM_H = 40;
 const SOONDELTASEC = 30 * 60;
 const NOWDELTASEC = 10 * 60;

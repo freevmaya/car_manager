@@ -85,7 +85,7 @@ function calcPaths(graph, directions = null, nearest = true) {
 
 			if (directions)
 				for (let i=0; i<directions.length; i++) {
-					if (line.indexOf(directions[i][0].toString()) > line.indexOf(directions[i][1].toString()))
+					if (line.indexOf(directions[i].start.toString()) > line.indexOf(directions[i].finish.toString()))
 						return false;
 				}
 			return true;
@@ -97,8 +97,8 @@ function calcPaths(graph, directions = null, nearest = true) {
 	function calcTakeTime(route) {
 		let takeTime = [];
 		for (let i=0; i<directions.length; i++) {
-			let idx1 = route.indexOf(directions[i][0].toString());
-			let idx2 = route.indexOf(directions[i][1].toString());
+			let idx1 = route.indexOf(directions[i].start.toString());
+			let idx2 = route.indexOf(directions[i].finish.toString());
 
 			let dist = 0;
 			for (let n=idx1; n<idx2; n++) {
@@ -110,6 +110,19 @@ function calcPaths(graph, directions = null, nearest = true) {
 		return takeTime;
 	}
 
+	function processLine(line) {
+		if (checkChars(line)) {
+			let route = Array.from(line);
+			let takeTime = calcTakeTime(route);
+			lines.push({
+				distance: calculateLength(route), 
+				route: route, 
+				takeTime: takeTime, 
+				totalTime: takeTime.reduce((a, b) => a + b, 0)
+			});
+		}
+	}
+
 	let visited = [];
 	let lines = [];
 
@@ -118,15 +131,12 @@ function calcPaths(graph, directions = null, nearest = true) {
 		if (!(visited.includes(idx))) {
 			visited.push(idx);
 			if (graph[idx]) {
-				Object.keys(graph[idx]).forEach((i) => {
-
+				let lkeys = Object.keys(graph[idx]);
+				if (lkeys.length == 0)
+						processLine(visited);
+				else lkeys.forEach((i) => {
 						passLevel(i);
-
-						if (checkChars(visited)) {
-							let route = Array.from(visited);
-							let takeTime = calcTakeTime(route);
-							lines.push({distance: calculateLength(route), route: route, takeTime: takeTime, totalTime: takeTime.reduce((a, b) => a + b, 0)});
-						}
+						processLine(visited);
 				});
 			}
 
@@ -146,23 +156,3 @@ function calcPaths(graph, directions = null, nearest = true) {
 
 	return lines;
 }
-
-/*
-let graph = {
-  0: { 1: 1, 3: 1, 5: 1 },
-  1: { 2: 2, 3: 1, 5: 2 },
-  2: { 3: 3, 5: 1, 4: 5, 6: 2 },
-  3: { 4: 4, 1: 1, 5: 2 },
-  4: { 1: 2.5, 5: 3, 2: 1, 6: 2 },
-  5: { 6: 3.5, 3: 1, 1: 2.1 },
-  6: { 1: 6, 3: 7, 4: 1.2, 2: 3.2}
-}
-
-let directions = [
-	[1, 2],
-	[3, 4],
-	[5, 6]
-]
-
-let result = calcPaths(graph, directions);
-console.log(result);*/
