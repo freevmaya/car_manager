@@ -1375,10 +1375,12 @@ form .field .container {
 
 .speedInfo {
     top: 4em;
+    display: none;
 }
 
 .stepInfo {
     top: 8em;
+    display: none;
 }
 
 .stepInfo > div,.stepInfo > div {
@@ -1539,6 +1541,7 @@ form .field .container {
 .tracerBar {
     height: 5px;
     background: #979797;
+    overflow: hidden;
 }
 
 .tracerBar > div {

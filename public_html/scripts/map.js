@@ -225,10 +225,14 @@ class VMap extends EventProvider {
 		this.infoWindow = new InfoWindow();
 
 		if (this.#options.main_marker)
-			this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position');
+			this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position', this.onMainMarkerClick.bind(this));
 
 		this.#map.addListener('mousedown', this.onDown.bind(this));
 		this.#map.addListener('mouseup', this.onUp.bind(this));
+	}
+
+	onMainMarkerClick(e) {
+		this.SendEvent('MAINMARKERCLICK', e);
 	}
 
 	#clearMdTid() {

@@ -72,7 +72,7 @@ const MAXPERIODWAITMEETING = 5 * 60;
 const SLOWSPEED_KM_H = 40;
 const SOONDELTASEC = 30 * 60;
 const NOWDELTASEC = 10 * 60;
-const WAITOFFERS = 30; //сек
+const WAITOFFERS = DEV ? 5 : 30; //сек
 
 const windowsLayerId = 'windows';
 const modalLayerId = 'modal-windows';

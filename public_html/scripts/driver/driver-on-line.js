@@ -3,6 +3,7 @@ var takenOrders;
 class DMap extends VMap {
 
     tracer;
+
     constructor(elem) {
         super(elem, ()=>{
             takenOrders = new TakenOrders(jsdata.taken_orders);
@@ -50,6 +51,9 @@ class TakenOrders extends EventProvider {
     selOrderView;
     #path;
     #taken_orders;
+    #graph;
+
+    get Graph() { return this.#graph; }
 
     get TopOrder() { return this.#orders.length > 0 ? this.#orders[0] : null; }
     get Path() { return this.#path; }
@@ -85,33 +89,29 @@ class TakenOrders extends EventProvider {
         }
     }
 
-    RefreshOrders() {
+    ResetPath(mainPoint) {
 
         this.#orders = [];
         this.#taken_orders.forEach(((o)=>{
             if (ACTIVESTATES.includes(o.state))
                 this.#orders.push(o);
         }).bind(this));
-
-    }
-
-    ResetPath(mainPoint) {
-
-        this.RefreshOrders();
+        
+        this.#graph = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
 
         if (this.#orders.length > 0) {
-            let generator = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
-            generator.AddOrders(this.#orders);
+            this.#graph.AddOrders(this.#orders);
 
-            this.#path = generator.getPath();
-            for (let i=1; i<this.#path.length; i++)
-                this.#path[i].order.sort = i;
+            this.#path = this.#graph.getPath();
+            for (let i=0; i<this.#path.length; i++) {
+                let order = this.#graph.getStartOrder(i);
+                if (order) order.sort = i;
+            }
 
             this.#orders.sort((order1, order2)=>{
                 return order1.sort - order2.sort;
-                //return importanList.indexOf(order2.state) - importanList.indexOf(order1.state);
             });
-        }
+        } else this.#path = [];
 
         this.SendEvent('CHANGE', this);
 
@@ -160,6 +160,10 @@ class TakenOrders extends EventProvider {
         if (idx > -1) {
             let order = this.#orders[idx];
             order.state = state;
+
+            if (this.isShown(order_id))
+                this.selOrderView.SetState(state);
+
             this.ResetPath();
 
             if (!order.changeList) order.changeList = [];
@@ -182,7 +186,10 @@ class TakenOrders extends EventProvider {
     }
 
     addOrder(order) {
-        this.#orders.push(order);
+        if (!this.#taken_orders.find((e) => e.id == order.id)) {
+            this.#taken_orders.push(new Order(order));
+            this.ResetPath();
+        }
     }
 
     removeOrder(order) {
@@ -374,12 +381,13 @@ class MarkerOrderManager extends MarkerManager {
 
     SetState(order_id, state) {
         let idx = this.IndexOfByOrder(order_id);
-        if (idx > -1)
-            $(this.markers.users[idx].content).setStateClass(state);
+        if (idx > -1) {
+            let m = this.markers.users[idx];
+            $(m.content).setStateClass(state);
+            m.order.state = state;
+        }
         
         takenOrders.SetState(order_id, state);
-        if (takenOrders.isShown(order_id))
-            takenOrders.selOrderView.SetState(state);
     }
 
     AcceptedOffer(order_id, driver_id=false) {
@@ -395,7 +403,7 @@ class MarkerOrderManager extends MarkerManager {
                 .addClass('user-current');
 
             if (takenOrders.isShown(order_id))
-                takenOrders.selOrderView.view.addClass('taken-order');
+                takenOrders.selOrderView.Close();
 
             takenOrders.addOrder(m.order);
         }

@@ -60,6 +60,22 @@ class Tracer extends EventProvider {
         this.#curLeg = 0;
         this.SetRoutes(routes);
         this.ToStart();
+
+        if (this.Options.beginPoint) 
+            this.ToPoint(this.Options.beginPoint);
+        if (this.Options.speed)
+            this.#avgSpeed = this.Options.speed;
+    }
+
+    ToPoint(latLng) {
+        let inPath = {};
+        let p = Tracer.CalcPointInPath(this.#routes[this.#routeIndex].overview_path, 
+            latLng, inPath, this.Options.magnetDistance);
+
+        if (p) {
+            this.#routePos = p;
+            this.#routeDistance = this.#calcDistance(inPath);
+        }
     }
 
     ToStart() {
@@ -115,6 +131,10 @@ class Tracer extends EventProvider {
         this.#avgSpeed = 0;
     }
 
+    SetSpeed(value) {
+        this.#avgSpeed = value.clamp(-this.Options.speedMax, this.Options.speedMax);
+    }
+
     #checkCurStep() {
 
         let lastStep = this.#curStep;
@@ -143,7 +163,8 @@ class Tracer extends EventProvider {
 
     #updateRoutePos() {
         if (this.#avgSpeed) {
-            this.#routeDistance += this.#avgSpeed * this.#periodTime / 1000;
+            this.#routeDistance = (this.#routeDistance + this.#avgSpeed * this.#periodTime / 1000)
+                                        .clamp(0, this.#totalLength);
             this.#calcPoint();
             this.#checkCurStep();
         }
@@ -209,7 +230,7 @@ class Tracer extends EventProvider {
             let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance);
 
             if (p) {
-                let distance = this.#calcDistance(inPath);
+                let distance = this.#calcDistance(inPath).clamp(0, this.TotalLength);
                 let deltaDist = distance - this.#routeDistance;
 
                 let speed = (deltaDist / this.#deltaT)
@@ -226,7 +247,7 @@ class Tracer extends EventProvider {
                         this.SendEvent('TEAREDTIME', tearedDist);
                     else this.SendEvent('TEAREDDIST', tearedDist);
                         
-                    this.#avgSpeed = speed;
+                    this.SetSpeed(speed);
 
                     console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
                 } else {

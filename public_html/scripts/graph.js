@@ -36,14 +36,14 @@ class GraphGenerator {
 		let idx1 = this.points.length;
 		let idx2 = this.points.length + 1;
 
-		this.points.push($.extend(toLatLng(order.start), {order: order}));
-		this.points.push($.extend(toLatLng(order.finish), {order: order}));
+		this.points.push(toLatLng(order.start));
+		this.points.push(toLatLng(order.finish));
 
 		this.graph['0'][idx1] = Distance(this.points[0], this.points[idx1]);
 		this.graph[idx1] = this.addVar(idx2, parseInt(order.meters));
 		this.graph[idx2] = {};
 
-		this.directions.push([idx1, idx2]);
+		this.directions.push({start: idx1, finish:idx2, order: order});
 	}
 
 	getPath() {
@@ -57,7 +57,22 @@ class GraphGenerator {
 				result.push(this.points[shortPath[i]]);
 		} else console.error("No routes available");
 
+        console.log(this.graph);
+        console.log(this.directions);
+        console.log(result);
 		return result;
+	}
+
+	getStartOrder(idx) {
+		for (let i=0; i<this.directions.length; i++)
+			if (idx == this.directions[i].start)
+				return this.directions[i].order;
+	}
+
+	getFinishOrder(idx) {
+		for (let i=0; i<this.directions.length; i++)
+			if (idx == this.directions[i].finish)
+				return this.directions[i].order;
 	}
 }
 
