@@ -6,7 +6,7 @@ class Tracer extends EventProvider {
     Options = {
         magnetDistance: 100, // 100 метров от пути
         waitTooFar: 30,
-        speedMax: 30,
+        speedMax: 10,
         tearedTime: 2 * 60,
         tearedDistance: 100,
         startTime: Date.now()
@@ -31,7 +31,7 @@ class Tracer extends EventProvider {
     #periodTime;
     #curStep;
     #nextStep;
-    #curLegIdx;
+    #curLeg;
 
     get AvgSpeed() { return this.#avgSpeed; };
     get RouteDistance() { return this.#routeDistance; };
@@ -40,8 +40,8 @@ class Tracer extends EventProvider {
     get TotalLength() { return this.#totalLength; };
     get RemaindDistance() { return this.#totalLength - this.#routeDistance; };
     get RemaindTime() { return this.RemaindDistance / this.AvgSpeed; };
-    get Leg() { return this.#routes[this.#routeIndex].legs[this.#curLegIdx]; };
-    get Duration() { return this.Leg.duration; };
+    get Legs() { return this.#routes[this.#routeIndex].legs[this.#curLeg]; };
+    get Duration() { return this.Legs.duration; };
     get Step() { return this.#curStep; }
     get NextStep() { return this.#nextStep; }
     get TakeTime() { return Date.now() - this.Options.startTime; }
@@ -57,6 +57,7 @@ class Tracer extends EventProvider {
         this.#intervalId = setInterval(this.update.bind(this), periodTime);
 
         this.#periodTime = periodTime;
+        this.#curLeg = 0;
         this.SetRoutes(routes);
         this.ToStart();
 
@@ -80,7 +81,7 @@ class Tracer extends EventProvider {
     ToStart() {
         this.#routePos = this.#routes[this.#routeIndex].overview_path[0];
         this.#routeDistance = 0;
-        this.#curLegIdx = -1;
+        this.#curLeg = 0;
         this.#curStep = null;
     }
 
@@ -137,7 +138,6 @@ class Tracer extends EventProvider {
     #checkCurStep() {
 
         let lastStep = this.#curStep;
-        let lastLegIdx = this.#curLegIdx;
         
         let accumDist = 0;
         this.#curStep = null;
@@ -147,10 +147,8 @@ class Tracer extends EventProvider {
             let step = routes[r].legs[l].steps[s];
             accumDist += step.distance.value;
             if (accumDist > this.#routeDistance) {
-                if (!this.#curStep) {
+                if (!this.#curStep)
                     this.#curStep = step;
-                    this.#curLegIdx = l;
-                }
                 else {
                     this.#nextStep = step;
                     return true;
@@ -161,9 +159,6 @@ class Tracer extends EventProvider {
 
         if (this.#curStep != lastStep)
             this.SendEvent("CHANGESTEP", this.#curStep);
-
-        if (this.#curLegIdx != lastLegIdx)
-            this.SendEvent("CHANGELEG", this.Leg);
     }
 
     #updateRoutePos() {

@@ -6,9 +6,15 @@ class DMap extends VMap {
 
     constructor(elem) {
         super(elem, ()=>{
-            takenOrders = new TakenOrders(jsdata.taken_orders);
+
+            takenOrders = new TakenOrders(orderManager.AddOrders(jsdata.taken_orders));
+            this.markers.AddOrders(orderManager.Items);
 
         }, {markerManagerClass: MarkerOrderManager});
+    }
+
+    async initMap() {
+        return super.initMap();
     }
 
     createTracer(order, routes, options) {
@@ -63,30 +69,10 @@ class TakenOrders extends EventProvider {
 
         super();
 
-        this.#taken_orders = [];
-        taken_orders.forEach(((o)=>{
-            if (ACTIVESTATES.includes(o.state))
-                this.#taken_orders.push(new Order(o));
-        }).bind(this));
-
+        this.#taken_orders = taken_orders;
         this.ResetPath();
         this.beginCheckOrders();
         this.showImportantOrder();
-
-        transport.AddListener('notificationList', this.onNotificationList.bind(this));
-    }
-
-    onNotificationList(e) {
-        let list = e.value;
-        for (let i in list) {
-            let item = list[i];
-
-            if (item.content_type == "changeOrder") {
-                let part_order = JSON.parse(item.text);
-                this.SetState(item.content_id, part_order.state);
-                transport.SendStatusNotify(item, 'read');
-            }
-        }
     }
 
     ResetPath(mainPoint) {
@@ -96,6 +82,10 @@ class TakenOrders extends EventProvider {
             if (ACTIVESTATES.includes(o.state))
                 this.#orders.push(o);
         }).bind(this));
+
+        this.#orders.sort((order1, order2)=>{
+            return ACTIVESTATES.indexOf(order2.state) - ACTIVESTATES.indexOf(order1.state);
+        });
         
         this.#graph = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
 
@@ -164,13 +154,20 @@ class TakenOrders extends EventProvider {
             if (this.isShown(order_id))
                 this.selOrderView.SetState(state);
 
-            this.ResetPath();
-
             if (!order.changeList) order.changeList = [];
             order.changeList.push({time: Date.now(), text: JSON.stringify({state: state})});
 
             if (state == 'wait_meeting')
                 this.beginCheckOrders();
+
+            this.ResetPath();
+
+            if (!app.Question) {
+                if (state == 'wait_meeting')
+                    app.showQuestion('Waiting for a passenger');
+            } else if (state == 'execution')
+                app.Question.Close();
+
         }
     }
 
@@ -315,8 +312,8 @@ class MarkerOrderManager extends MarkerManager {
     constructor(mapControl) {
         super(mapControl);
 
-        transport.AddListener('notificationList', this.onNotificationList.bind(this));
-        this.AddOrders($.extend([], jsdata.all_orders, jsdata.taken_orders));
+        //transport.AddListener('notificationList', this.onNotificationList.bind(this));
+        //$.extend([], jsdata.all_orders, jsdata.taken_orders));
     }
 
     onNotificationList(e) {

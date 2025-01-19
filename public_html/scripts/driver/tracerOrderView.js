@@ -146,7 +146,6 @@ class TracerOrderView extends PathView {
     }*/
 
     SetState(state) {
-        //this.resetForState();
     }
 
     setIsDrive(value) {
@@ -166,6 +165,8 @@ class TracerOrderView extends PathView {
             else {
                 v_map.RemoveListener('UPDATE', this.#updateListenerId);
                 clearInterval(this.#updateTimelineId);
+
+                this.#stepInfo.hide();
             }
         }
 
@@ -174,32 +175,40 @@ class TracerOrderView extends PathView {
         this.view.toggleClass('expand', !value).toggleClass('collaps', value);
     }
 
-    onChangeStep() {
+    doCheckRoutePoints(latLng) {
+
+        let min = 15;
+        let nearest = -1;
+        for (let i=0; i<this.#points.length; i++) {
+            let distance = Distance(this.#points[i], latLng);
+            if (distance < min) {
+                nearest = i;
+                min = distance;
+            }
+        }
+
+        if (nearest > -1) {
+
+            let order = this.Orders.Graph.getStartOrder(nearest);
+            if (order && (order.state == 'accepted')) {
+                order.SetState('wait_meeting');
+                this.Tracer.Pause();
+            }
+            else {
+                let order = this.Orders.Graph.getFinishOrder(nearest);
+                if (order && (order.state == 'execution'))
+                    order.SetState('finished');
+            }
+        }
+    }
+
+    onChangeLeg(e) {
+        if (e.value) this.doCheckRoutePoints(e.value.start_location);
+    }
+
+    onChangeStep(e) {
         let tracer = this.Tracer;
         this.#stepInfo.find('.instruction').html(tracer.NextStep ? tracer.NextStep.instructions : '');
-
-        if (tracer.Step)
-            for (let i=0; i<this.#points.length; i++) {
-
-                if (LatLngEquals(this.#points[i], tracer.Step.start_point)) {
-                    let order = this.Orders.Graph.getStartOrder(i);
-                    if (order && (order.state == 'accepted'))
-                        order.SetState('wait_meeting', tracer.Pause.bind(tracer));
-                    else {
-                        let order = this.Orders.Graph.getFinishOrder(i);
-                        if (order && (order.state == 'execution'))
-                            order.SetState('finished');
-                    }
-                }
-
-                /*
-                if (order && (order.state == 'accepted') && LatLngEquals(this.#points[i], tracer.Step.start_point))
-                    order.SetState('wait_meeting', tracer.Pause.bind(tracer));
-
-                if (order && (order.state == 'execution') && LatLngEquals(this.#points[i], tracer.Step.end_point))
-                    order.SetState('finished');
-                    */
-            }
     }
 
     onChangeselectOrderPath(e) {
@@ -241,6 +250,16 @@ class TracerOrderView extends PathView {
             this.#speedInfo.find('.avgSpeed')
                 .text(speed >= 0 ? speed + "km/h" : toLang("Backwards"));
             this.#stepInfo.toggle((speed > 0) && (tracer.Step != null));
+
+            transport.addExtRequest({
+                action: 'setValue',
+                data: {
+                    model: 'DriverModel',
+                    id: user.asDriver,
+                    name: 'avgSpeed',
+                    value: tracer.AvgSpeed
+                }
+            });
         }
     }
 
@@ -265,6 +284,7 @@ class TracerOrderView extends PathView {
 
                     this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
                     this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+                    this.Tracer.AddListener('CHANGELEG', this.onChangeLeg.bind(this));
 
                     this.Tracer.SetSpeed(this.#lastSpeed);
                 } else this.Tracer.SetRoutes(this.Path.routes);

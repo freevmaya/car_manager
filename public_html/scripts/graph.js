@@ -19,31 +19,56 @@ class GraphGenerator {
 
 	AddOrders(orders) {
 
-		for (let i=0; i<orders.length; i++)
-			this.#addOrder(orders[i]);
+		function linkInGraph(a, b) {
+			if ((a < this.points.length) && (b < this.points.length))
+				this.graph[a] = this.addVar(b, Distance(this.points[a], this.points[b]), this.graph[a]);
+		}
 
-		for (let i=1; i<this.points.length; i+=2)
-			for (let n=1; n<this.points.length; n+=2)
-				if (n != i) {
-					this.graph[i] = this.addVar(n, Distance(this.points[i], this.points[n]), this.graph[i]);
-					this.graph[i + 1] = this.addVar(n, Distance(this.points[i + 1], this.points[n]), this.graph[i + 1]);
-					this.graph[n + 1] = this.addVar(i + 1, Distance(this.points[n + 1], this.points[i + 1]), this.graph[n + 1]);
-				}
+		if (orders.length > 0) {
+			for (let i=0; i<orders.length; i++)
+				this.#addOrder(orders[i]);
+
+			for (let i=1; i<this.points.length; i+=2)
+				for (let n=1; n<this.points.length; n+=2)
+					if (n != i) {
+
+						linkInGraph.bind(this)(i, n);
+						linkInGraph.bind(this)(i + 1, n);
+						linkInGraph.bind(this)(n + 1, i + 1);
+						/*
+						this.graph[i] = this.addVar(n, Distance(this.points[i], this.points[n]), this.graph[i]);
+						this.graph[i + 1] = this.addVar(n, Distance(this.points[i + 1], this.points[n]), this.graph[i + 1]);
+						this.graph[n + 1] = this.addVar(i + 1, Distance(this.points[n + 1], this.points[i + 1]), this.graph[n + 1]);
+						*/
+					}
+		}
 	}
 
 	#addOrder(order) {
 
-		let idx1 = this.points.length;
-		let idx2 = this.points.length + 1;
+		if ((order.state == 'execution') && (this.points.length == 1)) {
 
-		this.points.push(toLatLng(order.start));
-		this.points.push(toLatLng(order.finish));
+			this.points.push(toLatLng(order.finish));
 
-		this.graph['0'][idx1] = Distance(this.points[0], this.points[idx1]);
-		this.graph[idx1] = this.addVar(idx2, parseInt(order.meters));
-		this.graph[idx2] = {};
+			this.graph['0']['1'] = Distance(this.points[0], this.points[1]);
+			this.graph['1'] = {};
 
-		this.directions.push({start: idx1, finish:idx2, order: order});
+			this.directions.push({start:0, finish:1, order: order});
+
+		} else {
+
+			let idx1 = this.points.length;
+			let idx2 = this.points.length + 1;
+
+			this.points.push(toLatLng(order.start));
+			this.points.push(toLatLng(order.finish));
+
+			this.graph['0'][idx1] = Distance(this.points[0], this.points[idx1]);
+			this.graph[idx1] = this.addVar(idx2, parseInt(order.meters));
+			this.graph[idx2] = {};
+
+			this.directions.push({start: idx1, finish:idx2, order: order});
+		}
 	}
 
 	getPath() {
@@ -57,9 +82,9 @@ class GraphGenerator {
 				result.push(this.points[shortPath[i]]);
 		} else console.error("No routes available");
 
-        console.log(this.graph);
-        console.log(this.directions);
-        console.log(result);
+        //console.log(this.graph);
+        //console.log(this.directions);
+        //console.log(result);
 		return result;
 	}
 

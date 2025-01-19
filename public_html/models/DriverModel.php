@@ -14,6 +14,7 @@ class DriverModel extends BaseModel {
 		
 		$active = (isset($values['active']) && $values['active']) ? 1 : 0;
 		$car_id = isset($values['car_id']) ? $values['car_id'] : null;
+		$avgSpeed = isset($values['avgSpeed']) ? $values['avgSpeed'] : 0;
 
 		if (isset($values['id'])) 
 			$field_indent = 'id';
@@ -28,15 +29,15 @@ class DriverModel extends BaseModel {
 			if ($active)
 				$timeBlock = ',`activationTime` = NOW(), `expiredTime` = NOW() + '.$this->expiredInterval;
 
-			$query = "UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock} WHERE `{$field_indent}`= ?";
+			$query = "UPDATE {$this->getTable()} SET `car_id` = ?, `active` = ?{$timeBlock}, `avgSpeed` = ? WHERE `{$field_indent}`= ?";
 
 			return $dbp->bquery($query, 
-				'iii', 
-				[$car_id, $active, $values[$field_indent]]);
+				'iidi', 
+				[$car_id, $active, $avgSpeed, $values[$field_indent]]);
 		} else {
-			return $dbp->bquery("INSERT {$this->getTable()} (`user_id`, `car_id`, `active`, `activationTime`, `expiredTime`) VALUES (?, ?, ?, NOW(), NOW() + {$this->expiredInterval})", 
-				'iii', 
-				[$values['user_id'], $car_id, $active]);
+			return $dbp->bquery("INSERT {$this->getTable()} (`user_id`, `car_id`, `active`, `activationTime`, `expiredTime`, `avgSpeed`) VALUES (?, ?, ?, NOW(), NOW() + {$this->expiredInterval}), ?", 
+				'iiid', 
+				[$values['user_id'], $car_id, $active, $avgSpeed]);
 		}
 
 		return false;

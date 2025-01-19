@@ -2,6 +2,7 @@
 
 	include_once(TEMPLATES_PATH.'/toolbar.php');
 	include_once(TEMPLATES_PATH.'/map/map-index.php');
+	include_once(MODULESPATH.'/order.php');
 
 	$orderModel = new OrderModel();
 	$routeModel = new RouteModel();

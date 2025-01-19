@@ -1,3 +1,4 @@
+/*
 class Order {
     constructor(data) {
         $.extend(this, data);
@@ -20,7 +21,7 @@ class Order {
             }).bind(this));
         }
     }
-}
+}*/
 
 class EventProvider {
     #incIndex;  
@@ -75,6 +76,8 @@ class App {
 
     #listeners;
     #question;
+
+    get Question() { return this.#question; }
 
     constructor() {
         this.#listeners = {};
