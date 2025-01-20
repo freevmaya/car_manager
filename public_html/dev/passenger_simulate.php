@@ -111,18 +111,20 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 
 				} else if ($notify['content_type'] == 'changeOrder') {
 
-					$order = array_merge($orderModel->getItem($notify['content_id']), json_decode($notify['text'], true));
-					if ($order['state'] == 'wait_meeting') {
-						$route = $routeModel->getItem($order['route_id']);
+					if ($order = $orderModel->getItem($notify['content_id'])) {
+						$order = array_merge($order, json_decode($notify['text'], true));
+						if ($order['state'] == 'wait_meeting') {
+							$route = $routeModel->getItem($order['route_id']);
 
-						print_r("Set position for meeting\n");
-						$start = json_decode($route['start'], true);
+							print_r("Set position for meeting\n");
+							$start = json_decode($route['start'], true);
 
-						$userModel->UpdatePosition($pass['user_id'], $start);
-						$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
-					} else {
-						print_r("Change order {$order['id']} to {$order['state']}\n");
-						$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
+							$userModel->UpdatePosition($pass['user_id'], $start);
+							$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
+						} else {
+							print_r("Change order {$order['id']} to {$order['state']}\n");
+							$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
+						}
 					}
 				}
 			}

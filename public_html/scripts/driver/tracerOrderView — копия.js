@@ -62,7 +62,7 @@ class TracerOrderView extends OrderView {
 
         this.view.removeClass('wait accepted driver_move wait_meeting execution finished expired');
         this.view.addClass(this.Order.state = state);
-        this.SetStateText(state);
+        this.setStateText(state);
 
         this.view
             .removeClass(lastState)

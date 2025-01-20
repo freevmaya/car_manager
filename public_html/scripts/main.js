@@ -631,13 +631,18 @@ function isNumeric(str) {
 
 
 function toLatLngF(obj) {
-    if (isFunc(obj.lat))
-        return obj;
+    let llp = google.maps.LatLng;
+    
+    if (isFunc(obj.lat)) {
+        if (llp)
+            return new llp(obj.lat(), obj.lng());
+        else return obj;
+    }
     
     let r = toLatLng(obj);
 
-    if (google.maps.LatLng)
-        return new google.maps.LatLng(r.lat, r.lng);
+    if (llp)
+        return new llp(r.lat, r.lng);
 
     return {lat: ()=>{return r.lat;}, lng: ()=>{return r.lng;}};
 }
@@ -830,19 +835,6 @@ function getOrderInfo(order, callback = null) {
     return result
 }
 
-function ShowDriverMenu() {
-    let menu = $('#DriverMenu');
-    if (menu.length == 0) {
-        let btn;
-        $('body').append(menu = $('<div id="DriverMenu" class="radius shadow">'));
-        menu.append(btn = $('<a>'));
-        btn.click(() => {window.ShowDriverSubmenu();});
-        afterMap(() => {v_map.MarkerManager.ShowOrders();});
-    }
-
-    menu.css('display', 'block');
-}
-
 function afterMap(action) {
     const intervalId = setInterval(() => {
         if (v_map.map) {
@@ -1001,6 +993,15 @@ function PrepareInput() {
     $('input.phone').each((i, item) => {
         $(item).inputmask($(item).data('mask'));
     });
+}
+
+function afterCondition(checkFunc, resolve) {
+    let timerId = setInterval(()=>{
+        if (checkFunc()) {
+            resolve();
+            clearInterval(timerId);
+        }
+    }, 10);
 }
 
 $(window).ready(()=>{

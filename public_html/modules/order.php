@@ -1,9 +1,5 @@
 <?
 html::AddScriptFile("order.js");
 
-html::AddJsCode("
-	$(window).ready(()=>{
-		window.orderManager = new OrderManager();
-	});
-", 'initOrderManager');
+html::AddJsCode("window.orderManager = new OrderManager();", 'initOrderManager');
 ?>

@@ -63,6 +63,8 @@ ViewManager.setContent = function($this, content, clone = false)  {
 class BaseParentView {
 
     children;
+    #requireRefresh;
+    #refreshTimer;
 
     constructor() {
         this.children = {};
@@ -124,6 +126,31 @@ class BaseParentView {
         setTimeout(()=>{
             elem.prop("disabled", false);
         }, time);
+    }
+
+    RequireRefresh() {
+        this.#requireRefresh = true;
+        if (!this.#refreshTimer)
+            this.#refreshTimer = setInterval(this.#checkRefresh.bind(this), 10);
+    }
+
+    _refresh() {
+
+    }
+
+    #checkRefresh() {
+        if (this.#requireRefresh) {
+            this.#requireRefresh = false;
+            this._refresh();
+        }
+    }
+
+    destroy() {
+        if (this.#refreshTimer) {
+            clearInterval(this.#refreshTimer);
+            this.#refreshTimer = null;
+        }
+        delete this;
     }
 }
 
@@ -234,7 +261,7 @@ class View extends BaseParentView {
         this.view.remove();
         $(window).off('resize', this.onResize.bind(this));
         this.afterDestroy();
-        delete this;
+        super.destroy();
     }
 
     Close() {

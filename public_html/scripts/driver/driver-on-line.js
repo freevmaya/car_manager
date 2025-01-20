@@ -1,20 +1,9 @@
-var takenOrders;
-
 class DMap extends VMap {
 
     tracer;
 
-    constructor(elem) {
-        super(elem, ()=>{
-
-            takenOrders = new TakenOrders(orderManager.AddOrders(jsdata.taken_orders));
-            this.markers.AddOrders(orderManager.Items);
-
-        }, {markerManagerClass: MarkerOrderManager});
-    }
-
-    async initMap() {
-        return super.initMap();
+    constructor(elem, callback) {
+        super(elem, callback, {markerManagerClass: MarkerOrderManager});
     }
 
     createTracer(order, routes, options) {
@@ -33,14 +22,6 @@ class DMap extends VMap {
 
     superSetPosition(latLng, angle = undefined) {
         super.setMainPosition(latLng, angle);
-        /*
-        if (this.tracer && this.tracer.order)
-            transport.addExtRequest({action: 'SetRemaindDistance', 
-                    data: {
-                        order_id: this.tracer.order.id,
-                        remaindDistance: this.tracer.RemaindDistance
-                    }
-                });*/
     }
 
     setMainPosition(latLng, angle = undefined) {
@@ -51,46 +32,62 @@ class DMap extends VMap {
 }
 
 
-class TakenOrders extends EventProvider {
-    #orders;
-    #timerId;
+class TakenOrders extends OrderManager {
+    #taken_orders;
     selOrderView;
     #path;
-    #taken_orders;
     #graph;
 
     get Graph() { return this.#graph; }
 
-    get TopOrder() { return this.#orders.length > 0 ? this.#orders[0] : null; }
+    get TopOrder() { return this.#taken_orders.length > 0 ? this.#taken_orders[0] : null; }
     get Path() { return this.#path; }
-    get length() { return this.#orders.length; }
+    get length() { return this.#taken_orders.length; }
 
-    constructor(taken_orders) {
+    constructor(ordersData) {
 
-        super();
-
-        this.#taken_orders = taken_orders;
+        super(ordersData);
         this.ResetPath();
-        this.beginCheckOrders();
         this.showImportantOrder();
+    }
+
+    doChangeOrder(order, part_order) {
+        super.doChangeOrder(order, part_order);
+
+        if (ACTIVESTATES.includes(order.state) && (order.driver_id == user.asDriver)) {
+            this.ResetPath();
+
+            if (order.state == 'accepted')
+                this.checkNearPassenger(order);
+        }
+    }
+
+    checkNearPassenger(order) {
+        let distance = Distance(v_map.getMainPosition(), order.start);
+
+        if (distance <= MAXDISTANCEFORMEETING) {
+            order.SetState('wait_meeting');
+            return true;
+        }
+        return false;
     }
 
     ResetPath(mainPoint) {
 
-        this.#orders = [];
-        this.#taken_orders.forEach(((o)=>{
-            if (ACTIVESTATES.includes(o.state))
-                this.#orders.push(o);
+        this.#taken_orders = [];
+        this.Items.forEach(((o)=>{
+            if (ACTIVESTATES.includes(o.state) && (o.driver_id == user.asDriver))
+                this.#taken_orders.push(o);
         }).bind(this));
 
-        this.#orders.sort((order1, order2)=>{
+        this.#taken_orders.sort((order1, order2)=>{
             return ACTIVESTATES.indexOf(order2.state) - ACTIVESTATES.indexOf(order1.state);
         });
         
         this.#graph = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
 
-        if (this.#orders.length > 0) {
-            this.#graph.AddOrders(this.#orders);
+        if (this.#taken_orders.length > 0) {
+            this.#graph.AddOrders(this.#taken_orders);
 
             this.#path = this.#graph.getPath();
             for (let i=0; i<this.#path.length; i++) {
@@ -98,24 +95,14 @@ class TakenOrders extends EventProvider {
                 if (order) order.sort = i;
             }
 
-            this.#orders.sort((order1, order2)=>{
+            this.#taken_orders.sort((order1, order2)=>{
                 return order1.sort - order2.sort;
             });
         } else this.#path = [];
 
-        this.SendEvent('CHANGE', this);
+        this.SendEvent('CHANGE_PATH', this.#path);
 
         return this.#path;
-    }
-
-    showOrderInList() {
-        for (let i=0; i<this.#orders.length; i++)
-            if (['execution', 'execution', 'driver_move', 'wait_meeting'].includes(this.#orders[i].state)) {
-
-                let idx = v_map.MarkerManager.IndexOfByOrder(this.#orders[i].id);
-                this.ShowInfoOrder(v_map.MarkerManager.markers.users[idx]);
-                return;
-            }
     }
 
     showImportantOrder(order_id = null) {
@@ -134,125 +121,15 @@ class TakenOrders extends EventProvider {
             this.takenOrdersView.togglePathOrder(order_id);
     }
 
-    beginCheckOrders() {
-        this.#timerId = setTimeout(this.checkOrders.bind(this), 1000);
-    }
-
-    IndexOfByOrder(order_id) {
-        for (let i=0; i<this.#orders.length; i++)
-            if (order_id == this.#orders[i].id)
-                return i;
-        return -1;
-    }
-
-    SetState(order_id, state) {
-        let idx = this.IndexOfByOrder(order_id);
-        if (idx > -1) {
-            let order = this.#orders[idx];
-            order.state = state;
-
-            if (this.isShown(order_id))
-                this.selOrderView.SetState(state);
-
-            if (!order.changeList) order.changeList = [];
-            order.changeList.push({time: Date.now(), text: JSON.stringify({state: state})});
-
-            if (state == 'wait_meeting')
-                this.beginCheckOrders();
-
-            this.ResetPath();
-
-            if (!app.Question) {
-                if (state == 'wait_meeting')
-                    app.showQuestion('Waiting for a passenger');
-            } else if (state == 'execution')
-                app.Question.Close();
-
-        }
-    }
-
     remaindDistance() {
         let result = 0;
-        for (let i=0; i<this.#orders.length; i++)
-            result += this.#orders[i].remaindDistance;
+        for (let i=0; i<this.#taken_orders.length; i++)
+            result += this.#taken_orders[i].remaindDistance;
         return result;
-    }
-
-    count() {
-        return this.#orders.length;
-    }
-
-    addOrder(order) {
-        if (!this.#taken_orders.find((e) => e.id == order.id)) {
-            this.#taken_orders.push(new Order(order));
-            this.ResetPath();
-        }
-    }
-
-    removeOrder(order) {
-        this.#orders.remove(order);
     }
 
     isShown(order_id) {
         return this.selOrderView && (this.selOrderView.Order.id == order_id);
-    }
-
-    timeState(order, state) {
-        if (order.changeList)
-            for (let i=order.changeList.length - 1; i >= 0; i--) {
-                let order_part = JSON.parse(order.changeList[i].text);
-                if (order_part.state == state)
-                    return order.changeList[i].time;
-            }
-        return false;
-    }
-
-    checkOrders() {
-        for (let i=0; i<this.#orders.length; i++)
-            if (this.#orders[i].state == 'wait_meeting') {
-                let order = this.#orders[i];
-                let time = this.timeState(order, 'wait_meeting');
-                if (time) {
-                    let deltaSec = Math.round((Date.now() - (isStr(time) ? Date.parse(time) : time)) / 1000);
-                    if (deltaSec > MAXPERIODWAITMEETING) {
-
-                        transport.addExtRequest({
-                            action: 'SetState',
-                            data: {id: order.id, state: 'expired'}
-                        })
-
-                        this.SetState(order.id, 'expired');
-
-                    } else {
-
-                        transport.addExtRequest({
-                            action: 'GetPosition',
-                            data: order.user_id
-                        }, (latLng)=>{
-                            let distance = Distance(latLng, order.start);
-                            if (distance <= MAXDISTANCEFORMEETING)
-                                transport.addExtRequest({
-                                    action: 'SetState',
-                                    data: {id: order.id, state: 'execution'}
-                                })
-                        });
-
-                        if (this.selOrderView)
-                            this.selOrderView.SetStateText('wait_meeting', (MAXPERIODWAITMEETING - deltaSec) + ' sec.');
-                    }
-                    this.beginCheckOrders();
-                }
-            }
-    }
-
-    contains(orderId) {
-        return this.getOrder(orderId) != undefined;
-    }
-
-    getOrder(orderId) {
-        return this.#orders.find(
-            (order) => order.id == orderId
-        );
     }
 
     ShowInfoOrder(markerOrOrderId) {
@@ -261,7 +138,7 @@ class TakenOrders extends EventProvider {
         if (!marker) return;
         let order = marker.order;
 
-        if (this.contains(order.id))
+        if (this.#taken_orders.find((e) => e.id == order.id))
             this.showImportantOrder(order.id);
         else {
 
@@ -312,56 +189,57 @@ class MarkerOrderManager extends MarkerManager {
     constructor(mapControl) {
         super(mapControl);
 
+        afterCondition(()=>{
+            return orderManager != null;
+        }, (()=>{
+            this.AddOrders(orderManager.Items);
+            orderManager.AddListener('CREATED_ORDER', this.onAfterCreateOrder.bind(this));
+            orderManager.AddListener('CHANGE_ORDER', this.onChangeOrder.bind(this));
+        }).bind(this));
+
         //transport.AddListener('notificationList', this.onNotificationList.bind(this));
         //$.extend([], jsdata.all_orders, jsdata.taken_orders));
     }
 
-    onNotificationList(e) {
-        let list = e.value;
-        for (let i in list) {
-            let item = list[i];
+    onAfterCreateOrder(e) {
+        this.AddOrder(e.value, true);
+    }
 
-            if (item.content_type == "changeOrder") {
+    onChangeOrder(e) {
+        let order = e.value;
+        this.#updateMarkerState(order);
+        if (['cancel', 'finished', 'rejected'].includes(order.state))
+            this.CancelOrder(order.id);
+        else if (order.state == "accepted")
+            this.AcceptedOffer(order.id);
+    }
 
-                let part_order = JSON.parse(item.text);
 
-                this.SetState(item.content_id, part_order.state);
-                transport.SendStatusNotify(item, 'read');
-                
-                switch (part_order.state) {
+    #updateMarkerState(order) {
+        let idx = this.IndexOfByOrder(order.id);
+        if (idx > -1) {
+            let m = this.markers.users[idx];
+            $(m.content).setStateClass(order.state);
+        }
+    }
 
-                    case "wait":
-                        Ajax({
-                            action: 'GetOrder',
-                            data: item.content_id
-                        }).then(((order)=>{
-                            this.AddOrder(order, true);
-                        }).bind(this));
-                        break;
+    AcceptedOffer(order_id) {
+        let idx = this.IndexOfByOrder(order_id);
+        if (idx > -1) {
+            let m = this.markers.users[idx];
 
-                    case "cancel":
+            this.Shake(m);
+            $(m.content)
+                .removeClass('user-marker')
+                .addClass('user-current');
+        }
+    } 
 
-                        this.CancelOrder(item.content_id);
-                        break;
-                        
-                    case "finished":
-
-                        this.CancelOrder(item.content_id);
-                        break;
-                        
-                    case "rejected":
-
-                        this.CancelOrder(item.content_id);
-                        break;
-                        
-                    case "accepted":
-                        
-                        this.AcceptedOffer(item.content_id, part_order.driver_id);
-                        break;
-
-                    default: continue;
-                }
-            }
+    CancelOrder(order_id) {
+        let idx = this.IndexOfByOrder(order_id);
+        if (idx > -1) {
+            this.markers.users[idx].setMap(null);
+            this.markers.users.splice(idx, 1);
         }
     }
 
@@ -376,46 +254,12 @@ class MarkerOrderManager extends MarkerManager {
         } else e.addClass('animShake');
     }
 
-    SetState(order_id, state) {
-        let idx = this.IndexOfByOrder(order_id);
-        if (idx > -1) {
-            let m = this.markers.users[idx];
-            $(m.content).setStateClass(state);
-            m.order.state = state;
-        }
-        
-        takenOrders.SetState(order_id, state);
-    }
-
-    AcceptedOffer(order_id, driver_id=false) {
-        let idx = this.IndexOfByOrder(order_id);
-        if (idx > -1) {
-            let m = this.markers.users[idx];
-
-            m.order.driver_id = driver_id ? driver_id : jsdata.driver.id;
-
-            this.Shake(m);
-            $(m.content)
-                .removeClass('user-marker')
-                .addClass('user-current');
-
-            if (takenOrders.isShown(order_id))
-                takenOrders.selOrderView.Close();
-
-            takenOrders.addOrder(m.order);
-        }
-    } 
-
     ShowMarkerOfOrder(order_id, order = null) {
         let idx = this.IndexOfByOrder(order_id);
         if (idx > -1) {
             let market = this.markers.users[idx];
             this.ctrl.map.setCenter(market.position);
             this.Shake(this.markers.users[idx]);
-            /*
-            if (order)
-                this.ShowInfoOrder(market, order);
-                */
         }
     }
 
@@ -431,28 +275,11 @@ class MarkerOrderManager extends MarkerManager {
         return -1;
     }
 
-    CancelOrder(order_id) {
-        let idx = this.IndexOfByOrder(order_id);
-        if (idx > -1) {
-
-            if (takenOrders.isShown(order_id)) {
-                takenOrders.selOrderView.Close().then((()=>{
-                    this.markers.users[idx].setMap(null);
-                    this.markers.users.splice(idx, 1);
-                }).bind(this));
-                this.showOrderMarker = null;
-            } else {
-                this.markers.users[idx].setMap(null);
-                this.markers.users.splice(idx, 1);
-            }
-        }
-    }
-
     RemoveCar(id) {
         let idx = this.IndexOfByDriver(id);
         if (idx > -1) {
-            if (takenOrders.selOrderView && (takenOrders.selOrderView.Order.id == this.markers.users[idx].order.id))
-                takenOrders.selOrderView.Close();
+            if (orderManager.selOrderView && (orderManager.selOrderView.Order.id == this.markers.users[idx].order.id))
+                orderManager.selOrderView.Close();
         }
         super.RemoveCar(id);
     }
@@ -481,30 +308,10 @@ class MarkerOrderManager extends MarkerManager {
                             $('<span>' + DepartureTime(order.pickUpTime) + '</span>');
 
         let m = this.CreateUserMarker(latLng, 'order/user: ' + (order.id + '/' + order.user_id), (()=>{
-            takenOrders.ShowInfoOrder(m);
+            orderManager.ShowInfoOrder(m);
         }).bind(this), 
                 (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 
                 (anim ? ' anim' : '') + ' ' + order.state, extConten);
         m.order = order;
-    }
-
-    ShowOrders() {
-        Ajax({
-            action: 'getOrders',
-            data: {
-                location: this.ctrl.map.position
-            }
-        }).then(((data)=>{
-            let item;
-            for (let i=0; i<data.length; i++) {
-                let item = data[i];
-
-                item.startPlace = JSON.parse(item.startPlace);
-                item.finishPlace = JSON.parse(item.finishPlace);
-
-                let latLng = { lat: item.startPlace.lat, lng: item.startPlace.lng };
-                this.#createFromOrder(latLng, item);
-            }
-        }).bind(this));
     }
 }

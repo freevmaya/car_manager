@@ -1,11 +1,15 @@
-var orderManager;
-
 class Order extends EventProvider {
 	#manager;
+    #timerId;
     constructor(manager, data) {
     	super();
         $.extend(this, data);
+
+        this.start = JSON.vparse(data.start);
+        this.finish = JSON.vparse(data.finish);
+
         this.#manager = manager;
+        this.beginCheckPassengerDistance();
     }
 
     isStartPoint(latLng) {
@@ -14,28 +18,68 @@ class Order extends EventProvider {
 
     SetState(value, after=null) {
         if (this.state != value) {
-            this.state = value;
 
             console.log("Set state order " + this.id + ", " + value);
             Ajax({
                 action: 'SetState',
                 data: {id: this.id, state: value}
             }, ((e)=>{
-                if (e.result == 'ok') {
+                if (e.result) {
+                    $.extend(this, e.result);
                     if (after != null) after();
                 }
             }).bind(this));
         }
     }
+
+    checkPassengerDistance() {
+        let time = this.beganWaitTime;
+        if (time) {
+            let deltaSec = Math.round((Date.now() - (isStr(time) ? Date.parse(time) : time)) / 1000);
+            if (deltaSec > MAXPERIODWAITMEETING)
+                this.SetState('expired');
+            else {
+
+                transport.addExtRequest({
+                    action: 'GetPosition',
+                    data: this.user_id
+                }, (latLng)=>{
+                    let distance = Distance(latLng, this.start);
+                    if (distance <= MAXDISTANCEFORMEETING)
+                        this.SetState('execution');
+                });
+            }
+            return true;
+        }
+    }
+
+    afterChange(part_order) {
+        this.SendEvent('CHANGE', part_order);
+        this.beginCheckPassengerDistance();
+    }
+
+    beginCheckPassengerDistance() {
+        if (this.state == 'wait_meeting')
+            this.#timerId = setTimeout(this.checkPassengerDistance.bind(this), 1000);
+    }
+
+    destroy() {
+        if (this.#timerId) clearTimeout(this.#timerId);
+        this.#manager.RemoveOrder(this.id);
+        super.destroy();
+    }
 }
 
-class OrderManager {
+class OrderManager extends EventProvider {
 	#orders;
 
     get Items() { return Array.from(this.#orders);}
 
-	constructor() {
-		this.#orders = [];
+	constructor(ordersData) {
+        super();
+        this.#orders = [];
+        window.orderManager = this;
+		this.AddOrders(ordersData);
     	transport.AddListener('notificationList', this.#onNotificationList.bind(this));
 	}
 
@@ -46,20 +90,36 @@ class OrderManager {
 
             if (item.content_type == "changeOrder") {
                 let part_order = JSON.parse(item.text);
-                let idx = this.IndexOfByOrder(order_id);
-		        if (idx > -1) {
-		            let order = this.#orders[idx];
+                let idx = this.IndexOfByOrder(item.content_id);
+		        if (idx > -1)
+		            this.doChangeOrder(this.#orders[idx], part_order);
+		        else {
+                    Ajax({
+                        action: 'GetOrder',
+                        data: item.content_id
+                    }).then(((order)=>{
+                        if (order) 
+                            this.CreateOrder(order);
+                    }).bind(this));
+                }
 
-		            $.extend(order, part_order);
-
-		            if (!order.changeList) order.changeList = [];
-		            order.changeList.push({time: Date.now(), text: JSON.stringify({state: state})});
-
-		            order.SendEvent('CHANGE', part_order);
-		        }
                 transport.SendStatusNotify(item, 'read');
             }
         }
+    }
+
+    doChangeOrder(order, part_order) {
+        this.SendEvent('CHANGE_ORDER', $.extend(order, part_order));
+        order.afterChange(part_order);
+    }
+
+    has(order_id) {
+        return this.IndexOfByOrder(order_id) > -1;
+    }
+
+    GetOrder(order_id) {
+        let idx = this.IndexOfByOrder(order_id);
+        return idx > -1 ? this.#orders[idx] : null;
     }
 
     IndexOfByOrder(order_id) {
@@ -73,14 +133,25 @@ class OrderManager {
 		let result = [];
 		for (let i=0; i<list.length; i++)
 			result.push(this.CreateOrder(list[i]));
-
-		this.#orders = this.#orders.concat(result);
 		return result;
     }
 
     CreateOrder(data) {
-    	let order = new Order(this, data);
-    	this.#orders.push(order);
+
+        let order = null;
+        if (!this.has(data.id)) {
+        	order = new Order(this, data);
+        	this.#orders.push(order);
+            this.SendEvent('CREATED_ORDER', order);
+        }
     	return order;
+    }
+
+    RemoveOrder(order_id) {
+        let idx = this.IndexOfByOrder(order_id);
+        if (idx > -1) {
+            this.#orders.splice(idx, 1);
+            this.SendEvent('REMOVED_ORDER', order);
+        }
     }
 }

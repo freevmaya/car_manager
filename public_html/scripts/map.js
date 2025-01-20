@@ -227,8 +227,14 @@ class VMap extends EventProvider {
 		if (this.#options.main_marker)
 			this.#mainMarker = this.CreateMarker(position, 'my-position', 'marker position', this.onMainMarkerClick.bind(this));
 
+		this.afterInitMap();
+	}
+
+	afterInitMap() {
+
 		this.#map.addListener('mousedown', this.onDown.bind(this));
 		this.#map.addListener('mouseup', this.onUp.bind(this));
+
 	}
 
 	onMainMarkerClick(e) {
@@ -396,6 +402,12 @@ class VMap extends EventProvider {
 			clearInterval(this.#updateTimerId);
 		this.#view.empty();
 	}
+}
+
+VMap.AfterInit = function(afterProc) {
+	afterCondition(()=>{
+		return (typeof(v_map) != 'undefined') && v_map.map;
+	}, afterProc);
 }
 
 VMap.preparePlace = function(p) {

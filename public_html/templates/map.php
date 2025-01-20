@@ -2,7 +2,6 @@
 
 	include_once(TEMPLATES_PATH.'/toolbar.php');
 	include_once(TEMPLATES_PATH.'/map/map-index.php');
-	include_once(MODULESPATH.'/order.php');
 
 	$orderModel = new OrderModel();
 	$routeModel = new RouteModel();
@@ -10,28 +9,25 @@
 	if ($this->asDriver) {
 //------------------------------DRIVER---------------------------------------------
 
+		html::AddScriptFile("order.js");
 		html::AddScriptFile("graph.js");
 		html::AddScriptFile("driver/orderView.js");
 		html::AddScriptFile("driver/tracerOrderView.js");
 		html::AddScriptFile("driver/driver-on-line.js");
 
 		$wait_orders = $orderModel->getItems(['state'=>'wait']);
-		html::AddJsData(
-				$wait_orders
-			, 'all_orders');
+		$orders = array_merge($wait_orders, $orderModel->getItems(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR]));
 
 		if (count($wait_orders) > 0)
 			(new OrderListeners())->AddListener(BaseModel::getListValues($wait_orders, 'id'), $user['id']);
 
-		html::AddJsData(
-				$orderModel->getItemsWithChanges(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR])
-			, 'taken_orders');
 		html::AddJsData(
 				(new DriverModel())->getItem(['user_id'=>$user['id']])
 			, 'driver');
 
 		html::AddJsCode("
 			new DMap($('#map'));
+			new TakenOrders(".json_encode($orders).");
 		");
 
 		html::AddTemplateFile('driver/orderInfo.php', 'orderInfo');

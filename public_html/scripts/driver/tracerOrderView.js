@@ -20,7 +20,6 @@ class TracerOrderView extends PathView {
     set isDrive(value) { this.setIsDrive(value); };
     
     get Order() { return null; }
-    get Orders() { return this.options.orders; }
 
     afterConstructor() {
 
@@ -32,28 +31,33 @@ class TracerOrderView extends PathView {
 
         this.contentElement.css('display', 'none');
 
-        this.Orders.AddListener('CHANGE', this.onOrdersChange.bind(this));
+        orderManager.AddListener('CREATED_ORDER', this.onCreatedOrder.bind(this));
+        orderManager.AddListener('REMOVED_ORDER', this.onRemovedOrder.bind(this));
+        orderManager.AddListener('CHANGE_PATH', this.onChangePath.bind(this))
+
         super.afterConstructor();
 
-        if (DEV) {
-            this.#mapClickListener = v_map.map.addListener("click", ((e)=>{
-                if (e.domEvent.ctrlKey) {
-                    this.createMainPath(e.latLng);
-                    if (this.#tracer)
-                        this.#tracer.ReceivePoint(e.latLng);
-                }
-            }).bind(this));
+        VMap.AfterInit(this.refreshPath.bind(this));
 
-            v_map.AddListener('MAINMARKERCLICK', ((e)=>{
-                if (this.#tracer)
-                    this.#tracer.Pause();
+        if (DEV) {
+            afterCondition(()=>{
+                return v_map && v_map.map;
+            }, (()=>{
+                v_map.AddListener('MAINMARKERCLICK', ((e)=>{
+                    if (this.#tracer)
+                        this.#tracer.Pause();
+                }).bind(this));
             }).bind(this));
         }
     }
 
-    onOrdersChange() {
+    onChangePath(e) {
+        VMap.AfterInit(this.RequireRefresh.bind(this));
+    }
 
-        this.#points = this.Orders.Path;
+    refreshPath() {
+
+        this.#points = orderManager.Path;
         if (this.#points && (this.#points.length > 1)) {
 
             let waypoints = [];
@@ -79,11 +83,24 @@ class TracerOrderView extends PathView {
         }
     }
 
+    _refresh() {
+        super._refresh();
+        this.refreshPath();
+    }
+
+    onCreatedOrder(order) {
+        this.RequireRefresh();
+    }
+
+    onRemovedOrder(order) {
+        this.RequireRefresh();
+    }
+
     createMainPath(mainPoint) {
 
-        if (this.Orders.length > 0) {
+        if (orderManager.length > 0) {
             mainPoint = mainPoint ? mainPoint : v_map.getMainPosition();
-            this.Orders.ResetPath(mainPoint);
+            orderManager.ResetPath(mainPoint);
         }
     }
 
@@ -92,7 +109,7 @@ class TracerOrderView extends PathView {
         if (this.#selectOrderPath && (this.#selectOrderPath.orderId == order_id))
             this.closeSelectselectOrderPath();
         else {
-            let order = this.Orders.getOrder(order_id);
+            let order = orderManager.GetOrder(order_id);
             this.pathRequest({
                 origin: VMap.preparePlace(order.start),
                 destination: VMap.preparePlace(order.finish),
@@ -130,7 +147,7 @@ class TracerOrderView extends PathView {
         let state = this.Order.state;
         this.view.removeClass(STATES);
         this.view.addClass(state);
-        this.SetStateText(state);
+        this.setStateText(state);
 
         this.view
             .removeClass(STATES)
@@ -189,13 +206,13 @@ class TracerOrderView extends PathView {
 
         if (nearest > -1) {
 
-            let order = this.Orders.Graph.getStartOrder(nearest);
+            let order = orderManager.Graph.getStartOrder(nearest);
             if (order && (order.state == 'accepted')) {
                 order.SetState('wait_meeting');
                 this.Tracer.Pause();
             }
             else {
-                let order = this.Orders.Graph.getFinishOrder(nearest);
+                let order = orderManager.Graph.getFinishOrder(nearest);
                 if (order && (order.state == 'execution'))
                     order.SetState('finished');
             }
@@ -316,19 +333,6 @@ class TracerOrderView extends PathView {
         else this.#moveToStart();
     }
 
-    checkNearPassenger() {
-        let distance = Distance(v_map.getMainPosition(), this.Order.start);
-
-        if (distance <= MAXDISTANCEFORMEETING) {
-            Ajax({
-                action: 'SetState',
-                data: {id: this.Order.id, state: 'wait_meeting'}
-            });
-            return true;
-        }
-        return false;
-    }
-
     closePathOrder() {
         super.closePathOrder();
 
@@ -341,7 +345,7 @@ class TracerOrderView extends PathView {
     }
 
     onFinishPathOrder(tracer) {
-        let order = this.Orders.Graph.getFinishOrder(this.#points.length - 1);
+        let order = orderManager.Graph.getFinishOrder(this.#points.length - 1);
         if (order && ACTIVESTATES.includes(order.state))
             order.SetState('finished');
     }

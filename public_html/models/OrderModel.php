@@ -142,7 +142,16 @@ class OrderModel extends BaseModel {
 
 			$data['driver_id'] = $driver_id;
 		}
-		else $result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=? WHERE id=?", 'si', [$state, $id]);
+		else {
+
+			if ($state == 'wait_meeting') {
+				$data['beganWaitTime'] = date('Y-m-d H:i:s');
+				$query = "UPDATE {$this->getTable()} SET `state`=?, `beganWaitTime`='{$data['beganWaitTime']}' WHERE id=?";
+			}
+			else $query = "UPDATE {$this->getTable()} SET `state`=? WHERE id=?";
+
+			$result = $dbp->bquery($query, 'si', [$state, $id]);
+		}
 		
 		$orderListeners = new OrderListeners();
 		$orderListeners->SendNotify($id, 'changeOrder', json_encode($data));
@@ -150,7 +159,7 @@ class OrderModel extends BaseModel {
 		if (in_array($state, INACTIVEORDERLIST_ARR))
 			$orderListeners->RemoveListeners($id);
 		
-		return $result;
+		return $result ? $data : false;
 	}
 }
 ?>

@@ -13,7 +13,10 @@ class PathView extends BottomView {
 
     setPath(value) {
         this.#path = value;
-        this.reDrawPath();
+
+        afterCondition(()=>{
+            return typeof(google.maps.DirectionsRenderer) != 'undefined';
+        }, this.reDrawPath.bind(this));
     }
 
     reDrawPath() {
@@ -47,6 +50,9 @@ class PathView extends BottomView {
 }
 
 class OrderView extends PathView {
+
+    #listenerId;
+
     get Order() { return this.getOrder(); };
 
     getOrder() {
@@ -55,7 +61,8 @@ class OrderView extends PathView {
 
     afterConstructor() {
         super.afterConstructor();
-        this.SetState(this.Order.state);
+        this.#fromState(this.Order.state);
+        this.#listenerId = this.Order.AddListener('CHANGE', this.onChangeOrder.bind(this));
     }
 
     createMainPath() {
@@ -95,6 +102,12 @@ class OrderView extends PathView {
         this.visibleMarker(false);
     }
 
+    onChangeOrder(e) {
+        if (e.value.state == 'accepted')
+            this.Close();
+        else this.#fromState(e.value.state);
+    }
+
     visibleMarker(visibility) {
 
          let idx = v_map.MarkerManager.IndexOfByOrder(this.Order.id);
@@ -103,15 +116,15 @@ class OrderView extends PathView {
 
     }
 
-    SetStateText(state, ext=null) {
+    setStateText(state, ext=null) {
         $('#state-' + this.Order.id).text(toLang(state) + (ext ? (" " + ext) : ''));
     }
 
-    SetState(state) {
+    #fromState(state) {
 
         this.view.removeClass('wait accepted driver_move wait_meeting execution finished expired');
         this.view.addClass(this.Order.state = state);
-        this.SetStateText(state);
+        this.setStateText(state);
     }
 
     continueOrder(e) {
@@ -132,7 +145,7 @@ class OrderView extends PathView {
 
             Ajax({
                 action: 'offerToPerform',
-                data: JSON.stringify({id: this.Order.id, remaindDistance: result.routes[0].legs[0].distance.value + takenOrders.remaindDistance()})
+                data: JSON.stringify({id: this.Order.id, remaindDistance: result.routes[0].legs[0].distance.value + orderManager.remaindDistance()})
             }).then(((response)=>{
                 if (response.result != 'ok')
                     this.trouble(response);
@@ -155,6 +168,7 @@ class OrderView extends PathView {
     }
 
     destroy() {
+        this.Order.RemoveListener('CHANGE', this.#listenerId);
         if (this.Order.state != 'finished')
             this.visibleMarker(true);
         this.closePathOrder();

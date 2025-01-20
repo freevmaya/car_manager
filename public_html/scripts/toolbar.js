@@ -114,7 +114,7 @@ class ToolbarUser {
 		let order = null;
 
 		function showOrder() {
-			let remaindDistance = takenOrders ? takenOrders.remaindDistance() : 0;
+			let remaindDistance = orderManager ? orderManager.remaindDistance() : 0;
 			let view = viewManager.Create({modal: true,
                 title: 'OrderCreated',
                 content: templateClone('offerView', order),
@@ -155,9 +155,9 @@ class ToolbarUser {
 		if (order_id && v_map) {
 
 			if (user.asDriver) {
-				if (!takenOrders.selOrderView) {
+				if (!orderManager.selOrderView) {
 					this.#listView.Close();
-					takenOrders.ShowInfoOrder(order_id);
+					orderManager.ShowInfoOrder(order_id);
 				}
 				else this.showOfferView(order_id);
  			} else {
