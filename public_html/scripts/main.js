@@ -173,19 +173,25 @@ async function Ajax(params, after = null) {
         method: "POST",
         body: formData
     });
+
+    let result = null;
+    let serverTime = Date.now();
     try {
         const response = await fetch(request);
         if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
         }
 
-        let result = await response.json();
-        if (after != null) after(result);
-        return result;
+        if (response.headers.has('Server-Time'))
+            serverTime = Date.parse(response.headers.get('Server-Time'));
+
+        result = await response.json();
     } catch (error) {
-        //console.error(error.message);
+        console.error(error.message);
     }
-    return null;
+
+    if (after != null) after(result, serverTime);
+    return result;
 }
 
 class AjaxTransport extends EventProvider {
@@ -196,6 +202,7 @@ class AjaxTransport extends EventProvider {
     extRequest;
     statusesToReturn;
     periodTime;
+    serverTime;
 
     constructor(periodTime) {
         super();
@@ -265,7 +272,7 @@ class AjaxTransport extends EventProvider {
             } else this.enableGeo(false);
 
             params.data = JSON.stringify(data);
-            Ajax(params).then(this.onRecive.bind(this));
+            Ajax(params, this.onRecive.bind(this));
         } else this.initTimer();
     }
 
@@ -292,7 +299,10 @@ class AjaxTransport extends EventProvider {
         }
     }
 
-    onRecive(value) {
+    onRecive(value, responseTime) {
+        this.serverTime = responseTime;
+        this.SendEvent('RECEIVE_SERVERTIME', this.serverTime);
+
         for (let n in value)
             this.SendEvent(n, value[n]);
 
@@ -632,7 +642,7 @@ function isNumeric(str) {
 
 function toLatLngF(obj) {
     let llp = google.maps.LatLng;
-    
+
     if (isFunc(obj.lat)) {
         if (llp)
             return new llp(obj.lat(), obj.lng());
@@ -774,8 +784,7 @@ function CalcCoordinate(center, angle, distanceMeters) {
     }
 }
 
-function CalcPathLength(routeData, routeIndex = 0, outList=null) {
-    let route = routeData.routes ? routeData.routes[routeIndex].overview_path : routeData[routeIndex].overview_path;
+function CalcLengths(route, outList=null) {
     let totalLength = 0;
     for (let i=0; i < route.length - 1; i++) {
         let d = Distance(route[i], route[i + 1]);
@@ -783,6 +792,10 @@ function CalcPathLength(routeData, routeIndex = 0, outList=null) {
         totalLength += d; 
     }
     return totalLength;
+}
+
+function CalcPathLength(routeData, routeIndex = 0, outList=null) {
+    return CalcLengths(routeData.routes ? routeData.routes[routeIndex].overview_path : routeData[routeIndex].overview_path, outList);
 }
 
 function HideDriverMenu() {

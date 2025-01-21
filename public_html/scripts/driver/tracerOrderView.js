@@ -44,10 +44,15 @@ class TracerOrderView extends PathView {
                 return v_map && v_map.map;
             }, (()=>{
                 v_map.AddListener('MAINMARKERCLICK', ((e)=>{
-                    if (this.#tracer)
-                        this.#tracer.Pause();
+                    if (this.Tracer)
+                        this.Tracer.Pause();
                 }).bind(this));
             }).bind(this));
+
+
+            this.headerElement.find('.tracerBar')
+                .click(this.onTraceBarClick.bind(this))
+                .css('cursor', 'pointer');
         }
     }
 
@@ -96,6 +101,14 @@ class TracerOrderView extends PathView {
         this.RequireRefresh();
     }
 
+    onTraceBarClick(e) {
+        if (this.Tracer) {
+            this.Tracer.SetNextDistance(e.offsetX / $(e.currentTarget).width() * this.Tracer.TotalLength);
+            v_map.setMainPosition(this.Tracer.RoutePosition);
+            this.doUpdateTimeLine();
+        }
+    }
+
     createMainPath(mainPoint) {
 
         if (orderManager.length > 0) {
@@ -107,7 +120,7 @@ class TracerOrderView extends PathView {
     togglePathOrder(order_id) {
 
         if (this.#selectOrderPath && (this.#selectOrderPath.orderId == order_id))
-            this.closeSelectselectOrderPath();
+            this.closeSelectOrderPath();
         else {
             let order = orderManager.GetOrder(order_id);
             this.pathRequest({
@@ -118,13 +131,13 @@ class TracerOrderView extends PathView {
     }
 
     showSelectOrderPath(order_id, value) {
-        this.closeSelectselectOrderPath();
+        this.closeSelectOrderPath();
         this.#selectOrderPath = value;
         this.#selectOrderPath.orderId = order_id;
         this.#selectOrderPathRender = v_map.DrawPath(this.#selectOrderPath, driverOrderPathOptions);
     }
 
-    closeSelectselectOrderPath() {
+    closeSelectOrderPath() {
         if (this.#selectOrderPathRender) {
             this.#selectOrderPathRender.setMap(null);
             this.#selectOrderPathRender = null;
@@ -177,11 +190,11 @@ class TracerOrderView extends PathView {
 
             if (value) {
                 this.#updateListenerId = v_map.AddListener('UPDATE', this.onUpdateMap.bind(this));
-                this.#updateTimelineId = setInterval(this.doUpdateTimeLine.bind(this), 5000);
+                this.#updateTimelineId = transport.AddListener('RECEIVE_SERVERTIME', this.doUpdateTimeLine.bind(this));
             }
             else {
                 v_map.RemoveListener('UPDATE', this.#updateListenerId);
-                clearInterval(this.#updateTimelineId);
+                transport.RemoveListener('RECEIVE_SERVERTIME', this.#updateTimelineId);
 
                 this.#stepInfo.hide();
             }
@@ -230,8 +243,8 @@ class TracerOrderView extends PathView {
 
     onChangeselectOrderPath(e) {
         const directions = this.pathRender.getDirections();
-        if (this.#tracer)
-            this.#tracer.SetRoutes(directions.routes);
+        if (this.Tracer)
+            this.Tracer.SetRoutes(directions.routes);
     }
 
     reDrawPath() {
@@ -262,7 +275,6 @@ class TracerOrderView extends PathView {
             elem.text(DistanceToStr(remaindDistance));
             elem.toggleClass('dist-warning', remaindDistance < 100);
 
-            this.#lastSpeed = tracer.AvgSpeed;
             let speed = round(tracer.AvgSpeed * 3.6, 1);
             this.#speedInfo.find('.avgSpeed')
                 .text(speed >= 0 ? speed + "km/h" : toLang("Backwards"));
@@ -285,30 +297,33 @@ class TracerOrderView extends PathView {
         if (tracer) {
             this.headerElement.find('.tracerBar > div').css('width', (tracer.RouteDistance / tracer.TotalLength * 100) + '%');
             this.headerElement.find('.startTime').text($.format.date(tracer.StartTime, HMFormat));
-            this.headerElement.find('.finishTime').text($.format.date(tracer.FinishTime, HMFormat));
+            this.headerElement.find('.finishTime').text($.format.date(tracer.GetFinishTime(transport.serverTime), HMFormat));
         }
     }
 
     traceOrderPath() {
-        //if (['execution', 'driver_move'].includes(this.Order.state)) {
-            if (this.Path) {
+        if (this.Path) {
 
-                let startTime = Date.now();
+            let options = {
+                startTime: orderManager.TopOrder.StartTime, 
+                beginPoint: toLatLngF(v_map.getMainPosition()),
+                speed: orderManager.TopOrder.state != 'wait_meeting' ? this.#lastSpeed : 0
+            };
 
-                if (!this.Tracer) {
-                    this.#tracer = v_map.createTracer(this.Order, this.Path.routes, 
-                            {startTime: startTime, beginPoint: toLatLngF(v_map.getMainPosition())});
+            if (!this.Tracer) {
+                this.#tracer = v_map.createTracer(orderManager.TopOrder, this.Path.routes, options);
 
-                    this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
-                    this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
-                    this.Tracer.AddListener('CHANGELEG', this.onChangeLeg.bind(this));
+                //this.Tracer.ReceivePoint(toLatLngF(v_map.getMainPosition()));
 
-                    this.Tracer.SetSpeed(this.#lastSpeed);
-                } else this.Tracer.SetRoutes(this.Path.routes);
+                this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
+                this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
+                this.Tracer.AddListener('CHANGELEG', this.onChangeLeg.bind(this));
+            } else this.Tracer.SetRoutes(this.Path.routes, options);
 
-                this.isDrive = true;
-            }
-        //}
+            this.doUpdateTimeLine();
+
+            this.isDrive = true;
+        }
     }
 
     #moveToStart() {
@@ -333,15 +348,20 @@ class TracerOrderView extends PathView {
         else this.#moveToStart();
     }
 
+    checkAndCloseTrace() {
+        if (this.Tracer) {
+            if (!orderManager.TopOrder || INACTIVESTATES.includes(orderManager.TopOrder.state)) {
+                this.#lastSpeed = this.Tracer.AvgSpeed;
+                v_map.removeTracer(this.Tracer);
+                this.#tracer = null;
+            }
+        }
+    }
+
     closePathOrder() {
         super.closePathOrder();
-
-        if (this.#tracer) {
-            v_map.removeTracer(this.#tracer);
-            this.#tracer = null;
-
-            this.closeSelectselectOrderPath();
-        }
+        this.closeSelectOrderPath();
+        this.checkAndCloseTrace();
     }
 
     onFinishPathOrder(tracer) {
@@ -352,7 +372,7 @@ class TracerOrderView extends PathView {
 
     destroy() {
         this.isDrive = false;
-        this.closeSelectselectOrderPath();
+        this.closeSelectOrderPath();
         super.destroy();
     }
 

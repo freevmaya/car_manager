@@ -36,59 +36,67 @@ class Tracer extends EventProvider {
     get AvgSpeed() { return this.#avgSpeed; };
     get RouteDistance() { return this.#routeDistance; };
     get StartTime() { return this.Options.startTime; };
-    get FinishTime() { return this.StartTime + this.TakeTime * this.TotalLength / this.RouteDistance; };
     get TotalLength() { return this.#totalLength; };
     get RemaindDistance() { return this.#totalLength - this.#routeDistance; };
     get RemaindTime() { return this.RemaindDistance / this.AvgSpeed; };
-    get Leg() { return this.#routes[this.#routeIndex].legs[this.#curLegIdx]; };
+    get Route() { return this.#routes[this.#routeIndex]; };
+    get Leg() { return this.Route.legs[this.#curLegIdx]; };
     get Duration() { return this.Leg.duration; };
     get Step() { return this.#curStep; }
     get NextStep() { return this.#nextStep; }
-    get TakeTime() { return Date.now() - this.Options.startTime; }
+    get RoutePosition() { return this.#routePos; }
+
+    GetFinishTime(currentTime) { return this.StartTime + (currentTime - this.StartTime) * this.TotalLength / this.RouteDistance; };
 
     constructor(routes, callback, periodTime, options=null) {
 
         super();
 
-        this.Options = $.extend(this.Options, options);
         this.#time = Date.now();
-
         this.#callback = callback;
-        this.#intervalId = setInterval(this.update.bind(this), periodTime);
+        this.#intervalId = setInterval(this.update.bind(this), this.#periodTime = periodTime);
 
-        this.#periodTime = periodTime;
-        this.SetRoutes(routes);
-        this.ToStart();
+        this.SetRoutes(routes, options);
+    }
+
+    SetRoutes(routes, options) {
+
+        this.#reset();
+
+        this.Options = $.extend(this.Options, options);
+        this.#routes = routes;
+        this.#lengthList = [];
+        this.#totalLength = CalcPathLength(this.#routes, this.#routeIndex, this.#lengthList);
+
+        let accumDist = 0;
+        this.forEachSteps((routes, r, l, s)=>{
+            accumDist += routes[r].legs[l].steps[s].distance.value;
+            routes[r].legs[l].steps[s].finishDistance = accumDist;
+        })
 
         if (this.Options.beginPoint) 
-            this.ToPoint(this.Options.beginPoint);
-        if (this.Options.speed)
+            this.#setGeoPos(this.Options.beginPoint);
+        else this.#calcRoutePos();
+
+        if (!isEmpty(this.Options.speed))
             this.#avgSpeed = this.Options.speed;
     }
 
-    ToPoint(latLng) {
-        let inPath = {};
-        let p = Tracer.CalcPointInPath(this.#routes[this.#routeIndex].overview_path, 
-            latLng, inPath, this.Options.magnetDistance);
-
-        if (p) {
-            this.#routePos = p;
-            this.#routeDistance = this.#calcDistance(inPath);
-        }
-    }
-
-    ToStart() {
-        this.#routePos = this.#routes[this.#routeIndex].overview_path[0];
+    #reset() {
         this.#routeDistance = 0;
         this.#curLegIdx = -1;
         this.#curStep = null;
     }
 
-    SetRoutes(routes) {
-        this.#routes = routes;
-        this.#lengthList = [];
-        this.#totalLength = CalcPathLength(this.#routes, this.#routeIndex, this.#lengthList);
-        this.updateSteps();
+    ToPoint(latLng) {
+        let inPath = {};
+        let p = Tracer.CalcPointInPath(this.Route.overview_path, 
+            latLng, inPath, this.Options.magnetDistance);
+
+        if (p) {
+            this.#routePos = p;
+            this.#routeDistance = inPath.distance;
+        }
     }
 
     forEachSteps(func) {
@@ -96,19 +104,11 @@ class Tracer extends EventProvider {
             let legs = this.#routes[r].legs;
             for (let l=0; l<legs.length; l++)
                 for (let s=0; s<legs[l].steps.length; s++) {
-                    if (func(this.#routes, r, l, s))
-                        return;
+                    let result = func(this.#routes, r, l, s);
+                    if (result)
+                        return result;
                 }
         }
-    }
-
-    updateSteps() {
-        let accumDist = 0;
-
-        this.forEachSteps((routes, r, l, s)=>{
-            accumDist += routes[r].legs[l].steps[s].distance.value;
-            routes[r].legs[l].steps[s].finishDistance = accumDist;
-        })
     }
 
     destroy() {
@@ -167,12 +167,9 @@ class Tracer extends EventProvider {
     }
 
     #updateRoutePos() {
-        if (this.#avgSpeed) {
-            this.#routeDistance = (this.#routeDistance + this.#avgSpeed * this.#periodTime / 1000)
-                                        .clamp(0, this.#totalLength);
-            this.#calcPoint();
-            this.#checkCurStep();
-        }
+        if (this.#avgSpeed)
+            this.SetNextDistance((this.#routeDistance + this.#avgSpeed * this.#periodTime / 1000)
+                                        .clamp(0, this.#totalLength));
     }
 
     #calcDistance(inPath) {
@@ -182,10 +179,10 @@ class Tracer extends EventProvider {
         return result + inPath.distance;
     }
 
-    #calcPoint() {
+    #calcRoutePos() {
 
         let distance = this.#routeDistance;
-        let path = this.#routes[this.#routeIndex].overview_path;
+        let path = this.Route.overview_path;
         let idx = 0;
 
         if (distance < this.#totalLength) {
@@ -223,6 +220,40 @@ class Tracer extends EventProvider {
         this.#routePos = path[this.#pathIndex = idx];        
     }
 
+    SetNextDistance(distance) {
+
+        distance = distance.clamp(0, this.TotalLength);
+        let currentTime = Date.now();
+        this.#deltaT = (currentTime - this.#time) / 1000;
+
+        let deltaDist = distance - this.#routeDistance;
+
+        let speed = (deltaDist / this.#deltaT)
+                        .clamp(-this.Options.speedMax, this.Options.speedMax);
+
+        let tearedTime = this.#deltaT > this.Options.tearedTime;
+        let tearedDist = Math.abs(deltaDist) > this.Options.tearedDistance;
+            
+        this.#routeDistance = distance;
+
+        this.#calcRoutePos();
+        this.#checkCurStep();
+
+        if (tearedTime || tearedDist) {
+
+            if (tearedTime)
+                this.SendEvent('TEAREDTIME', tearedDist);
+            else this.SendEvent('TEAREDDIST', tearedDist);
+                
+            this.SetSpeed(speed);
+
+            console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
+        } else {
+            this.#avgSpeed = this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed;
+        }
+        this.#time = currentTime;
+    }
+
     #setGeoPos(latLng) {
 
         if (this.#routes && (this.#routes.length > 0)) {
@@ -230,34 +261,14 @@ class Tracer extends EventProvider {
             let currentTime = Date.now();
             this.#deltaT = (currentTime - this.#time) / 1000;
 
-            let path = this.#routes[this.#routeIndex].overview_path;
+            let path = this.Route.overview_path;
             let inPath = {};
-            let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance);
+            //let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance);
+            let p = this.CalcPointInLeg(this.#curLegIdx, latLng, inPath);
 
             if (p) {
-                let distance = this.#calcDistance(inPath).clamp(0, this.TotalLength);
-                let deltaDist = distance - this.#routeDistance;
-
-                let speed = (deltaDist / this.#deltaT)
-                                .clamp(-this.Options.speedMax, this.Options.speedMax);
-
-                let tearedTime = this.#deltaT > this.Options.tearedTime;
-                let tearedDist = Math.abs(deltaDist) > this.Options.tearedDistance;
-
-                if (tearedTime || tearedDist) {
-                    this.#routeDistance = distance;
-                    this.#routePos = p;
-
-                    if (tearedTime)
-                        this.SendEvent('TEAREDTIME', tearedDist);
-                    else this.SendEvent('TEAREDDIST', tearedDist);
-                        
-                    this.SetSpeed(speed);
-
-                    console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
-                } else {
-                    this.#avgSpeed = this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed;
-                }
+                let distance = inPath.distance.clamp(0, this.TotalLength);
+                this.SetNextDistance(distance);
                 this.#timeTooFar = 0;
             } else {
                 this.#timeTooFar += this.#deltaT;
@@ -275,21 +286,110 @@ class Tracer extends EventProvider {
         this.#setGeoPos(latLng);
     }
 
+    CalcPointInLeg = function (LegIdx, p, ResultData) {
+        let accumDist = 0;
+        let variantes = [];
+        let magnet = this.Options.magnetDistance;
+
+        this.forEachSteps((routes, r, l, s) => {
+            let step = routes[r].legs[l].steps[s];
+            let inPath = {};
+            let path = [step.start_point].concat(step.path, [step.end_point]);
+
+            let point = Tracer.CalcPointInPath(path, p, inPath, magnet);
+            if (point) {
+                variantes.push({
+                    r: r,
+                    l: l,
+                    s: s,
+                    i: inPath.idx,
+                    point: point,
+                    distanceToLine: inPath.distanceToLine,
+                    distance: accumDist + inPath.distance 
+                });
+            }
+
+            accumDist += inPath.totalLength;
+        });
+
+
+        accumDist = 0;
+
+        this.forEachSteps((routes, r, l, s) => {
+            let step = routes[r].legs[l].steps[s];
+            let inPath = {};
+            let path = [step.start_point].concat(step.path, [step.end_point]);
+
+            let point = Tracer.CalcConerInPath(path, p, inPath, magnet);
+            if (point) {
+                variantes.push({
+                    r: r,
+                    l: l,
+                    s: s,
+                    i: inPath.idx,
+                    point: point,
+                    distanceToLine: inPath.distanceToLine,
+                    distance: accumDist + inPath.distance 
+                });
+            }
+
+            accumDist += inPath.totalLength;
+        });
+
+
+        if (variantes.length > 0) {
+            variantes.sort((v1, v2) => v1.distanceToLine - v2.distanceToLine );
+            $.extend(ResultData, variantes[0]);
+            return variantes[0].point;
+        }
+
+        return null;
+    }
+}
+
+Tracer.CalcConerInPath = function (path, p, inPath, minDistance = Number.MAX_VALUE) {
+    let min = minDistance;
+    let result = false;
+    accumDist = 0;
+
+    inPath.distList = [];
+    inPath.totalLength = CalcLengths(path, inPath.distList);
+
+    for (let i=0; i<path.length; i++) {
+        let h = Distance(path[i], p);
+        if (h < min) {
+            min = h;
+            result = path[i];
+
+            inPath.idx = i;
+            inPath.distance = accumDist;
+            inPath.distanceToLine = h;
+        }
+        if (i < path.length - 1)
+            accumDist += inPath.distList[i];
+    }
+
+    return result;
 }
 
 Tracer.CalcPointInPath = function (path, p, inPath, minDistance = Number.MAX_VALUE) {
 
     let min = minDistance;
     let result = false;
+    let accumDist = 0;
+
+    inPath.distList = [];
+    inPath.totalLength = CalcLengths(path, inPath.distList);
 
     for (let i=0; i<path.length - 1; i++) {
 
         let p1 = path[i];
         let p2 = path[i + 1];
+        let b = inPath.distList[i];
+
         let angle = Math.abs(CalcAngleRad(p1, p2) - CalcAngleRad(p1, p));
         if (angle < Math.PI / 2) {
             let c = Distance(p1, p);
-            let b = Distance(p1, p2);
 
             let b2 = c * Math.cos(angle);
 
@@ -304,26 +404,12 @@ Tracer.CalcPointInPath = function (path, p, inPath, minDistance = Number.MAX_VAL
                     );
 
                     inPath.idx = i;
-                    inPath.distance = b2;
+                    inPath.distance = accumDist + b2;
                     inPath.distanceToLine = h;
                 }
             }
         }
-    }
-
-    if (!result) {
-        let min = minDistance;
-        for (let i=0; i<path.length; i++) {
-            let h = Distance(path[i], p);
-            if (h < min) {
-                min = h;
-                result = path[i];
-
-                inPath.idx = i;
-                inPath.distance = 0;
-                inPath.distanceToLine = h;
-            }
-        }
+        accumDist += b;
     }
 
     return result;

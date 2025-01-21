@@ -54,22 +54,8 @@ class TakenOrders extends OrderManager {
     doChangeOrder(order, part_order) {
         super.doChangeOrder(order, part_order);
 
-        if (ACTIVESTATES.includes(order.state) && (order.driver_id == user.asDriver)) {
+        if (order.driver_id == user.asDriver)
             this.ResetPath();
-
-            if (order.state == 'accepted')
-                this.checkNearPassenger(order);
-        }
-    }
-
-    checkNearPassenger(order) {
-        let distance = Distance(v_map.getMainPosition(), order.start);
-
-        if (distance <= MAXDISTANCEFORMEETING) {
-            order.SetState('wait_meeting');
-            return true;
-        }
-        return false;
     }
 
     ResetPath(mainPoint) {
@@ -178,10 +164,6 @@ class TakenOrders extends OrderManager {
                 this.selOrderView.Close().then(showPathAndInfo.bind(this));
             else showPathAndInfo.bind(this)();
         }
-    }
-
-    destroy() {
-        clearTimeout(this.#timerId);
     }
 }
 

@@ -48,6 +48,7 @@ class GraphGenerator {
 
 		if ((order.state == 'execution') && (this.points.length == 1)) {
 
+			this.points[0] = toLatLng(order.start);
 			this.points.push(toLatLng(order.finish));
 
 			this.graph['0']['1'] = Distance(this.points[0], this.points[1]);

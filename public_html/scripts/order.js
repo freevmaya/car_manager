@@ -1,6 +1,12 @@
 class Order extends EventProvider {
 	#manager;
-    #timerId;
+    #waitTimerId;
+
+    get StartTime() {
+        return this.state == 'execution' ? Date.parse(this.beganExecuteTime) : 
+                (this.state == 'wait_meeting' ? Date.parse(this.beganWaitTime) : Date.now());
+    }
+
     constructor(manager, data) {
     	super();
         $.extend(this, data);
@@ -18,7 +24,7 @@ class Order extends EventProvider {
 
     SetState(value, after=null) {
         if (this.state != value) {
-
+            this.state = value;
             console.log("Set state order " + this.id + ", " + value);
             Ajax({
                 action: 'SetState',
@@ -35,7 +41,7 @@ class Order extends EventProvider {
     checkPassengerDistance() {
         let time = this.beganWaitTime;
         if (time) {
-            let deltaSec = Math.round((Date.now() - (isStr(time) ? Date.parse(time) : time)) / 1000);
+            let deltaSec = (transport.serverTime - (isStr(time) ? Date.parse(time) : time)) / 1000;
             if (deltaSec > MAXPERIODWAITMEETING)
                 this.SetState('expired');
             else {
@@ -47,6 +53,7 @@ class Order extends EventProvider {
                     let distance = Distance(latLng, this.start);
                     if (distance <= MAXDISTANCEFORMEETING)
                         this.SetState('execution');
+                    else this.beginCheckPassengerDistance();
                 });
             }
             return true;
@@ -56,15 +63,23 @@ class Order extends EventProvider {
     afterChange(part_order) {
         this.SendEvent('CHANGE', part_order);
         this.beginCheckPassengerDistance();
+            
+        if ((this.state == 'accepted') && (this.driver_id == user.asDriver) && v_map)
+            this.checkNearPassenger();
+    }
+
+    checkNearPassenger() {
+        if (Distance(v_map.getMainPosition(), this.start) <= MAXDISTANCEFORMEETING) 
+            this.SetState('wait_meeting');
     }
 
     beginCheckPassengerDistance() {
         if (this.state == 'wait_meeting')
-            this.#timerId = setTimeout(this.checkPassengerDistance.bind(this), 1000);
+            this.#waitTimerId = setTimeout(this.checkPassengerDistance.bind(this), 1000);
     }
 
     destroy() {
-        if (this.#timerId) clearTimeout(this.#timerId);
+        if (this.#waitTimerId) clearTimeout(this.#waitTimerId);
         this.#manager.RemoveOrder(this.id);
         super.destroy();
     }

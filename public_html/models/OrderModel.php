@@ -148,6 +148,10 @@ class OrderModel extends BaseModel {
 				$data['beganWaitTime'] = date('Y-m-d H:i:s');
 				$query = "UPDATE {$this->getTable()} SET `state`=?, `beganWaitTime`='{$data['beganWaitTime']}' WHERE id=?";
 			}
+			else if ($state == 'execution') {
+				$data['beganExecuteTime'] = date('Y-m-d H:i:s');
+				$query = "UPDATE {$this->getTable()} SET `state`=?, `beganExecuteTime`='{$data['beganExecuteTime']}' WHERE id=?";
+			}
 			else $query = "UPDATE {$this->getTable()} SET `state`=? WHERE id=?";
 
 			$result = $dbp->bquery($query, 'si', [$state, $id]);

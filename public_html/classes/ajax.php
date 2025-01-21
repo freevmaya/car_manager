@@ -3,6 +3,7 @@ class Ajax extends Page {
 
 	public function Render($page) {
 		header("Content-Type: text/json; charset=".CHARSET);
+		header('Server-Time:'.date("Y-m-d H:i:s"));
 		echo json_encode($this->ajax());
 	}
 

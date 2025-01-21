@@ -9,6 +9,7 @@ var STATELIST = ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution',
 
 var STATES = 'wait accepted driver_move wait_meeting execution finished expired rejected cancel';
 var ACTIVESTATES = ['accepted', 'driver_move', 'wait_meeting', 'execution'];
+var INACTIVESTATES = ['finished', 'expired', 'rejected', 'cancel'];
 
 
 var currentPathOptions = {

@@ -35,6 +35,7 @@ class Tracer extends EventProvider {
 
     get AvgSpeed() { return this.#avgSpeed; };
     get RouteDistance() { return this.#routeDistance; };
+    set RouteDistance(value) { this.#routeDistance = value.clamp(0, this.#totalLength); };
     get StartTime() { return this.Options.startTime; };
     get FinishTime() { return this.StartTime + this.TakeTime * this.TotalLength / this.RouteDistance; };
     get TotalLength() { return this.#totalLength; };
