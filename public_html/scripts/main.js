@@ -124,18 +124,18 @@ class App {
         } else w.Remove();
     }
 
-    showQuestion(text, afterOk = null) {
+    showQuestion(text, afterOkOrAction = {}) {
         if (this.#question == null) {
 
-            let actions = isFunc(afterOk) ? {
+            let actions = isFunc(afterOkOrAction) ? {
                 'Ok': (()=>{
                         this.#question.Close();
-                        afterOk();
+                        afterOkOrAction();
                     }).bind(this),
                 'Cancel': (()=>{
                     this.#question.Close();
                 }).bind(this)
-            } : {};
+            } : afterOkOrAction;
 
             this.#question = viewManager.Create({modal: true,
                 title: 'Warning!',
@@ -149,7 +149,10 @@ class App {
             }, View, (()=>{
                 this.#question = null;
             }).bind(this));
+
+            return this.#question;
         }
+        return false;
     }
 }
 
@@ -638,7 +641,6 @@ function isNumeric(str) {
   if (typeof str != "string") return false;
   return !isNaN(str) && !isNaN(parseFloat(str));
 }
-
 
 function toLatLngF(obj) {
     let llp = google.maps.LatLng;

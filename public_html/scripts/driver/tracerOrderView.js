@@ -13,7 +13,8 @@ class TracerOrderView extends PathView {
     #selectOrderPathRender;
     #points;
     #isDrive;
-    #lastSpeed = 0;
+    #lastSpeed;
+    #waitDialog;
 
     get Tracer() { return this.#tracer; }
     get isDrive() { return this.#isDrive; };
@@ -33,6 +34,7 @@ class TracerOrderView extends PathView {
 
         orderManager.AddListener('CREATED_ORDER', this.onCreatedOrder.bind(this));
         orderManager.AddListener('REMOVED_ORDER', this.onRemovedOrder.bind(this));
+        orderManager.AddListener('CHANGE_ORDER', this.onChangeOrder.bind(this))
         orderManager.AddListener('CHANGE_PATH', this.onChangePath.bind(this))
 
         super.afterConstructor();
@@ -99,6 +101,23 @@ class TracerOrderView extends PathView {
 
     onRemovedOrder(order) {
         this.RequireRefresh();
+    }
+
+    onChangeOrder(e) {
+        let order = e.value;
+        if (order.state == 'wait_meeting')
+            this.#waitDialog = app.showQuestion("Waiting for a passenger", {
+                'Complete': ()=>{
+                   order.SetState('execution'); 
+                },
+                'Reject': ()=>{
+                   order.SetState('reject'); 
+                }
+            });
+        else if (this.#waitDialog) {
+            this.#waitDialog.Close();
+            this.#waitDialog = null;
+        }
     }
 
     onTraceBarClick(e) {
@@ -221,8 +240,9 @@ class TracerOrderView extends PathView {
 
             let order = orderManager.Graph.getStartOrder(nearest);
             if (order && (order.state == 'accepted')) {
-                order.SetState('wait_meeting');
+                this.#lastSpeed = this.Tracer.AvgSpeed;
                 this.Tracer.Pause();
+                order.SetState('wait_meeting');
             }
             else {
                 let order = orderManager.Graph.getFinishOrder(nearest);
@@ -280,6 +300,7 @@ class TracerOrderView extends PathView {
                 .text(speed >= 0 ? speed + "km/h" : toLang("Backwards"));
             this.#stepInfo.toggle((speed > 0) && (tracer.Step != null));
 
+            jsdata.driver.avgSpeed = tracer.AvgSpeed;
             transport.addExtRequest({
                 action: 'setValue',
                 data: {
@@ -304,21 +325,34 @@ class TracerOrderView extends PathView {
     traceOrderPath() {
         if (this.Path) {
 
+            let order = orderManager.TopOrder;
+
             let options = {
-                startTime: orderManager.TopOrder.StartTime, 
+                startTime: order.StartTime, 
                 beginPoint: toLatLngF(v_map.getMainPosition()),
-                speed: orderManager.TopOrder.state != 'wait_meeting' ? this.#lastSpeed : 0
+                speed: jsdata.driver.avgSpeed
             };
 
             if (!this.Tracer) {
-                this.#tracer = v_map.createTracer(orderManager.TopOrder, this.Path.routes, options);
+                this.#tracer = v_map.createTracer(order, this.Path.routes, options);
 
                 //this.Tracer.ReceivePoint(toLatLngF(v_map.getMainPosition()));
 
                 this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
                 this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
                 this.Tracer.AddListener('CHANGELEG', this.onChangeLeg.bind(this));
-            } else this.Tracer.SetRoutes(this.Path.routes, options);
+            } else {
+                switch (order.state) {
+                    case 'execution': 
+                            options.speed = this.#lastSpeed;
+                            break;
+                    case 'wait_meeting': 
+                            options.speed = 0;
+                            break;
+                }
+
+                this.Tracer.SetRoutes(this.Path.routes, options);
+            }
 
             this.doUpdateTimeLine();
 
@@ -326,32 +360,9 @@ class TracerOrderView extends PathView {
         }
     }
 
-    #moveToStart() {
-        Ajax({
-            action: 'SetState',
-            data: {id: this.Order.id, state: 'driver_move'}
-        }).then(((response)=>{
-            if (response.result != 'ok')
-                this.trouble(response);
-        }).bind(this));
-    }
-
-    moveToStart(e) {
-        this.blockClickTemp(e, 10000);
-
-        let distKm = Distance(this.Order.start, user) / 1000;
-        let takeTime = distKm / SLOWSPEED_KM_H * 60 * 60;
-        let deltaTime = DeltaTime(this.Order.pickUpTime);
-
-        if (deltaTime > takeTime)
-            app.showQuestion(toLang('Trip start time: %1. Are you sure you want to start the trip?', [DepartureTime(this.Order.pickUpTime)]), this.#moveToStart.bind(this));
-        else this.#moveToStart();
-    }
-
     checkAndCloseTrace() {
         if (this.Tracer) {
             if (!orderManager.TopOrder || INACTIVESTATES.includes(orderManager.TopOrder.state)) {
-                this.#lastSpeed = this.Tracer.AvgSpeed;
                 v_map.removeTracer(this.Tracer);
                 this.#tracer = null;
             }

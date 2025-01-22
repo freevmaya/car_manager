@@ -57,7 +57,7 @@ class DriverModel extends BaseModel {
 			else return null;
 		}
 
-		$query = "SELECT d.id, (d.active AND `expiredTime` >= NOW()) AS active, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, d.car_id, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
+		$query = "SELECT d.id, d.avgSpeed, (d.active AND `expiredTime` >= NOW()) AS active, d.user_id, d.useTogether, IF (u.`last_time` >= NOW() - {$this->offlineInterval}, 1, 0) AS online, u.lat, u.lng, u.angle, u.username, d.car_id, c.comfort, c.seating, c.comfort, cb.symbol AS car_body, c.number, c.seating - (SELECT COUNT(id) FROM orders WHERE driver_id = d.id AND state = 'accepted') AS available_seat, cc.name AS car_colorName, cc.rgb AS car_color ".
 
 			"FROM {$this->getTable()} d ".
 				"INNER JOIN users u ON d.user_id = u.id ".

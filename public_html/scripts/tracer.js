@@ -79,7 +79,7 @@ class Tracer extends EventProvider {
         else this.#calcRoutePos();
 
         if (!isEmpty(this.Options.speed))
-            this.#avgSpeed = this.Options.speed;
+            this.SetSpeed(this.Options.speed);
     }
 
     #reset() {
@@ -127,11 +127,13 @@ class Tracer extends EventProvider {
     }
 
     Pause() {
-        this.#avgSpeed = 0;
+        this.SetSpeed(0);
     }
 
-    SetSpeed(value) {
-        this.#avgSpeed = value.clamp(-this.Options.speedMax, this.Options.speedMax);
+    SetSpeed(v) {
+
+        if (isStr(v)) v = parseFloat(v);
+        this.#avgSpeed = v.clamp(-this.Options.speedMax, this.Options.speedMax);
     }
 
     #checkCurStep() {
@@ -248,9 +250,8 @@ class Tracer extends EventProvider {
             this.SetSpeed(speed);
 
             console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
-        } else {
-            this.#avgSpeed = this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed;
-        }
+        } else this.SetSpeed(this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed);
+
         this.#time = currentTime;
     }
 
@@ -338,7 +339,14 @@ class Tracer extends EventProvider {
 
 
         if (variantes.length > 0) {
-            variantes.sort((v1, v2) => v1.distanceToLine - v2.distanceToLine );
+            variantes.sort(((v1, v2) => {
+
+                let td1 = Math.abs(v1.distance - this.#routeDistance);
+                let td2 = Math.abs(v2.distance - this.#routeDistance);
+
+                return (td1 - td2) + 0.5 * (v1.distanceToLine - v2.distanceToLine) / magnet;
+
+            }).bind(this));
             $.extend(ResultData, variantes[0]);
             return variantes[0].point;
         }

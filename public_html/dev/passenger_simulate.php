@@ -47,17 +47,13 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 	}
 
 	function isNotAllowRoute($route) {
-		GLOBAL $passengers;
+		GLOBAL $dbp;
 
 		$start = json_decode($route['start'], true);
 		if (!isset($start['lat']))
 			return true;
 
-		foreach ($passengers as $pass)
-			if (isset($passengers['order']) && ($passengers['order']['route_id'] == $route['id']))
-				return true;
-
-		return false;
+		return $dbp->one("SELECT `id` FROM `orders` WHERE route_id={$route['id']} AND `state` IN (".ACTIVEORDERLIST.")") != null;
 	}
 
 	function NearestOffer($offers, $user) {
