@@ -56,6 +56,8 @@ class TracerOrderView extends PathView {
                 .click(this.onTraceBarClick.bind(this))
                 .css('cursor', 'pointer');
         }
+
+        this.#lastSpeed = jsdata.driver.avgSpeed;
     }
 
     onChangePath(e) {
@@ -80,9 +82,20 @@ class TracerOrderView extends PathView {
             };
 
             v_map.DirectionsService.route(request, ((result, status) => {
-                if (status == 'OK')
+                if (status == 'OK') {
+                    for (let i=0; i<result.routes[0].legs.length; i++) {
+                        let p = this.#points[i];
+                        let leg = result.routes[0].legs[i];
+                        if (p.start) {
+                            console.log('Point: ' + i + ', start order: ' + p.start.id);
+                            leg.start = p.start;
+                        } else if (p.finish) {
+                            console.log('Point: ' + i + ', finish order: ' + p.finish.id);
+                            leg.finish = p.finish;
+                        }
+                    }
                     this.setPath(result);
-                else console.log(request);
+                } else console.log(request);
             }).bind(this));
         } else {
             this.closePathOrder();
@@ -224,36 +237,20 @@ class TracerOrderView extends PathView {
         this.view.toggleClass('expand', !value).toggleClass('collaps', value);
     }
 
-    doCheckRoutePoints(latLng) {
-
-        let min = 15;
-        let nearest = -1;
-        for (let i=0; i<this.#points.length; i++) {
-            let distance = Distance(this.#points[i], latLng);
-            if (distance < min) {
-                nearest = i;
-                min = distance;
-            }
+    doCheckRoutePoints(leg) {
+        if (leg.start && (leg.start.state == 'accepted')) {
+            this.#lastSpeed = this.Tracer.AvgSpeed;
+            this.Tracer.Pause();
+            leg.start.SetState('wait_meeting');
         }
-
-        if (nearest > -1) {
-
-            let order = orderManager.Graph.getStartOrder(nearest);
-            if (order && (order.state == 'accepted')) {
-                this.#lastSpeed = this.Tracer.AvgSpeed;
-                this.Tracer.Pause();
-                order.SetState('wait_meeting');
-            }
-            else {
-                let order = orderManager.Graph.getFinishOrder(nearest);
-                if (order && (order.state == 'execution'))
-                    order.SetState('finished');
-            }
+        else {
+            if (leg.finish && (leg.finish.state == 'execution'))
+                leg.finish.SetState('finished');
         }
     }
 
     onChangeLeg(e) {
-        if (e.value) this.doCheckRoutePoints(e.value.start_location);
+        if (e.value) this.doCheckRoutePoints(e.value);
     }
 
     onChangeStep(e) {
@@ -326,15 +323,14 @@ class TracerOrderView extends PathView {
         if (this.Path) {
 
             let order = orderManager.TopOrder;
-
             let options = {
                 startTime: order.StartTime, 
                 beginPoint: toLatLngF(v_map.getMainPosition()),
-                speed: jsdata.driver.avgSpeed
+                speed: order.state == 'wait_meeting' ? 0 : this.#lastSpeed
             };
 
             if (!this.Tracer) {
-                this.#tracer = v_map.createTracer(order, this.Path.routes, options);
+                this.#tracer = v_map.createTracer(this.Path.routes, options);
 
                 //this.Tracer.ReceivePoint(toLatLngF(v_map.getMainPosition()));
 
@@ -376,7 +372,7 @@ class TracerOrderView extends PathView {
     }
 
     onFinishPathOrder(tracer) {
-        let order = orderManager.Graph.getFinishOrder(this.#points.length - 1);
+        let order = this.#points[this.#points.length - 1].finish;
         if (order && ACTIVESTATES.includes(order.state))
             order.SetState('finished');
     }

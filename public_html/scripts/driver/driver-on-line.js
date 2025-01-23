@@ -6,7 +6,7 @@ class DMap extends VMap {
         super(elem, callback, {markerManagerClass: MarkerOrderManager});
     }
 
-    createTracer(order, routes, options) {
+    createTracer(routes, options) {
         this.removeTracer();
         this.tracer = new Tracer(routes, this.superSetPosition.bind(this), 200, options);
         this.tracer.ReceivePoint(new google.maps.LatLng(this.getMainPosition()));
@@ -76,10 +76,9 @@ class TakenOrders extends OrderManager {
             this.#graph.AddOrders(this.#taken_orders);
 
             this.#path = this.#graph.getPath();
-            for (let i=0; i<this.#path.length; i++) {
-                let order = this.#graph.getStartOrder(i);
-                if (order) order.sort = i;
-            }
+            for (let i=0; i<this.#path.length; i++)
+                if (this.#path.start)
+                    this.#path.start.sort = i;
 
             this.#taken_orders.sort((order1, order2)=>{
                 return order1.sort - order2.sort;
