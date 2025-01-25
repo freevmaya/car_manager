@@ -103,9 +103,12 @@ class OrderView extends PathView {
     }
 
     onChangeOrder(e) {
+        this.Close();
+        /*
         if (e.value.state == 'accepted')
             this.Close();
         else this.#fromState(e.value.state);
+        */
     }
 
     visibleMarker(visibility) {
@@ -129,42 +132,23 @@ class OrderView extends PathView {
 
     continueOrder(e) {
         this.blockClickTemp(e, WAITOFFERS * 1000);
-        Ajax({
-            action: 'SetState',
-            data: {id: this.Order.id, state: 'accepted'}
-        }).then(((response)=>{
-            if (response.result != 'ok')
-                this.trouble(response);
+        this.Order.SetState(this.Order.state == 'accepted' ? 'driver_move' : 'accepted', ((result)=>{
+            if (!result) this.trouble(result);
         }).bind(this));
     }
 
     offerToPerform(e) {
         this.blockClickTemp(e, WAITOFFERS * 1000);
-
-        v_map.getRoutes(Extend({}, user, ['lat', 'lng']), this.Order.start, this.Order.travelMode, ((result)=>{
-
-            Ajax({
-                action: 'offerToPerform',
-                data: JSON.stringify({id: this.Order.id, remaindDistance: result.routes[0].legs[0].distance.value + orderManager.remaindDistance()})
-            }).then(((response)=>{
-                if (response.result != 'ok')
-                    this.trouble(response);
-            }).bind(this));
-        }).bind(this));
+        orderManager.TakenOrders.length == 0;
+        this.Order.SetState(orderManager.TakenOrders.length == 0 ? 'driver_move' : 'accepted');
     }
 
     reject() {
-        Ajax({
-            action: 'SetState',
-            data: {id: this.Order.id, state: 'rejected'}
-        });
+        this.Order.SetState('rejected');
     }
 
     letsGot() {
-        Ajax({
-            action: 'SetState',
-            data: {id: this.Order.id, state: 'execution'}
-        });
+        this.Order.SetState('execution');
     }
 
     destroy() {

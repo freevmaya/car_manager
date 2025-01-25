@@ -7,6 +7,8 @@ class Order extends EventProvider {
                 (this.state == 'wait_meeting' ? Date.parse(this.beganWaitTime) : Date.now());
     }
 
+    get isPickUpNow() { return DeltaTime(this.pickUpTime) <= NOWDELTASEC; };
+
     constructor(manager, data) {
     	super();
         $.extend(this, data);
@@ -15,37 +17,36 @@ class Order extends EventProvider {
         this.finish = JSON.vparse(data.finish);
 
         this.#manager = manager;
-        this.beginCheckPassengerDistance();
-    }
-
-    isStartPoint(latLng) {
-        return LatLngEquals(latLng, this.start);
+        this.#processFromState();
     }
 
     SetState(value, after=null) {
         if (this.state != value) {
             this.state = value;
             console.log("Set state order " + this.id + ", " + value);
+
+            let data = {id: this.id, state: value};
+            if (user.asDriver) data.driver_id = user.asDriver;
+
             Ajax({
                 action: 'SetState',
-                data: {id: this.id, state: value}
+                data: data
             }, ((e)=>{
-                if (e.result) {
+                if (e.result)
                     $.extend(this, e.result);
-                    if (after != null) after();
-                }
+                if (after != null) after(e.result);
             }).bind(this));
         }
     }
 
-    checkPassengerDistance() {
+    #checkPassengerDistance() {
         let time = this.beganWaitTime;
         if (time) {
             let deltaSec = (transport.serverTime - (isStr(time) ? Date.parse(time) : time)) / 1000;
             if (deltaSec > MAXPERIODWAITMEETING)
                 this.SetState('expired');
             else {
-
+f
                 transport.addExtRequest({
                     action: 'GetPosition',
                     data: this.user_id
@@ -53,29 +54,40 @@ class Order extends EventProvider {
                     let distance = Distance(latLng, this.start);
                     if (distance <= MAXDISTANCEFORMEETING)
                         this.SetState('execution');
-                    else this.beginCheckPassengerDistance();
+                    else this.#processFromState();
                 });
             }
             return true;
         }
     }
 
-    afterChange(part_order) {
-        this.SendEvent('CHANGE', part_order);
-        this.beginCheckPassengerDistance();
-            
-        if ((this.state == 'accepted') && (this.driver_id == user.asDriver) && v_map)
-            this.checkNearPassenger();
+    _afterChange(part_order) {
+        for (let i in part_order)
+            this[i] = part_order[i];
+        this.SendEvent('CHANGE', this);
+        this.#processFromState();
     }
 
-    checkNearPassenger() {
-        if (Distance(v_map.getMainPosition(), this.start) <= MAXDISTANCEFORMEETING) 
+    #processFromState() {
+        if (this.driver_id == user.asDriver)
+            switch (this.state) {
+                case 'accepted': this.#checkNearPassenger();
+                    break;
+                case 'driver_move': this.#checkNearPassenger();
+                    break;
+                case 'wait_meeting': this.#beginCheckPassengerDistance();
+                    break;
+            }
+    }
+
+    #checkNearPassenger() {
+        if (Distance(user, this.start) <= MAXDISTANCEFORMEETING)
             this.SetState('wait_meeting');
     }
 
-    beginCheckPassengerDistance() {
-        if (this.state == 'wait_meeting')
-            this.#waitTimerId = setTimeout(this.checkPassengerDistance.bind(this), 1000);
+    #beginCheckPassengerDistance() {
+        if (!this.#waitTimerId)
+            this.#waitTimerId = setTimeout(this.#checkPassengerDistance.bind(this), 1000);
     }
 
     destroy() {
@@ -124,8 +136,8 @@ class OrderManager extends EventProvider {
     }
 
     doChangeOrder(order, part_order) {
-        this.SendEvent('CHANGE_ORDER', $.extend(order, part_order));
-        order.afterChange(part_order);
+        order._afterChange(part_order);
+        this.SendEvent('CHANGE_ORDER', this);
     }
 
     has(order_id) {

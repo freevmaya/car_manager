@@ -128,7 +128,7 @@ class OrderModel extends BaseModel {
 	}
 
 	public function SetState($id, $state, $driver_id = false, $setter_user_id=null) {
-		GLOBAL $dbp;
+		GLOBAL $dbp, $user;
 
 		$result = false;
 		$data = ['state'=>$state];
@@ -136,26 +136,26 @@ class OrderModel extends BaseModel {
 		if ($setter_user_id)
 			(new OrderListeners())->AddListener($id, $setter_user_id); // Слушает тот, кто и устанавливает статус
 
+		$query = "UPDATE {$this->getTable()} SET `state`=?";
+
+		$driver_id = Page::$current->asDriver();
 		if ($driver_id) {
-			$result = $dbp->bquery("UPDATE {$this->getTable()} SET `state`=?, `driver_id`=? WHERE id=?", 
-				'sii', [$state, $driver_id, $id]);
-
 			$data['driver_id'] = $driver_id;
+			$query .= ", `driver_id`={$driver_id}";
 		}
-		else {
 
-			if ($state == 'wait_meeting') {
-				$data['beganWaitTime'] = date('Y-m-d H:i:s');
-				$query = "UPDATE {$this->getTable()} SET `state`=?, `beganWaitTime`='{$data['beganWaitTime']}' WHERE id=?";
-			}
-			else if ($state == 'execution') {
-				$data['beganExecuteTime'] = date('Y-m-d H:i:s');
-				$query = "UPDATE {$this->getTable()} SET `state`=?, `beganExecuteTime`='{$data['beganExecuteTime']}' WHERE id=?";
-			}
-			else $query = "UPDATE {$this->getTable()} SET `state`=? WHERE id=?";
-
-			$result = $dbp->bquery($query, 'si', [$state, $id]);
+		if ($state == 'wait_meeting') {
+			$data['beganWaitTime'] = date('Y-m-d H:i:s');
+			$query .= ", `beganWaitTime`='{$data['beganWaitTime']}'";
 		}
+		else if ($state == 'execution') {
+			$data['beganExecuteTime'] = date('Y-m-d H:i:s');
+			$query .= ", `beganExecuteTime`='{$data['beganExecuteTime']}'";
+		}
+		
+		$query .= " WHERE id=?";
+
+		$result = $dbp->bquery($query, 'si', [$state, $id]);
 		
 		$orderListeners = new OrderListeners();
 		$orderListeners->SendNotify($id, 'changeOrder', json_encode($data));

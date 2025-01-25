@@ -1,28 +1,3 @@
-/*
-class Order {
-    constructor(data) {
-        $.extend(this, data);
-    }
-
-    isStartPoint(latLng) {
-        return LatLngEquals(latLng, this.start);
-    }
-
-    SetState(value, after=null) {
-        if (this.state != value) {
-            Ajax({
-                action: 'SetState',
-                data: {id: this.id, state: value}
-            }, ((e)=>{
-                if (e.result == 'ok') {
-                    if (after != null) after();
-                    this.state = value;
-                }
-            }).bind(this));
-        }
-    }
-}*/
-
 class EventProvider {
     #incIndex;  
     constructor() {

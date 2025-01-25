@@ -15,7 +15,7 @@
 		html::AddScriptFile("driver/tracerOrderView.js");
 		html::AddScriptFile("driver/driver-on-line.js");
 
-		$wait_orders = $orderModel->getItems(['state'=>'wait']);
+		$wait_orders = $orderModel->getItems(['state'=>['wait', 'driver_move']]);
 		$orders = array_merge($wait_orders, $orderModel->getItems(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR]));
 
 		if (count($wait_orders) > 0)

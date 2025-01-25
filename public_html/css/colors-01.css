@@ -157,15 +157,27 @@ html {
     background-image: url('images/driver-position.png');
 }
 
-.user-current {
-    background-image: url('images/user-current.png');
+.user-marker.execution {
+    filter: hue-rotate(168deg);
+}
+
+.user-marker.accepted {
+    filter: hue-rotate(126deg);
+}
+
+.user-marker.driver_move {
+    filter: hue-rotate(280deg);
+}
+
+.user-marker.wait_meeting {
+    filter: hue-rotate(22deg);
 }
 
 .user-marker {
     background-image: url('images/user-marker.png');
 }
 
-.user-current.expired {
+.user-marker.expired {
     opacity: 0.5;
 }
 
@@ -370,6 +382,10 @@ form > .footer{
 }
 
 .order.wait_meeting .stateHead .state {
+    color: coral;
+}
+
+.order.execution {
     color: coral;
 }
 

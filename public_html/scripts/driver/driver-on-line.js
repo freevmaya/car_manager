@@ -40,6 +40,7 @@ class TakenOrders extends OrderManager {
 
     get Graph() { return this.#graph; }
 
+    get TakenOrders() { return this.#taken_orders; }
     get TopOrder() { return this.#taken_orders.length > 0 ? this.#taken_orders[0] : null; }
     get Path() { return this.#path; }
     get length() { return this.#taken_orders.length; }
@@ -47,32 +48,47 @@ class TakenOrders extends OrderManager {
     constructor(ordersData) {
 
         super(ordersData);
-        this.ResetPath();
+        this.Reset();
         this.showImportantOrder();
     }
 
     doChangeOrder(order, part_order) {
         super.doChangeOrder(order, part_order);
 
-        if (order.driver_id == user.asDriver)
-            this.ResetPath();
+        if ((order.driver_id == user.asDriver) && (order.state != 'wait_meeting'))
+            this.Reset();
+    }
+
+    Reset() {
+        this.#resetTakenOrders();
+        this.ResetPath();
+        if ((this.#taken_orders.length > 0) && (this.#taken_orders[0].state == 'accepted'))
+            this.#taken_orders[0].SetState('driver_move');
+    }
+
+    #resetTakenOrders() {
+
+        this.#taken_orders = [];
+        this.Items.forEach(((o)=>{
+            if (TRACESTATES.includes(o.state) && (o.driver_id == user.asDriver)) {
+                if (o.state = 'accepted') {
+                    if (o.isPickUpNow)
+                        this.#taken_orders.push(o);
+                }
+                else this.#taken_orders.push(o);
+            }
+        }).bind(this));
+
+        this.#taken_orders.sort((order1, order2)=>{
+            return TRACESTATES.indexOf(order1.state) - TRACESTATES.indexOf(order2.state);
+        });
     }
 
     ResetPath(mainPoint) {
 
-        this.#taken_orders = [];
-        this.Items.forEach(((o)=>{
-            if (ACTIVESTATES.includes(o.state) && (o.driver_id == user.asDriver))
-                this.#taken_orders.push(o);
-        }).bind(this));
-
-        this.#taken_orders.sort((order1, order2)=>{
-            return ACTIVESTATES.indexOf(order2.state) - ACTIVESTATES.indexOf(order1.state);
-        });
-        
-        this.#graph = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
-
         if (this.#taken_orders.length > 0) {
+        
+            this.#graph = new GraphGenerator(mainPoint ? mainPoint : v_map.getMainPosition());
             this.#graph.AddOrders(this.#taken_orders);
 
             this.#path = this.#graph.getPath();
@@ -191,29 +207,16 @@ class MarkerOrderManager extends MarkerManager {
         this.#updateMarkerState(order);
         if (['cancel', 'finished', 'rejected'].includes(order.state))
             this.CancelOrder(order.id);
-        else if (order.state == "accepted")
-            this.AcceptedOffer(order.id);
+        else this.#chageStateMarker(order.id);
     }
 
 
     #updateMarkerState(order) {
-        let idx = this.IndexOfByOrder(order.id);
-        if (idx > -1) {
-            let m = this.markers.users[idx];
-            $(m.content).setStateClass(order.state);
-        }
+        $(this.MarkerByOrderId(order.id).content).setStateClass(order.state);
     }
 
-    AcceptedOffer(order_id) {
-        let idx = this.IndexOfByOrder(order_id);
-        if (idx > -1) {
-            let m = this.markers.users[idx];
-
-            this.Shake(m);
-            $(m.content)
-                .removeClass('user-marker')
-                .addClass('user-current');
-        }
+    #chageStateMarker(order_id) {
+        this.Shake(this.MarkerByOrderId(order_id));
     } 
 
     CancelOrder(order_id) {
@@ -285,14 +288,12 @@ class MarkerOrderManager extends MarkerManager {
 
     #createFromOrder(latLng, order, anim) {
 
-        let extConten = DeltaTime(order.pickUpTime) <= NOWDELTASEC ? null : 
+        let extConten = order.isPickUpNow ? null : 
                             $('<span>' + DepartureTime(order.pickUpTime) + '</span>');
 
         let m = this.CreateUserMarker(latLng, 'order/user: ' + (order.id + '/' + order.user_id), (()=>{
             orderManager.ShowInfoOrder(m);
-        }).bind(this), 
-                (order.driver_id == user.asDriver ? 'user-current' : 'user-marker') + 
-                (anim ? ' anim' : '') + ' ' + order.state, extConten);
+        }).bind(this), 'user-marker' + (anim ? ' anim' : '') + ' ' + order.state, extConten);
         m.order = order;
     }
 }

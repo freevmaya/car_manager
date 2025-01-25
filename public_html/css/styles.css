@@ -1397,11 +1397,6 @@ form .field .container {
     display: block;
 }
 
-.orderView.execution,
-.orderView.driver_move {
-    height: 2.8em;
-}
-
 .orderView.expand.execution,
 .orderView.expand.driver_move {
     height: fit-content;

@@ -8,7 +8,8 @@ var HMFormat  = "HH:mm";
 var STATELIST = ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'finished', 'expired', 'rejected', 'cancel'];
 
 var STATES = 'wait accepted driver_move wait_meeting execution finished expired rejected cancel';
-var ACTIVESTATES = ['accepted', 'driver_move', 'wait_meeting', 'execution'];
+var ACTIVESTATES = ['execution', 'wait_meeting', 'driver_move', 'accepted'];
+var TRACESTATES = ['execution', 'wait_meeting', 'driver_move', 'accepted'];
 var INACTIVESTATES = ['finished', 'expired', 'rejected', 'cancel'];
 
 

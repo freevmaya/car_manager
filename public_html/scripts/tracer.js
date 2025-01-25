@@ -27,11 +27,14 @@ class Tracer extends EventProvider {
     #totalLength;
     #time;
     #callback;
-    #intervalId;
+    #intervalId = false;
     #periodTime;
     #curStep;
     #nextStep;
     #curLegIdx;
+
+    get Enabled() { return this.#intervalId != false; }
+    set Enabled(value) { this.#setUpdateEnabled(value); }
 
     get AvgSpeed() { return this.#avgSpeed; };
     get RouteDistance() { return this.#routeDistance; };
@@ -52,11 +55,22 @@ class Tracer extends EventProvider {
 
         super();
 
+        this.#periodTime = periodTime;
         this.#time = Date.now();
         this.#callback = callback;
-        this.#intervalId = setInterval(this.update.bind(this), this.#periodTime = periodTime);
 
         this.SetRoutes(routes, options);
+    }
+
+    #setUpdateEnabled(value) {
+        if (this.Enabled != value) {
+            if (value) 
+                this.#intervalId = setInterval(this.update.bind(this), this.#periodTime);
+            else {
+                clearInterval(this.#intervalId);
+                this.#intervalId = false;
+            }
+        }
     }
 
     SetRoutes(routes, options) {
@@ -80,6 +94,8 @@ class Tracer extends EventProvider {
 
         if (!isEmpty(this.Options.speed))
             this.SetSpeed(this.Options.speed);
+
+        this.Enabled = true;
     }
 
     #reset() {
@@ -112,7 +128,7 @@ class Tracer extends EventProvider {
     }
 
     destroy() {
-        clearInterval(this.#intervalId);
+        this.Enabled = false;
         super.destroy();
     }
 
@@ -124,10 +140,6 @@ class Tracer extends EventProvider {
                 this.#callback(this.#routePos, this.#avgSpeed > 0 ? this.#routeAngle : (this.#routeAngle + 180) % 360);
         } else this.#callback(this.#routePos);
         this.#lastPos = this.#routePos;
-    }
-
-    Pause() {
-        this.SetSpeed(0);
     }
 
     SetSpeed(v) {

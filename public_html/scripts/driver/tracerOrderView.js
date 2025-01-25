@@ -15,6 +15,7 @@ class TracerOrderView extends PathView {
     #isDrive;
     #lastSpeed;
     #waitDialog;
+    #processOrders;
 
     get Tracer() { return this.#tracer; }
     get isDrive() { return this.#isDrive; };
@@ -29,6 +30,7 @@ class TracerOrderView extends PathView {
 
         this.#speedInfo.moveTo(this.windows);
         this.#stepInfo.moveTo(this.windows);
+        this.#processOrders = {};
 
         this.contentElement.css('display', 'none');
 
@@ -47,7 +49,7 @@ class TracerOrderView extends PathView {
             }, (()=>{
                 v_map.AddListener('MAINMARKERCLICK', ((e)=>{
                     if (this.Tracer)
-                        this.Tracer.Pause();
+                        this.Tracer.Enabled = false;
                 }).bind(this));
             }).bind(this));
 
@@ -87,10 +89,8 @@ class TracerOrderView extends PathView {
                         let p = this.#points[i];
                         let leg = result.routes[0].legs[i];
                         if (p.start) {
-                            console.log('Point: ' + i + ', start order: ' + p.start.id);
                             leg.start = p.start;
                         } else if (p.finish) {
-                            console.log('Point: ' + i + ', finish order: ' + p.finish.id);
                             leg.finish = p.finish;
                         }
                     }
@@ -118,8 +118,8 @@ class TracerOrderView extends PathView {
 
     onChangeOrder(e) {
         let order = e.value;
-        if (order.state == 'wait_meeting')
-            this.#waitDialog = app.showQuestion("Waiting for a passenger", {
+        if (order.state == 'wait_meeting') {
+            this.#waitDialog = app.showQuestion("Waiting for a passenger '" + getUserName(order) + "'", {
                 'Complete': ()=>{
                    order.SetState('execution'); 
                 },
@@ -127,10 +127,26 @@ class TracerOrderView extends PathView {
                    order.SetState('reject'); 
                 }
             });
-        else if (this.#waitDialog) {
-            this.#waitDialog.Close();
-            this.#waitDialog = null;
+            this.addProcessOrder(order);
+        } else {
+            if (this.#waitDialog) {
+                this.#waitDialog.Close();
+                this.#waitDialog = null;
+            }
+
+            if (INACTIVESTATES.includes(order.state)) 
+                this.removeProcessOrder(order);
         }
+    }
+
+    removeProcessOrder(order) {
+        delete this.#processOrders[order.id];
+        console.log(this.#processOrders);
+    }
+
+    addProcessOrder(order) {
+        this.#processOrders[order.id] = order;
+        console.log(this.#processOrders);
     }
 
     onTraceBarClick(e) {
@@ -187,26 +203,6 @@ class TracerOrderView extends PathView {
         this.view.addClass("taken-order");
     }
 
-    /*
-    resetForState() {
-        let state = this.Order.state;
-        this.view.removeClass(STATES);
-        this.view.addClass(state);
-        this.setStateText(state);
-
-        this.view
-            .removeClass(STATES)
-            .addClass(state);
-
-        if (state == 'driver_move')
-            this.reDrawPath();
-        else if (state == 'accepted') this.checkNearPassenger();
-
-        ViewManager.resizeMap();
-
-        this.isDrive = (state == 'driver_move') || (state == 'execution');
-    }*/
-
     SetState(state) {
     }
 
@@ -238,9 +234,9 @@ class TracerOrderView extends PathView {
     }
 
     doCheckRoutePoints(leg) {
-        if (leg.start && (leg.start.state == 'accepted')) {
+        if (leg.start && (leg.start.state == 'driver_move')) {
             this.#lastSpeed = this.Tracer.AvgSpeed;
-            this.Tracer.Pause();
+            this.Tracer.Enabled = false;
             leg.start.SetState('wait_meeting');
         }
         else {
@@ -323,6 +319,7 @@ class TracerOrderView extends PathView {
         if (this.Path) {
 
             let order = orderManager.TopOrder;
+
             let options = {
                 startTime: order.StartTime, 
                 beginPoint: toLatLngF(v_map.getMainPosition()),
@@ -332,21 +329,17 @@ class TracerOrderView extends PathView {
             if (!this.Tracer) {
                 this.#tracer = v_map.createTracer(this.Path.routes, options);
 
+                orderManager.TakenOrders.forEach(((o)=> {
+                    if (o.state == 'execution')
+                        this.addProcessOrder(o);
+                }).bind(this))
+
                 //this.Tracer.ReceivePoint(toLatLngF(v_map.getMainPosition()));
 
                 this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
                 this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
                 this.Tracer.AddListener('CHANGELEG', this.onChangeLeg.bind(this));
             } else {
-                switch (order.state) {
-                    case 'execution': 
-                            options.speed = this.#lastSpeed;
-                            break;
-                    case 'wait_meeting': 
-                            options.speed = 0;
-                            break;
-                }
-
                 this.Tracer.SetRoutes(this.Path.routes, options);
             }
 
