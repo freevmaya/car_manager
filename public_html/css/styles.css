@@ -1255,9 +1255,9 @@ form .field .container {
     font-size: 2em;
 }
 
-.stepInfo.expand {
+.stepInfo.expand,
+.selectOrder.expand {
     width: auto !important;
-    right: 1em;
 }
 
 .stepInfo.expand .remaindDistance {
@@ -1363,23 +1363,23 @@ form .field .container {
     left: 1em;
     height: fit-content;
     display: flex;
-    align-items: center;
-    justify-items: center;
-    align-content: space-between;
+    align-items: baseline;
     flex-wrap: wrap;
-    padding: 1em;
+    z-index: 2;
+    top: 4em;
+    flex-direction: column;
+    white-space: 10px;
+    align-content: 10px;
+    grid-gap: 0.5em;
+}
+
+.vidget .block {
     min-width: 15%;
     width: 8em;
-    z-index: 2;
+    padding: 1em;
 }
 
-.speedInfo {
-    top: 4em;
-    display: none;
-}
-
-.stepInfo {
-    top: 8em;
+.speedInfo, .selectOrder, .stepInfo {
     display: none;
 }
 

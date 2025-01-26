@@ -11,13 +11,18 @@
 	<div class="content"></div>
 
 
-
-	<div class="vidget speedInfo radius shadow">
-		<div class="avgSpeed">0</div>
-	</div>
-	<div class="vidget stepInfo radius shadow expandable">
-		<div class="instruction overflow-dot"></div>
-		<div class="remaindDistance"></div>
+	<div class="vidget">
+		<div class="block speedInfo radius shadow">
+			<div class="avgSpeed">0</div>
+		</div>
+		<div class="block stepInfo radius shadow expandable">
+			<div class="instruction overflow-dot"></div>
+			<div class="remaindDistance"></div>
+		</div>
+		<div class="block selectOrder radius shadow expandable">
+			<div class="header overflow-dot"></div>
+			<div class="content"></div>
+		</div>
 	</div>
 	
 	<div class="footer btn-block"></div>

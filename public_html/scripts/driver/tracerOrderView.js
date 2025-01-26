@@ -2,6 +2,7 @@ class TracerOrderView extends PathView {
 
     #speedInfo;
     #stepInfo;
+    #selectOrder;
 
     #updateListenerId;
     #updateTimelineId;
@@ -20,6 +21,8 @@ class TracerOrderView extends PathView {
     get Tracer() { return this.#tracer; }
     get isDrive() { return this.#isDrive; };
     set isDrive(value) { this.setIsDrive(value); };
+    get EnableUpdate() { return this.#updateListenerId; }
+    set EnableUpdate(value) { this.setEnableUpdate(value); }
     
     get Order() { return null; }
 
@@ -27,9 +30,10 @@ class TracerOrderView extends PathView {
 
         this.#speedInfo = this.view.find('.speedInfo');
         this.#stepInfo = this.view.find('.stepInfo');
+        this.#selectOrder = this.view.find('.selectOrder');
 
-        this.#speedInfo.moveTo(this.windows);
-        this.#stepInfo.moveTo(this.windows);
+        this.view.find('.vidget').moveTo(this.windows);
+
         this.#processOrders = {};
 
         this.contentElement.css('display', 'none');
@@ -60,7 +64,10 @@ class TracerOrderView extends PathView {
         }
 
         this.#lastSpeed = jsdata.driver.avgSpeed;
+
+        //Надо както удалять в destroy
         $(window).on('blur', this.onBlur.bind(this));
+        $(window).on('focus', this.onFocus.bind(this));
     }
 
     onChangePath(e) {
@@ -68,7 +75,11 @@ class TracerOrderView extends PathView {
     }
 
     onBlur(e) {
-        console.log(e);
+        this.EnableUpdate = false;
+    }
+
+    onFocus(e) {
+        this.EnableUpdate = this.isDrive;
     }
 
     refreshPath() {
@@ -179,15 +190,19 @@ class TracerOrderView extends PathView {
             this.pathRequest({
                 origin: VMap.preparePlace(order.start),
                 destination: VMap.preparePlace(order.finish),
-            }, this.showSelectOrderPath.bind(this, order_id));
+            }, this.showSelectOrderPath.bind(this, order));
         }
     }
 
-    showSelectOrderPath(order_id, value) {
+    showSelectOrderPath(order, value) {
         this.closeSelectOrderPath();
         this.#selectOrderPath = value;
-        this.#selectOrderPath.orderId = order_id;
+        this.#selectOrderPath.orderId = order.id;
         this.#selectOrderPathRender = v_map.DrawPath(this.#selectOrderPath, driverOrderPathOptions);
+
+        this.#selectOrder.find('.header').text($.format.date(Date.parse(order.pickUpTime), dateTinyFormat) + " " + getUserName(order));
+        this.#selectOrder.find('.content').text(order.meters);
+        this.#selectOrder.show();
     }
 
     closeSelectOrderPath() {
@@ -195,6 +210,7 @@ class TracerOrderView extends PathView {
             this.#selectOrderPathRender.setMap(null);
             this.#selectOrderPathRender = null;
             this.#selectOrderPath = null;
+            this.#selectOrder.hide();
         }
     }
 
@@ -211,6 +227,20 @@ class TracerOrderView extends PathView {
     SetState(state) {
     }
 
+    setEnableUpdate(value) {
+        if (this.EnableUpdate != value) {
+            if (value)
+                this.#updateListenerId = v_map.AddListener('UPDATE', this.onUpdateMap.bind(this));
+            else if (this.#updateListenerId) {
+                v_map.RemoveListener('UPDATE', this.#updateListenerId);
+                this.#updateListenerId = 0;
+            }
+
+            if (this.Tracer)
+                this.Tracer.Enabled = value;
+        }
+    }
+
     setIsDrive(value) {
 
         if (this.#isDrive != value) {
@@ -220,15 +250,12 @@ class TracerOrderView extends PathView {
                 .toggleClass('driver-position', value);
 
             v_map.CameraFollowPath = value;
+            this.EnableUpdate = value;
 
-            if (value) {
-                this.#updateListenerId = v_map.AddListener('UPDATE', this.onUpdateMap.bind(this));
+            if (value)
                 this.#updateTimelineId = transport.AddListener('RECEIVE_SERVERTIME', this.doUpdateTimeLine.bind(this));
-            }
             else {
-                v_map.RemoveListener('UPDATE', this.#updateListenerId);
                 transport.RemoveListener('RECEIVE_SERVERTIME', this.#updateTimelineId);
-
                 this.#stepInfo.hide();
             }
         }
@@ -339,6 +366,8 @@ class TracerOrderView extends PathView {
                         this.addProcessOrder(o);
                 }).bind(this))
 
+                if (!this.EnableUpdate) this.Tracer.Enabled = false;
+
                 //this.Tracer.ReceivePoint(toLatLngF(v_map.getMainPosition()));
 
                 this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
@@ -376,6 +405,7 @@ class TracerOrderView extends PathView {
     }
 
     destroy() {
+        this.EnableUpdate = false;
         this.isDrive = false;
         this.closeSelectOrderPath();
         super.destroy();
