@@ -68,9 +68,6 @@ var defaultPathOptions = {
     }
 }
 
-if (typeof(DEV) == 'undefined')
-    const DEV = false;
-
 const MAXDISTANCEEQUALS = 2;
 const MAXDISTANCEFORMEETING = 20;
 const MAXPERIODWAITMEETING = 5 * 60;

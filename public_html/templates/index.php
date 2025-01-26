@@ -20,7 +20,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <title><?=$this->title?></title>
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/styles.css<?=$anti_cache?>">
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/colors-<?=$this->colorSheme('01')?>.css<?=$anti_cache?>">
-    <script type="text/javascript">var DEV = <?=DEV?>;</script>
+    <script type="text/javascript">var DEV = <?=DEV ? 'true' : 'false'?>;</script>
     <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>   
     <script src="<?=SCRIPTURL?>/consts.js<?=$anti_cache?>"></script>    
     <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>
