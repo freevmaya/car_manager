@@ -21,7 +21,7 @@
 		</div>
 		<div class="block selectOrder radius shadow expandable">
 			<div class="header overflow-dot"></div>
-			<div class="content"></div>
+			<div class="text overflow-dot"></div>
 		</div>
 	</div>
 	

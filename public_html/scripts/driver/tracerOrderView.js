@@ -200,8 +200,8 @@ class TracerOrderView extends PathView {
         this.#selectOrderPath.orderId = order.id;
         this.#selectOrderPathRender = v_map.DrawPath(this.#selectOrderPath, driverOrderPathOptions);
 
-        this.#selectOrder.find('.header').text($.format.date(Date.parse(order.pickUpTime), dateTinyFormat) + " " + getUserName(order));
-        this.#selectOrder.find('.content').text(order.meters);
+        this.#selectOrder.find('.header').text($.format.date(Date.parse(order.pickUpTime), dateTinyFormat) + ", " + getUserName(order));
+        this.#selectOrder.find('.text').text(toLang(order.state) + ", " + DistanceToStr(order.meters));
         this.#selectOrder.show();
     }
 
