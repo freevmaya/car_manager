@@ -60,10 +60,15 @@ class TracerOrderView extends PathView {
         }
 
         this.#lastSpeed = jsdata.driver.avgSpeed;
+        $(window).on('blur', this.onBlur.bind(this));
     }
 
     onChangePath(e) {
         VMap.AfterInit(this.RequireRefresh.bind(this));
+    }
+
+    onBlur(e) {
+        console.log(e);
     }
 
     refreshPath() {
@@ -316,9 +321,9 @@ class TracerOrderView extends PathView {
     }
 
     traceOrderPath() {
-        if (this.Path) {
 
-            let order = orderManager.TopOrder;
+        let order = orderManager.TopOrder;
+        if (this.Path && order) {
 
             let options = {
                 startTime: order.StartTime, 

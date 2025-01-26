@@ -40,13 +40,13 @@ class Order extends EventProvider {
     }
 
     #checkPassengerDistance() {
+        this.#waitTimerId = 0;
         let time = this.beganWaitTime;
         if (time) {
             let deltaSec = (transport.serverTime - (isStr(time) ? Date.parse(time) : time)) / 1000;
             if (deltaSec > MAXPERIODWAITMEETING)
                 this.SetState('expired');
             else {
-f
                 transport.addExtRequest({
                     action: 'GetPosition',
                     data: this.user_id
@@ -62,8 +62,7 @@ f
     }
 
     _afterChange(part_order) {
-        for (let i in part_order)
-            this[i] = part_order[i];
+        $.extend(this, part_order);
         this.SendEvent('CHANGE', this);
         this.#processFromState();
     }
@@ -137,7 +136,7 @@ class OrderManager extends EventProvider {
 
     doChangeOrder(order, part_order) {
         order._afterChange(part_order);
-        this.SendEvent('CHANGE_ORDER', this);
+        this.SendEvent('CHANGE_ORDER', order);
     }
 
     has(order_id) {

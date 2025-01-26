@@ -12,6 +12,7 @@
 		html::AddScriptFile("order.js");
 		html::AddScriptFile("graph.js");
 		html::AddScriptFile("driver/orderView.js");
+		html::AddScriptFile("driver/taken-orders.js");
 		html::AddScriptFile("driver/tracerOrderView.js");
 		html::AddScriptFile("driver/driver-on-line.js");
 

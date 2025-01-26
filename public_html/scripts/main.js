@@ -131,7 +131,7 @@ class App {
     }
 }
 
-async function Ajax(params, after = null) {
+async function Ajax(params, after = null, userData = null) {
 
     var formData;
     if (getClassName(params) == 'FormData') 
@@ -167,8 +167,7 @@ async function Ajax(params, after = null) {
     } catch (error) {
         console.error(error.message);
     }
-
-    if (after != null) after(result, serverTime);
+    if (after != null) after(result, serverTime, userData);
     return result;
 }
 
@@ -187,7 +186,7 @@ class AjaxTransport extends EventProvider {
 
         this.periodTime = periodTime;
         this.requireDrivers = false;
-        this.extRequest = null;
+        this.extRequest = [];
         this.statusesToReturn = [];
 
         if (!isEmpty(jsdata) && !isEmpty(jsdata.notificationList))
@@ -212,9 +211,6 @@ class AjaxTransport extends EventProvider {
     }
 
     addExtRequest(data, callback=null) {
-        if (!this.extRequest)
-            this.extRequest = [];
-
         let request = callback ? $.extend(data, {callback: callback}) : data;
         let idx = this.extRequestIndexOf(data.action);
         if (idx > -1) this.extRequest[idx] = request;
@@ -227,8 +223,10 @@ class AjaxTransport extends EventProvider {
         
             let data = {};
 
-            if (this.extRequest)
-                data.extend = this.extRequest;
+            if (this.extRequest) {
+                data.extend = $.extend({}, this.extRequest);
+                this.extRequest = [];
+            }
 
             let params = {action: "checkState"};
 
@@ -250,7 +248,7 @@ class AjaxTransport extends EventProvider {
             } else this.enableGeo(false);
 
             params.data = JSON.stringify(data);
-            Ajax(params, this.onRecive.bind(this));
+            Ajax(params, this.onRecive.bind(this), data.extend);
         } else this.initTimer();
     }
 
@@ -277,15 +275,12 @@ class AjaxTransport extends EventProvider {
         }
     }
 
-    onRecive(value, responseTime) {
+    onRecive(value, responseTime, extList) {
         this.serverTime = responseTime;
         this.SendEvent('RECEIVE_SERVERTIME', this.serverTime);
 
         for (let n in value)
             this.SendEvent(n, value[n]);
-
-        let extList = this.extRequest;
-        this.extRequest = null;
 
         if (extList && value.extendResult) {
             for (let i=0; i<value.extendResult.length; i++)

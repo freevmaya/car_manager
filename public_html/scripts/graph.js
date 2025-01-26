@@ -1,7 +1,11 @@
+const IN_PROCESS = 1;
+const OUT_PROCESS = 0;
+
 class GraphGenerator {
 	graph;
 	points;
 	directions;
+	#sheme = 0;
 
 	constructor(startPoint) {
 		this.points = [startPoint];
@@ -19,6 +23,8 @@ class GraphGenerator {
 
 	AddOrders(orders) {
 
+		let topIdx = (orders[0].state == 'execution') ? 1 : 0;
+
 		function linkInGraph(a, b) {
 			if ((a < this.points.length) && (b < this.points.length))
 				this.graph[a] = this.addVar(b, Distance(this.points[a], this.points[b]), this.graph[a]);
@@ -26,10 +32,10 @@ class GraphGenerator {
 
 		if (orders.length > 0) {
 			for (let i=0; i<orders.length; i++)
-				this.#addOrder(orders[i]);
+				this.#addOrder(orders[i], topIdx);
 
-			for (let i=1; i<this.points.length; i+=2)
-				for (let n=1; n<this.points.length; n+=2)
+			for (let i=topIdx + 1; i<this.points.length; i+=2)
+				for (let n=topIdx + 1; n<this.points.length; n+=2)
 					if (n != i) {
 
 						linkInGraph.bind(this)(i, n);
@@ -44,18 +50,20 @@ class GraphGenerator {
 		}
 	}
 
-	#addOrder(order) {
+	#addOrder(order, topIdx = 0) {
 
-		if ((order.state == 'execution') && (this.points.length == 1)) {
+		let topIdxStr = topIdx.toString();
+
+		if ((topIdx == 1) && (this.points.length == 1)) {
 
 			//this.points[0] = toLatLng(order.start);
 			this.points[0].start = order;
 			this.points.push($.extend(toLatLng(order.finish), {finish: order}));
 
-			this.graph['0']['1'] = Distance(this.points[0], this.points[1]);
-			this.graph['1'] = {};
+			this.graph['0'][topIdxStr] = Distance(this.points[0], this.points[1]);
+			this.graph[topIdxStr] = {};
 
-			this.directions.push({start:0, finish:1});
+			this.directions.push({start:0, finish:topIdx});
 
 		} else {
 
@@ -65,7 +73,7 @@ class GraphGenerator {
 			this.points.push($.extend(toLatLng(order.start), {start: order}));
 			this.points.push($.extend(toLatLng(order.finish), {finish: order}));
 
-			this.graph['0'][idx1] = Distance(this.points[0], this.points[idx1]);
+			this.graph[topIdxStr][idx1] = Distance(this.points[topIdx], this.points[idx1]);
 			this.graph[idx1] = this.addVar(idx2, parseInt(order.meters));
 			this.graph[idx2] = {};
 
