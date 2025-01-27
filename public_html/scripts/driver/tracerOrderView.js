@@ -26,6 +26,101 @@ class TracerOrderView extends PathView {
     
     get Order() { return null; }
 
+
+
+    #onCreatedOrder(order) {
+        this.RequireRefresh();
+    }
+
+    #onRemovedOrder(order) {
+        this.RequireRefresh();
+    }
+
+    #onChangeOrder(e) {
+        let order = e.value;
+        if (order.state == 'wait_meeting') {
+            this.#waitDialog = app.showQuestion("Waiting for a passenger '" + getUserName(order) + "'", {
+                'Complete': ()=>{
+                   order.SetState('execution'); 
+                },
+                'Reject': ()=>{
+                   order.SetState('reject'); 
+                }
+            });
+            this.addProcessOrder(order);
+        } else {
+            if (this.#waitDialog) {
+                this.#waitDialog.Close();
+                this.#waitDialog = null;
+            }
+
+            if (INACTIVESTATES.includes(order.state)) 
+                this.removeProcessOrder(order);
+        }
+    }
+
+    #onChangePath(e) {
+        VMap.AfterInit(this.RequireRefresh.bind(this));
+    }
+
+    #refreshPath() {
+
+        this.#points = orderManager.Path;
+        if (this.#points && (this.#points.length > 1)) {
+
+            let waypoints = [];
+
+            for (let i = 1; i<this.#points.length - 1; i++)
+                waypoints.push({location: this.#points[i], stopover: true});
+
+            let request = {
+                origin: this.#points[0],
+                waypoints: waypoints,
+                destination: this.#points[this.#points.length - 1],
+                travelMode: travelMode
+            };
+
+            v_map.DirectionsService.route(request, ((result, status) => {
+                if (status == 'OK') 
+                    this.setPath(result);
+                else console.log(request);
+            }).bind(this));
+        } else {
+            this.closePathOrder();
+            this.isDrive = false;
+        }
+    }
+
+    #refreshTLMarkers() {
+        let layer = this.headerElement.find('.markers');
+        layer.empty();
+
+        let wwidth = $(window).width();
+        let spercent = (wwidth - layer.width()) / layer.width() * 100; 
+
+        let tracer = this.Tracer;
+
+        function appendMarker(step, styleClass) {
+            let marker = $('<div class="marker ' + styleClass + '"></div>');
+            marker.css('margin-left', (step.startDistance / tracer.TotalLength * (100 - spercent)) + '%');
+            layer.append(marker);
+        }
+
+        if (this.Tracer) {
+            let leg = null;
+            this.Tracer.forEachSteps(((routes, r, l, s)=>{
+                if (leg != routes[r].legs[l]) {
+                    leg = routes[r].legs[l];
+
+                    if (leg.start)
+                        appendMarker(routes[r].legs[l].steps[s], 'start');
+                    else if (leg.finish)
+                        appendMarker(routes[r].legs[l].steps[s], 'finish');
+                }
+            }).bind(this));
+        }
+    }
+
     afterConstructor() {
 
         this.#speedInfo = this.view.find('.speedInfo');
@@ -38,14 +133,14 @@ class TracerOrderView extends PathView {
 
         this.contentElement.css('display', 'none');
 
-        orderManager.AddListener('CREATED_ORDER', this.onCreatedOrder.bind(this));
-        orderManager.AddListener('REMOVED_ORDER', this.onRemovedOrder.bind(this));
-        orderManager.AddListener('CHANGE_ORDER', this.onChangeOrder.bind(this))
-        orderManager.AddListener('CHANGE_PATH', this.onChangePath.bind(this))
+        orderManager.AddListener('CREATED_ORDER', this.#onCreatedOrder.bind(this));
+        orderManager.AddListener('REMOVED_ORDER', this.#onRemovedOrder.bind(this));
+        orderManager.AddListener('CHANGE_ORDER', this.#onChangeOrder.bind(this))
+        orderManager.AddListener('CHANGE_PATH', this.#onChangePath.bind(this))
 
         super.afterConstructor();
 
-        VMap.AfterInit(this.refreshPath.bind(this));
+        VMap.AfterInit(this.#refreshPath.bind(this));
 
         if (DEV) {
             afterCondition(()=>{
@@ -70,10 +165,6 @@ class TracerOrderView extends PathView {
         $(window).on('focus', this.onFocus.bind(this));
     }
 
-    onChangePath(e) {
-        VMap.AfterInit(this.RequireRefresh.bind(this));
-    }
-
     onBlur(e) {
         this.EnableUpdate = false;
     }
@@ -82,77 +173,21 @@ class TracerOrderView extends PathView {
         this.EnableUpdate = this.isDrive;
     }
 
-    refreshPath() {
-
-        this.#points = orderManager.Path;
-        if (this.#points && (this.#points.length > 1)) {
-
-            let waypoints = [];
-
-            for (let i = 1; i<this.#points.length - 1; i++)
-                waypoints.push({location: this.#points[i], stopover: true});
-
-            let request = {
-                origin: this.#points[0],
-                waypoints: waypoints,
-                destination: this.#points[this.#points.length - 1],
-                travelMode: travelMode
-            };
-
-            v_map.DirectionsService.route(request, ((result, status) => {
-                if (status == 'OK') {
-                    for (let i=0; i<result.routes[0].legs.length; i++) {
-                        let p = this.#points[i];
-                        let leg = result.routes[0].legs[i];
-                        if (p.start) {
-                            leg.start = p.start;
-                        } else if (p.finish) {
-                            leg.finish = p.finish;
-                        }
-                    }
-                    this.setPath(result);
-                } else console.log(request);
-            }).bind(this));
-        } else {
-            this.closePathOrder();
-            this.isDrive = false;
+    setPath(path) {
+        for (let i=0; i<path.routes[0].legs.length; i++) {
+            let p = this.#points[i];
+            let leg = path.routes[0].legs[i];
+            if (p.start)
+                leg.start = p.start;
+            else if (p.finish)
+                leg.finish = p.finish;
         }
+        super.setPath(path);
     }
 
     _refresh() {
         super._refresh();
-        this.refreshPath();
-    }
-
-    onCreatedOrder(order) {
-        this.RequireRefresh();
-    }
-
-    onRemovedOrder(order) {
-        this.RequireRefresh();
-    }
-
-    onChangeOrder(e) {
-        let order = e.value;
-        if (order.state == 'wait_meeting') {
-            this.#waitDialog = app.showQuestion("Waiting for a passenger '" + getUserName(order) + "'", {
-                'Complete': ()=>{
-                   order.SetState('execution'); 
-                },
-                'Reject': ()=>{
-                   order.SetState('reject'); 
-                }
-            });
-            this.addProcessOrder(order);
-        } else {
-            if (this.#waitDialog) {
-                this.#waitDialog.Close();
-                this.#waitDialog = null;
-            }
-
-            if (INACTIVESTATES.includes(order.state)) 
-                this.removeProcessOrder(order);
-        }
+        this.#refreshPath();
     }
 
     removeProcessOrder(order) {
@@ -377,6 +412,7 @@ class TracerOrderView extends PathView {
                 this.Tracer.SetRoutes(this.Path.routes, options);
             }
 
+            this.#refreshTLMarkers();
             this.doUpdateTimeLine();
 
             this.isDrive = true;

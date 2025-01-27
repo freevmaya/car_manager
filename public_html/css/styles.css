@@ -1308,7 +1308,6 @@ form .field .container {
 .orderView .header > div {
     display: flex;
     flex-direction: column;
-
 }
 
 .orderView .header > div > div {
@@ -1392,9 +1391,7 @@ form .field .container {
 }
 
 .orderView.collaps .tracerInfo{
-    flex-grow: 1;
-    margin: 0.5em;
-    display: block;
+    margin: 5px !important;
 }
 
 .orderView.expand.execution,
@@ -1534,15 +1531,34 @@ form .field .container {
 }
 
 .tracerBar {
-    height: 5px;
+    height: 8px;
     background: #979797;
     overflow: hidden;
 }
 
 .tracerBar > div {
-    height: 4px;
+    height: 8px;
     background: ghostwhite;
     width: 30%;
+}
+
+.markers {
+    height: 0px;
+}
+
+.markers > div {
+    height: 15px;
+    width: 12px;
+    cursor: pointer;
+    margin-top: -2px;
+}
+
+.markers .start {
+    border-radius: 0 20px 20px 0;
+}
+
+.markers .finish {
+    border-radius: 20px 0 0 20px;
 }
 
 .timeLine {
@@ -1550,7 +1566,7 @@ form .field .container {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    margin-bottom: 2px;
+    margin-top: 5px;
 }
 
 /*-----------------Загрузка----------------*/

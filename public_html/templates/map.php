@@ -35,6 +35,7 @@
 		html::AddTemplateFile('driver/offerView.php', 'offerView');
 		html::AddTemplateFile('driver/orderView.php', 'orderView');
 		html::AddTemplateFile('driver/takenOrderView.php', 'takenOrderView');
+		html::AddTemplateFile('driver/timelineMarker.php', 'timelineMarker');
 
 	} else {
 //------------------------------PASSENGER---------------------------------------------

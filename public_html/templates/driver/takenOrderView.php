@@ -1,13 +1,18 @@
 <div class="view radius orderView">
 	<div class="header">
 		<div class="tracerInfo">
+			<div class="markers">
+			</div>
+			<div class="tracerBar">
+				<div>
+				</div>
+			</div>
 			<div class="timeLine">
 				<div class="startTime">12:02</div>
 				<div class="finishTime">24:05</div>
 			</div>
-			<div class="tracerBar"><div></div></div>
 		</div>
-		<button class="close button-flat"></button></div>
+	</div>
 	<div class="content"></div>
 
 

@@ -413,3 +413,8 @@ form > .footer{
     color: #cccccc;
     background: #00000099;
 }
+
+.markers > div {
+    background-color: white;
+    box-shadow: 0px 1px 3px black;
+}

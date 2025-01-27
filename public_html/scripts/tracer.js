@@ -84,6 +84,7 @@ class Tracer extends EventProvider {
 
         let accumDist = 0;
         this.forEachSteps((routes, r, l, s)=>{
+            routes[r].legs[l].steps[s].startDistance = accumDist;
             accumDist += routes[r].legs[l].steps[s].distance.value;
             routes[r].legs[l].steps[s].finishDistance = accumDist;
         })
