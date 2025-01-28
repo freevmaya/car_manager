@@ -414,7 +414,19 @@ form > .footer{
     background: #00000099;
 }
 
-.markers > div {
-    background-color: white;
-    box-shadow: 0px 1px 3px black;
+.markers .marker.finish {
+    background: white;
+}
+
+.markers .marker.start > div {
+    border-top: solid 5px white;
+    border-right: solid 5px white;
+}
+
+.tracerBar {
+    background: #919191;
+}
+
+.tracerBar > div {
+    background: #696969;
 }

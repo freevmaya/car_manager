@@ -49,7 +49,10 @@ class Tracer extends EventProvider {
     get NextStep() { return this.#nextStep; }
     get RoutePosition() { return this.#routePos; }
 
-    GetFinishTime(currentTime) { return this.StartTime + (currentTime - this.StartTime) * this.TotalLength / this.RouteDistance; };
+    GetFinishTime(currentTime) {
+        //return currentTime + (this.TotalLength - this.RouteDistance) / this.#avgSpeed;
+        return this.StartTime + (currentTime - this.StartTime) * this.TotalLength / this.RouteDistance; 
+    };
 
     constructor(routes, callback, periodTime, options=null) {
 

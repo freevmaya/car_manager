@@ -101,8 +101,10 @@ class TracerOrderView extends PathView {
         let tracer = this.Tracer;
 
         function appendMarker(step, styleClass) {
-            let marker = $('<div class="marker ' + styleClass + '"></div>');
-            marker.css('margin-left', (step.startDistance / tracer.TotalLength * (100 - spercent)) + '%');
+            let marker = templateClone('timelineMarker');// $('<div class="marker ' + styleClass + '"></div>');
+            marker
+                .addClass(styleClass)
+                .css('margin-left', (step.startDistance / tracer.TotalLength * (100 - spercent)) + '%');
             layer.append(marker);
         }
 
