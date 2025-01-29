@@ -1,8 +1,8 @@
 <?
-GLOBAL $devUser, $user, $lang;
+GLOBAL $devUser, $user, $lang, $anti_cache;
 include_once(MODULESPATH.'/views.php');
 
-$anti_cache = '?_=30';
+$anti_cache = '?=30';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
 html::AddJsData(json_encode(
@@ -27,7 +27,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <?
     if (DEV) echo "<script src=\"".SCRIPTURL."/dev.js{$anti_cache}\"></script>\n";
     ?>
-    <?=html::RenderJSFiles();?>
+    <?=html::RenderJSFiles($anti_cache);?>
     <?=html::RenderStyleFiles();?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>
     <script type="text/javascript">
