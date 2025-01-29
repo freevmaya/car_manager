@@ -4,6 +4,8 @@ class DMap extends VMap {
 
     constructor(elem, callback) {
         super(elem, callback, {markerManagerClass: MarkerOrderManager});
+
+        app.AddListener('GEOPOS', this.onGeoPos.bind(this));
     }
 
     createTracer(routes, options) {
@@ -28,6 +30,10 @@ class DMap extends VMap {
         if (this.tracer)
             this.tracer.ReceivePoint(latLng);
         else super.setMainPosition(latLng, angle);
+    }
+
+    onGeoPos(latLng) {
+        this.setMainPosition(latLng);
     }
 }
 

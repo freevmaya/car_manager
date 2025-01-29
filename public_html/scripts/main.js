@@ -47,14 +47,17 @@ class EventProvider {
     }
 }
 
-class App {
+class App extends EventProvider {
 
+    #geoId;
+    #geoPos;
     #listeners;
     #question;
 
     get Question() { return this.#question; }
 
     constructor() {
+        super();
         this.#listeners = {};
     }
 
@@ -129,6 +132,20 @@ class App {
         }
         return false;
     }
+
+    receiveGeo(position) {
+        this.#geoPos = toLatLngF(position);
+        this.SendEvent('GEOPOS', this.#geoPos);
+    }
+
+    enableGeo(enable) {
+        if (enable && !this.#geoId) {
+            this.#geoId = watchPosition(this.receiveGeo.bind(this));
+        } else if (!enable && (this.#geoId > 0)) {
+            clearWatchPosition(this.#geoId);
+            this.#geoId = false;
+        }
+    }
 }
 
 async function Ajax(params, after = null, userData = null) {
@@ -173,8 +190,6 @@ async function Ajax(params, after = null, userData = null) {
 
 class AjaxTransport extends EventProvider {
 
-    #geoId;
-    #getPosition;
     requireDrivers;
     extRequest;
     statusesToReturn;
@@ -237,7 +252,7 @@ class AjaxTransport extends EventProvider {
 
             if (user.sendCoordinates || this.requireDrivers) {
                 if (typeof(v_map) != 'undefined') {
-                    this.enableGeo(true);
+                    app.enableGeo(true);
                     data = $.extend(data, v_map.getMainPosition());
                 } else data = $.extend(data, toLatLng(user));
 
@@ -245,7 +260,7 @@ class AjaxTransport extends EventProvider {
                 if (this.requireDrivers)
                     data.requireDrivers = true;
 
-            } else this.enableGeo(false);
+            } else app.enableGeo(false);
 
             params.data = JSON.stringify(data);
             Ajax(params, this.onRecive.bind(this), data.extend);
@@ -254,19 +269,6 @@ class AjaxTransport extends EventProvider {
 
     requireRequest() {
         return (this.listeners.length > 0) || user.sendCoordinates || this.requireDrivers;
-    }
-
-    receiveGeo(position) {
-        this.#getPosition = position;
-    }
-
-    enableGeo(enable) {
-        if (enable && !this.#geoId) {
-            this.#geoId = watchPosition(this.receiveGeo.bind(this));
-        } else if (!enable && (this.#geoId > 0)) {
-            clearWatchPosition(this.#geoId);
-            this.#geoId = false;
-        }
     }
 
     #toArray(event) {
