@@ -1353,8 +1353,14 @@ form .field .container {
     display: flex;
 }
 
+
+
 .tracerInfo {
-    display: none;
+    margin: 0px !important;
+}
+
+.active .tracerInfo {
+    display: flex;
 }
 
 .vidget {
@@ -1530,7 +1536,20 @@ form .field .container {
     display: none;
 }
 
+.taken-order {
+    border-radius: 0 !important;
+}
+
+.taken-order .header {
+    display: none;
+}
+
+.taken-order .header.active {
+    display: flex;
+}
+
 .tracerBar {
+    margin: 5px;
     height: 8px;
     overflow: hidden;
 }
@@ -1548,18 +1567,46 @@ form .field .container {
     height: 15px;
     width: 8px;
     cursor: pointer;
-    margin-top: -3px;
 }
 
-.markers .marker.start > div {
+.markers .marker .arrow {
     height: 12px;
-    width: 12px;
-    transform: rotate(45deg);
     margin-top: 2px;
     margin-left: 1px;
 }
 
-.markers .finish > div {
+.markers .marker.start .arrow {
+    width: 12px;
+    transform: rotate(45deg);
+}
+
+.markers .marker.finish .up {
+    display: none;
+}
+
+.marker .tip {
+    position: absolute;
+    height: 20px;
+    width: 50px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: small;
+    padding: 2px;
+}
+
+.marker .up {
+    margin-top: -25px;
+    margin-left: -16px;
+}
+
+.marker .bottom {
+    margin-left: -16px;
+    margin-top: 18px;
+}
+
+.timeLine .startTime,
+.timeLine .finishTime {
+    z-index: 2;
 }
 
 .timeLine {
@@ -1567,7 +1614,6 @@ form .field .container {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    margin-top: 5px;
 }
 
 /*-----------------Загрузка----------------*/

@@ -17,6 +17,7 @@ class TracerOrderView extends PathView {
     #lastSpeed;
     #waitDialog;
     #processOrders;
+    #markers;
 
     get Tracer() { return this.#tracer; }
     get isDrive() { return this.#isDrive; };
@@ -92,6 +93,19 @@ class TracerOrderView extends PathView {
     }
 
     #refreshTLMarkers() {
+
+        let tracer = this.Tracer;
+        this.#markers.forEach((marker)=>{
+            let tp = marker.data('timePercent');
+            let text = null;
+            if ((tp > 0.15) && (tp < 0.85))
+                text = $.format.date(tracer.CalcTime(marker.data('timePercent')), HMFormat);
+
+            marker.find('.bottom').text(text);
+        });
+    }
+
+    #createTLMarkers() {
         let layer = this.headerElement.find('.markers');
         layer.empty();
 
@@ -100,24 +114,32 @@ class TracerOrderView extends PathView {
 
         let tracer = this.Tracer;
 
-        function appendMarker(step, styleClass) {
+        function appendMarker(order, timePercent, styleClass) {
             let marker = templateClone('timelineMarker');// $('<div class="marker ' + styleClass + '"></div>');
             marker
                 .addClass(styleClass)
-                .css('margin-left', (step.startDistance / tracer.TotalLength * (100 - spercent)) + '%');
+                .css('margin-left', (timePercent * (100 - spercent)) + '%');
+            
+            marker.find('.up').text(getUserName(order));
+            marker.data('order', order);
+
+            marker.data('timePercent', timePercent);
             layer.append(marker);
+            this.#markers.push(marker);
         }
 
         if (this.Tracer) {
             let leg = null;
+            this.#markers = [];
             this.Tracer.forEachSteps(((routes, r, l, s)=>{
                 if (leg != routes[r].legs[l]) {
                     leg = routes[r].legs[l];
+                    let timePercent = leg.steps[s].startDistance / tracer.TotalLength;
 
                     if (leg.start)
-                        appendMarker(routes[r].legs[l].steps[s], 'start');
+                        appendMarker.bind(this)(leg.start, timePercent, 'start');
                     else if (leg.finish)
-                        appendMarker(routes[r].legs[l].steps[s], 'finish');
+                        appendMarker.bind(this)(leg.finish, timePercent, 'finish');
                 }
             }).bind(this));
         }
@@ -340,8 +362,7 @@ class TracerOrderView extends PathView {
             this.pathRender = v_map.DrawPath(this.Path, options);
             this.pathRender.addListener("directions_changed", this.onChangeselectOrderPath.bind(this));
             this.traceOrderPath();
-        }
-        //this.resetForState();
+        } else this.headerElement.removeClass('active');
     }
 
     onUpdateMap() {
@@ -381,6 +402,7 @@ class TracerOrderView extends PathView {
             this.headerElement.find('.tracerBar > div').css('width', (tracer.RouteDistance / tracer.TotalLength * 100) + '%');
             this.headerElement.find('.startTime').text($.format.date(tracer.StartTime, HMFormat));
             this.headerElement.find('.finishTime').text($.format.date(tracer.GetFinishTime(transport.serverTime), HMFormat));
+            this.#refreshTLMarkers();
         }
     }
 
@@ -410,14 +432,14 @@ class TracerOrderView extends PathView {
                 this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
                 this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
                 this.Tracer.AddListener('CHANGELEG', this.onChangeLeg.bind(this));
-            } else {
-                this.Tracer.SetRoutes(this.Path.routes, options);
-            }
+            } else this.Tracer.SetRoutes(this.Path.routes, options);
 
-            this.#refreshTLMarkers();
+            this.#createTLMarkers();
             this.doUpdateTimeLine();
 
             this.isDrive = true;
+
+            this.headerElement.addClass('active');
         }
     }
 
