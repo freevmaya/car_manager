@@ -288,8 +288,8 @@ class Tracer extends EventProvider {
 
             let path = this.Route.overview_path;
             let inPath = {};
-            //let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance);
-            let p = this.CalcPointInLeg(this.#curLegIdx, latLng, inPath);
+            let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance);//, this.#routeDistance);
+            //let p = this.CalcPointInLeg(this.#curLegIdx, latLng, inPath);
 
             if (p) {
                 let distance = inPath.distance.clamp(0, this.TotalLength);
@@ -361,22 +361,24 @@ class Tracer extends EventProvider {
             accumDist += inPath.totalLength;
         });
 
-
-        if (variantes.length > 0) {
-            variantes.sort(((v1, v2) => {
-
-                let td1 = Math.abs(v1.distance - this.#routeDistance);
-                let td2 = Math.abs(v2.distance - this.#routeDistance);
-
-                return (td1 - td2) + 0.5 * (v1.distanceToLine - v2.distanceToLine) / magnet;
-
-            }).bind(this));
-            $.extend(ResultData, variantes[0]);
-            return variantes[0].point;
-        }
-
-        return null;
+        $.extend(ResultData, Tracer.GetNearestVariant(variantes, this.#routeDistance, magnet));
+        return ResultData.point;
     }
+}
+
+Tracer.GetNearestVariant = function(variantes, routeDistance, magnet) {
+    if (variantes.length > 0) {
+        variantes.sort((v1, v2) => {
+
+            let td1 = Math.abs(v1.distance - routeDistance);
+            let td2 = Math.abs(v2.distance - routeDistance);
+
+            return (td1 - td2) + 0.5 * (v1.distanceToLine - v2.distanceToLine) / magnet;
+
+        });
+        return variantes[0];
+    }
+    return null;
 }
 
 Tracer.CalcConerInPath = function (path, p, inPath, minDistance = Number.MAX_VALUE) {
@@ -384,8 +386,8 @@ Tracer.CalcConerInPath = function (path, p, inPath, minDistance = Number.MAX_VAL
     let result = false;
     accumDist = 0;
 
-    inPath.distList = [];
-    inPath.totalLength = CalcLengths(path, inPath.distList);
+    let distList = [];
+    inPath.totalLength = CalcLengths(path, distList);
 
     for (let i=0; i<path.length; i++) {
         let h = Distance(path[i], p);
@@ -398,26 +400,29 @@ Tracer.CalcConerInPath = function (path, p, inPath, minDistance = Number.MAX_VAL
             inPath.distanceToLine = h;
         }
         if (i < path.length - 1)
-            accumDist += inPath.distList[i];
+            accumDist += distList[i];
     }
 
     return result;
 }
 
-Tracer.CalcPointInPath = function (path, p, inPath, minDistance = Number.MAX_VALUE) {
+Tracer.CalcPointInPath = function (path, p, ResultData, minDistance = Number.MAX_VALUE, currenDistance = -1) {
 
-    let min = minDistance;
-    let result = false;
     let accumDist = 0;
+    let distList = [];
 
-    inPath.distList = [];
-    inPath.totalLength = CalcLengths(path, inPath.distList);
+    ResultData = $.extend(ResultData, {
+        totalLength: CalcLengths(path, distList),
+        point: false
+    });
+
+    let variantes = [];
 
     for (let i=0; i<path.length - 1; i++) {
 
         let p1 = path[i];
         let p2 = path[i + 1];
-        let b = inPath.distList[i];
+        let b = distList[i];
 
         let angle = Math.abs(CalcAngleRad(p1, p2) - CalcAngleRad(p1, p));
         if (angle < Math.PI / 2) {
@@ -427,22 +432,34 @@ Tracer.CalcPointInPath = function (path, p, inPath, minDistance = Number.MAX_VAL
 
             if (b2 < b) {
                 let h = c * Math.sin(angle);
-                if (h < min) {
-                    min = h;
+                if (h < minDistance) {
                     let lk = b2 / b;
-                    result = new google.maps.LatLng(
+                    let p = new google.maps.LatLng(
                         p1.lat() + (p2.lat() - p1.lat()) * lk,
                         p1.lng() + (p2.lng() - p1.lng()) * lk
                     );
 
-                    inPath.idx = i;
-                    inPath.distance = accumDist + b2;
-                    inPath.distanceToLine = h;
+                    variantes.push({
+                        idx: i,
+                        distance: accumDist,
+                        distanceToLine: h,
+                        point: p
+                    });
                 }
             }
         }
         accumDist += b;
     }
 
-    return result;
+    if (variantes.length > 0) {
+
+        if (currenDistance > -1)
+            $.extend(ResultData, Tracer.GetNearestVariant(variantes, currenDistance, minDistance));
+        else {
+            variantes.sort((v1, v2) => v2.distanceToLine - v1.distanceToLine);
+            $.extend(ResultData, variantes[0]);
+        }
+    }
+
+    return ResultData.point;
 }

@@ -4,8 +4,16 @@ class DMap extends VMap {
 
     constructor(elem, callback) {
         super(elem, callback, {markerManagerClass: MarkerOrderManager});
+    }
 
-        app.AddListener('GEOPOS', this.onGeoPos.bind(this));
+    afterInitMap() {
+        super.afterInitMap();
+
+        if (DEV) {
+            this.map.addListener('click', ((e)=>{
+                this.onGeoPos(e.latLng);
+            }).bind(this));
+        } else app.AddListener('GEOPOS', this.onGeoPos.bind(this));
     }
 
     createTracer(routes, options) {
@@ -27,8 +35,11 @@ class DMap extends VMap {
     }
 
     setMainPosition(latLng, angle = undefined) {
-        if (this.tracer)
+        if (this.tracer) {
             this.tracer.ReceivePoint(latLng);
+            if (DEV)
+                this.MarkerManager.CreateMarkerDbg(this.tracer.RoutePosition);
+        }
         else super.setMainPosition(latLng, angle);
     }
 
