@@ -9,7 +9,8 @@ class Tracer extends EventProvider {
         speedMax: 30,
         tearedTime: 2 * 60,
         tearedDistance: 100,
-        startTime: Date.now()
+        startTime: Date.now(),
+        backThreshold: 50 // На каком расстоянии сигнал назад будет разворачивать машинку
     };
     #geoPos;
     #routePos;
@@ -274,9 +275,13 @@ class Tracer extends EventProvider {
             this.SetSpeed(speed);
 
             console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
-        } else this.SetSpeed(this.#avgSpeed ? ((this.#avgSpeed + speed) / 2) : speed);
+        } else {
+            let k = deltaDist < 0 ? 0.3 : 0.5;
+            this.SetSpeed(this.#avgSpeed ? (this.#avgSpeed * (1 - k) + speed * k) : speed);
+        }
 
         this.#time = currentTime;
+        this.#timeTooFar = 0;
     }
 
     #setGeoPos(latLng) {
@@ -288,14 +293,12 @@ class Tracer extends EventProvider {
 
             let path = this.Route.overview_path;
             let inPath = {};
-            let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance);//, this.#routeDistance);
+            let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance, this.#routeDistance);
             //let p = this.CalcPointInLeg(this.#curLegIdx, latLng, inPath);
 
-            if (p) {
-                let distance = inPath.distance.clamp(0, this.TotalLength);
-                this.SetNextDistance(distance);
-                this.#timeTooFar = 0;
-            } else {
+            if (p)
+                this.SetNextDistance(inPath.distance);
+            else {
                 this.#timeTooFar += this.#deltaT;
                 if (this.#timeTooFar > this.Options.waitTooFar)
                     this.SendEvent('TOOFAR', this.Options.magnetDistance);
@@ -441,7 +444,7 @@ Tracer.CalcPointInPath = function (path, p, ResultData, minDistance = Number.MAX
 
                     variantes.push({
                         idx: i,
-                        distance: accumDist,
+                        distance: accumDist + b2,
                         distanceToLine: h,
                         point: p
                     });

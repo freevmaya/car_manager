@@ -134,8 +134,10 @@ class App extends EventProvider {
     }
 
     receiveGeo(position) {
-        this.#geoPos = toLatLngF(position);
-        this.SendEvent('GEOPOS', this.#geoPos);
+        if (position) {
+            this.#geoPos = toLatLngF(position);
+            this.SendEvent('GEOPOS', this.#geoPos);
+        }
     }
 
     enableGeo(enable) {
