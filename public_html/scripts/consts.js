@@ -76,5 +76,5 @@ const SOONDELTASEC = 30 * 60;
 const NOWDELTASEC = 10 * 60;
 const WAITOFFERS = DEV ? 5 : 30; //сек
 
-const windowsLayerId = 'windows';
-const modalLayerId = 'modal-windows';
+const windowsLayerId = '#windows';
+const modalLayerId = '#modal-windows';

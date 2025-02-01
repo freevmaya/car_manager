@@ -1,4 +1,4 @@
-<div class="view radius orderView">
+<div class="view orderView">
 	<div class="header">
 		<div class="tracerInfo">
 			<div class="markers">

@@ -240,14 +240,6 @@ h1, h2, h3 {
     border-radius: 1em;
 }
 
-.radiusTop {
-    border-radius: 1em 1em 0 0;
-}
-
-.radiusBottom {
-    border-radius: 0 0 1em 1em;
-}
-
 .notifications {
 }
 
@@ -283,9 +275,31 @@ h1, h2, h3 {
     /*transition: width 0.5s ease-in-out;*/
 }
 
-.windows .view, .modal-windows .view {
+#windows .view, 
+#modal-windows .view {
     animation-name: showView;
-    animation-duration: 1s;
+    animation-duration: 0.4s;
+    border-radius: 1em;
+}
+
+#windows > .bottom-layer {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column-reverse;
+    gap: 0.5em;
+    z-index: 1;
+}
+
+#windows > .bottom-layer > .view:nth-child(1) {
+    border-radius: 1em 1em 0 0;
+}
+
+#windows > .bottom-layer > .view {
+    animation-name: showView;
+    animation-duration: 0.4s;
 }
 
 .pageContent .view {
@@ -1534,10 +1548,6 @@ form .field .container {
 
 .orderView .btn-block .button {
     display: none;
-}
-
-.taken-order {
-    border-radius: 0 !important;
 }
 
 .taken-order .header {

@@ -1,4 +1,4 @@
-<div class="view radius orderView">
+<div class="view orderView">
 	<div class="header">
 		<div class="overflow-dot routeInfo">
 			<div class="overflow-dot"><span class="param name">{toLang('From')}: </span><span class="place start"></span></div>

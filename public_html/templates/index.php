@@ -110,7 +110,9 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <div class="wrapper">
         <div id="modal-windows"></div>
         <div id="back-content">
-            <div id="windows"></div>
+            <div id="windows">
+                <div class="bottom-layer"></div>
+            </div>
             <?=$content?>
         </div>
     </div>

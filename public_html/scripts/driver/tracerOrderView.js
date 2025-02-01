@@ -154,7 +154,7 @@ class TracerOrderView extends PathView {
         this.#stepInfo = this.view.find('.stepInfo');
         this.#selectOrder = this.view.find('.selectOrder');
 
-        this.view.find('.vidget').moveTo(this.windows);
+        this.view.find('.vidget').moveTo($('#windows'));
 
         this.#processOrders = {};
 

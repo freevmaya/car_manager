@@ -19,22 +19,12 @@ class ViewManager {
     
 }
 
-ViewManager.resizeMap = function(layer = '#windows') {
-
-    function maxHeight() {
-        let result = 0;
-        $(layer + ' .view').each((i, v)=>{
-            v = $(v);
-            if (v.hasClass('bottom'))
-                result = Math.max($(v).outerHeight(), result);
-        })
-        return result;
-    }
+ViewManager.resizeMap = function(layer) {
 
     VMap.AfterInit(()=>{
         setTimeout((()=>{
             let h = v_map.View.height();
-            v_map.View.children().css('height', Math.round((h - maxHeight()) / h * 100) + '%');
+            v_map.View.children().css('height', Math.round((h - layer.outerHeight()) / h * 100) + '%');
         }).bind(this), 500);
     });
 }
@@ -185,7 +175,7 @@ class View extends BaseParentView {
     initView() {
 
         this.view = templateClone(this.options.template, this.options);
-        this.windows = this.options.parent ? this.options.parent : $('#' + (this.options.modal ? modalLayerId : windowsLayerId));
+        this.windows = $(this.options.parent);
         this.windows.append(this.view);
 
         this.closeBtn = (this.headerElement = this.view.find('.header')).find('.close');
@@ -224,24 +214,25 @@ class View extends BaseParentView {
         ViewManager.setContent(this, this.options.content = content, this.options.clone);
     }
 
+    getDefaultOptions() {
+        return {
+            content: [], 
+            actions: [], 
+            template: 'view',
+            parent: windowsLayerId
+        }
+    }
+
     setOptions(options) {
-        this.options = $.extend({content: [], actions: [], template: 'view'}, options);
+        this.options = $.extend(this.getDefaultOptions(), options);
         
-        if (this.options.modal) this.blockBackground(true);
+        if (this.options.modal) {
+            this.options.parent = modalLayerId;
+            this.blockBackground(true);
+        }
     }
 
     toAlign() {
-        let size = { x: $(window).width(), y: $(window).height() };
-        if (!this.options.topAlign) {
-            if (this.options.bottomAlign) {
-                this.view.removeClass('radius')
-                    .addClass('bottom')
-                    .addClass('radiusTop');
-
-                ViewManager.resizeMap();
-            }
-            //else this.view.css('top', ($(window).height() - this.view.outerHeight(true)) / 2);
-        }
     }
 
     checkOverflow() {
@@ -291,13 +282,18 @@ class View extends BaseParentView {
 
 class BottomView extends View {
 
-    setOptions(options) {
-        options = $.extend({bottomAlign: true}, options);
-        super.setOptions(options);
+    getDefaultOptions() {
+        return $.extend(super.getDefaultOptions(), {
+            parent: $('#windows .bottom-layer')
+        });
+    }
+
+    toAlign() {
+        ViewManager.resizeMap(this.windows);
     }
 
     Close() {
-        ViewManager.resizeMap();
+        ViewManager.resizeMap(this.windows);
         return super.Close();
     }
 }
@@ -520,10 +516,6 @@ var formView;
 
 $(window).ready(()=>{
     viewManager = new ViewManager();
-    if ($('#' + windowsLayerId).length == 0) {
-        $('#back-content').prepend($('<div id="' + modalLayerId + '">'));
-        $('.wrapper').prepend($('<div id="' + windowsLayerId + '">'));
-    }
 
     let pageForm = $('form');
     if (pageForm) {
