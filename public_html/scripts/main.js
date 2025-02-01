@@ -676,6 +676,12 @@ function CalcAngleRad(p1, p2) {
     return Math.atan2(p2.lng() - p1.lng(), (p2.lat() - p1.lat()) * 1.5);
 }
 
+function minusRad(a1, a2) {
+    let a = ((a1 > a2) ? (a1 - a2) : (a2 - a1)) % (Math.PI * 2);
+    if (a > Math.PI) a = Math.PI * 2 - a;
+    return a;
+}
+
 function CalcAngle(p1, p2) {
     return CalcAngleRad(p1, p2) / Math.PI * 180;
 }

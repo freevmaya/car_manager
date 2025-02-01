@@ -4,11 +4,11 @@ class Tracer extends EventProvider {
 
 
     Options = {
-        magnetDistance: 100, // 100 метров от пути
+        magnetDistance: 180, // 100 метров от пути
         waitTooFar: 30,
         speedMax: 30,
         tearedTime: 2 * 60,
-        tearedDistance: 100,
+        tearedDistance: 180,
         startTime: Date.now(),
         backThreshold: 50, // На каком расстоянии сигнал назад будет разворачивать машинку
         smoothSpeed: 0.5
@@ -269,7 +269,7 @@ class Tracer extends EventProvider {
             speed = (deltaDist / this.#deltaGeoTime)
                             .clamp(-this.Options.speedMax, this.Options.speedMax); //  m/s
 
-            console.log(speed);
+            //console.log(speed);
 
             let tearedTime = this.#deltaGeoTime > this.Options.tearedTime;
             let tearedDist = Math.abs(deltaDist) > this.Options.tearedDistance;
@@ -285,7 +285,7 @@ class Tracer extends EventProvider {
 
                 console.log('Teared path, time: ' + this.#deltaGeoTime + ', distance: ' + distance);
             } else {
-                let k = deltaDist < 0 ? 0.3 : 0.5;
+                let k = deltaDist < 0 ? 0.5 : 0.8;
                 this.SetSpeed(this.#toSpeed ? (this.#toSpeed * (1 - k) + speed * k) : speed);
             }
         }
@@ -299,6 +299,7 @@ class Tracer extends EventProvider {
         let currentTime = Date.now();
         this.#deltaGeoTime = (currentTime - this.#lastCalcTime) / 1000;
         this.#lastCalcTime = currentTime;
+        console.log("Delta geo time: " + this.#deltaGeoTime);
     }
 
     #setGeoPos(latLng) {
@@ -391,7 +392,7 @@ Tracer.GetNearestVariant = function(variantes, routeDistance, magnet) {
             let td1 = Math.abs(v1.distance - routeDistance);
             let td2 = Math.abs(v2.distance - routeDistance);
 
-            return (td1 - td2) + 0.5 * (v1.distanceToLine - v2.distanceToLine) / magnet;
+            return (td1 - td2);// + 0.5 * (v1.distanceToLine - v2.distanceToLine) / magnet;
 
         });
         return variantes[0];
@@ -428,6 +429,8 @@ Tracer.CalcPointInPath = function (path, p, ResultData, minDistance = Number.MAX
 
     let accumDist = 0;
     let distList = [];
+    let pil2 = Math.PI / 2;
+    let toGrad = 1 / Math.PI * 180;
 
     ResultData = $.extend(ResultData, {
         totalLength: CalcLengths(path, distList),
@@ -442,26 +445,35 @@ Tracer.CalcPointInPath = function (path, p, ResultData, minDistance = Number.MAX
         let p2 = path[i + 1];
         let b = distList[i];
 
-        let angle = Math.abs(CalcAngleRad(p1, p2) - CalcAngleRad(p1, p));
-        if (angle < Math.PI / 2) {
+        let angle = minusRad(CalcAngleRad(p1, p2), CalcAngleRad(p1, p));
+        if (angle < pil2) {
             let c = Distance(p1, p);
 
             let b2 = c * Math.cos(angle);
 
             if (b2 < b) {
+
                 let h = c * Math.sin(angle);
+
+                //console.log("i: " + i + ", distance to line: " + h + ")");
                 if (h < minDistance) {
                     let lk = b2 / b;
-                    let p = new google.maps.LatLng(
+                    let result = new google.maps.LatLng(
                         p1.lat() + (p2.lat() - p1.lat()) * lk,
                         p1.lng() + (p2.lng() - p1.lng()) * lk
                     );
+
+                    //v_map.MarkerManager.CreateMarkerDbg(p, 3000);
+                    //v_map.MarkerManager.CreateMarkerDbg(p1, 3000, 'blue');
+                    //v_map.MarkerManager.CreateMarkerDbg(p2, 3000, 'blue');
+
+                    //v_map.MarkerManager.CreateMarkerDbg(result, 3000);
 
                     variantes.push({
                         idx: i,
                         distance: accumDist + b2,
                         distanceToLine: h,
-                        point: p
+                        point: result
                     });
                 }
             }

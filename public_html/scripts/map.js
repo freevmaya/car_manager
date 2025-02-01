@@ -29,8 +29,9 @@ class MarkerManager {
 		return marker;
 	}
 
-	CreateMarkerDbg(position, timeout=10000) {
+	CreateMarkerDbg(position, timeout=10000, color=false) {
 		let marker = this.CreateMarker(position, null, 'debug');
+		if (color) $(marker.content).css('background', color);
 		setTimeout(()=>{
 			marker.setMap(null);
 		}, timeout);
