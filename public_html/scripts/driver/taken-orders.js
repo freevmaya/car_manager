@@ -98,18 +98,17 @@ class TakenOrders extends OrderManager {
         return this.selOrderView && (this.selOrderView.Order.id == order_id);
     }
 
-    ShowInfoOrder(markerOrOrderId) {
+    GetMarker(markerOrOrderId) {
+        return isNumeric(markerOrOrderId) ? v_map.MarkerManager.MarkerByOrderId(markerOrOrderId) : markerOrOrderId;
+    }
 
-        let marker = isNumeric(markerOrOrderId) ? v_map.MarkerManager.MarkerByOrderId(markerOrOrderId) : markerOrOrderId;
-        if (!marker) return;
+    ShowOrderPreview(markerOrOrderId, haveActions = true) {
+
+        let marker = this.GetMarker(markerOrOrderId);
         let order = marker.order;
+        let actions = {};
 
-        if (this.#taken_orders.find((e) => e.id == order.id))
-            this.showImportantOrder(order.id);
-        else {
-
-            let actions = {};
-
+        if (haveActions) {
             if (['expired', 'accepted'].includes(order.state) && (parseInt(order.driver_id) == user.asDriver))
                 $.extend(actions, {
                     'Continue': 'this.continueOrder.bind(this)'
@@ -119,30 +118,38 @@ class TakenOrders extends OrderManager {
                 $.extend(actions, {
                     'Offer to perform': 'this.offerToPerform.bind(this)'
                 });
-
-            function showPathAndInfo() {
-
-                this.selOrderView = viewManager.Create({
-                    bottomAlign: true,
-                    template: 'orderView',
-                    order: order,
-                    marker: marker,
-                    content: [
-                        {
-                            label: "InfoPath",
-                            content: templateClone('offerView', order),// $(DataView.getOrderInfo(order, true)),
-                            class: HtmlField
-                        }
-                    ],
-                    actions: actions
-                }, OrderView, (()=>{
-                    this.selOrderView = null;
-                }).bind(this));
-            }
-
-            if (this.selOrderView) 
-                this.selOrderView.Close().then(showPathAndInfo.bind(this));
-            else showPathAndInfo.bind(this)();
         }
+
+        function showPathAndInfo() {
+
+            this.selOrderView = viewManager.Create({
+                bottomAlign: true,
+                template: 'orderView',
+                order: order,
+                marker: marker,
+                content: [
+                    {
+                        label: "InfoPath",
+                        content: templateClone('offerView', order),// $(DataView.getOrderInfo(order, true)),
+                        class: HtmlField
+                    }
+                ],
+                actions: actions
+            }, OrderView, (()=>{
+                this.selOrderView = null;
+            }).bind(this));
+        }
+
+        if (this.selOrderView) 
+            this.selOrderView.Close().then(showPathAndInfo.bind(this));
+        else showPathAndInfo.bind(this)();
+    }
+
+    ShowInfoOrder(markerOrOrderId) {
+        let marker = this.GetMarker(markerOrOrderId);
+        let order = marker.order;
+        if (this.#taken_orders.find((e) => e.id == order.id))
+            this.showImportantOrder(order.id);
+        else this.ShowOrderPreview(markerOrOrderId);
     }
 }

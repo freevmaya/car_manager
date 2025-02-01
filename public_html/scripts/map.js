@@ -259,13 +259,13 @@ class VMap extends EventProvider {
 
 	onDown(e) {
 		this.#clearMdTid();
-		this.#mouseDown = true;
+		this.#mouseDown = e.pixel;
 		this.#followCenter = false;
 	}
 
 	onUp(e) {
-		this.#mouseDown = false;
 		this.#beginMdTid();
+		this.#mouseDown = false;
 	}
 
 	driverManagerOn(value) {

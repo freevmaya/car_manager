@@ -124,6 +124,9 @@ class TracerOrderView extends PathView {
             marker.data('order', order);
 
             marker.data('timePercent', timePercent);
+            marker.click(()=>{
+                orderManager.ShowOrderPreview(order.id, false);
+            });
             layer.append(marker);
             this.#markers.push(marker);
         }
@@ -226,7 +229,7 @@ class TracerOrderView extends PathView {
 
     onTraceBarClick(e) {
         if (this.Tracer) {
-            this.Tracer.SetNextDistance(e.offsetX / $(e.currentTarget).width() * this.Tracer.TotalLength);
+            this.Tracer.SetNextPosition(e.offsetX / $(e.currentTarget).width() * this.Tracer.TotalLength);
             v_map.setMainPosition(this.Tracer.RoutePosition);
             this.doUpdateTimeLine();
         }
@@ -378,10 +381,10 @@ class TracerOrderView extends PathView {
             elem.text(DistanceToStr(remaindDistance));
             elem.toggleClass('dist-warning', remaindDistance < 100);
 
-            let speed = round(tracer.AvgSpeed * 3.6, 1);
+            let speedKms = round(tracer.AvgSpeed * 3.6, 1);
             this.#speedInfo.find('.avgSpeed')
-                .text(speed >= 0 ? speed + "km/h" : toLang("Backwards"));
-            this.#stepInfo.toggle((speed > 0) && (tracer.Step != null));
+                .text(speedKms >= 0 ? speedKms + "km/h" : toLang("Backwards"));
+            this.#stepInfo.toggle((speedKms > 0) && (tracer.Step != null));
 
             jsdata.driver.avgSpeed = tracer.AvgSpeed;
             transport.addExtRequest({

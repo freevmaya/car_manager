@@ -280,18 +280,21 @@ class AjaxTransport extends EventProvider {
     }
 
     onRecive(value, responseTime, extList) {
-        this.serverTime = responseTime;
-        this.SendEvent('RECEIVE_SERVERTIME', this.serverTime);
 
-        for (let n in value)
-            this.SendEvent(n, value[n]);
+        if (value) {
+            this.serverTime = responseTime;
+            this.SendEvent('RECEIVE_SERVERTIME', this.serverTime);
 
-        if (extList && value.extendResult) {
-            for (let i=0; i<value.extendResult.length; i++)
-                if (extList[i] && extList[i].callback)
-                    extList[i].callback(value.extendResult[i]);
-        }
-        this.initTimer();
+            for (let n in value)
+                this.SendEvent(n, value[n]);
+
+            if (extList && value.extendResult) {
+                for (let i=0; i<value.extendResult.length; i++)
+                    if (extList[i] && extList[i].callback)
+                        extList[i].callback(value.extendResult[i]);
+            }
+            this.initTimer();
+        } else console.error("The value must not be null");
     }
 
     getStatusToReturn(id, a_status) {
@@ -723,6 +726,13 @@ function Lng(p) {
 
 function LatLngEquals(p1, p2) {
     return Distance(p1, p2) <= MAXDISTANCEEQUALS;
+}
+
+function Equal(v1, v2) {
+    for (let fv in v1)
+        if (v1[fv] != v2[fv])
+            return false;
+    return true;
 }
 
 function Distance(p1, p2) {  // generally used geo measurement function

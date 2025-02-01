@@ -10,7 +10,8 @@ class Tracer extends EventProvider {
         tearedTime: 2 * 60,
         tearedDistance: 100,
         startTime: Date.now(),
-        backThreshold: 50 // На каком расстоянии сигнал назад будет разворачивать машинку
+        backThreshold: 50, // На каком расстоянии сигнал назад будет разворачивать машинку
+        smoothSpeed: 0.5
     };
     #geoPos;
     #routePos;
@@ -18,15 +19,17 @@ class Tracer extends EventProvider {
     #routeAngle;
     #lastPos;
     #avgSpeed = false;
+    #toSpeed = false;
     #routes;
     #routeIndex = 0;
     #pathIndex;
-    #timeTooFar = 0;
+    #lastCalcTimeTooFar = 0;
 
-    #deltaT;
+    #deltaGeoTime;
+    #distaneToGeo;
     #lengthList;
     #totalLength;
-    #time;
+    #lastCalcTime;
     #callback;
     #intervalId = false;
     #periodTime;
@@ -60,7 +63,7 @@ class Tracer extends EventProvider {
     };
 
     CalcTime(timePercent) {
-        return Math.round(this.StartTime + this.TotalLength / Math.max(this.#avgSpeed, 0.1) * 60 * 60 * timePercent);
+        return Math.round(this.StartTime + this.TotalLength / Math.max(this.AvgSpeed, 0.1) * 60 * 60 * timePercent);
     }
 
     constructor(routes, callback, periodTime, options=null) {
@@ -68,7 +71,7 @@ class Tracer extends EventProvider {
         super();
 
         this.#periodTime = periodTime;
-        this.#time = Date.now();
+        this.#lastCalcTime = Date.now();
         this.#callback = callback;
 
         this.SetRoutes(routes, options);
@@ -106,13 +109,14 @@ class Tracer extends EventProvider {
         else this.#calcRoutePos();
 
         if (!isEmpty(this.Options.speed))
-            this.SetSpeed(this.Options.speed);
+            this.SetSpeed(this.Options.speed, true);
 
         this.Enabled = true;
     }
 
     #reset() {
         this.#routeDistance = 0;
+        this.#distaneToGeo = -1;
         this.#curLegIdx = -1;
         this.#curStep = null;
     }
@@ -145,20 +149,22 @@ class Tracer extends EventProvider {
         super.destroy();
     }
 
+    SetSpeed(v, reset = false) {
+
+        if (isStr(v)) v = parseFloat(v);
+        this.#toSpeed = v.clamp(-this.Options.speedMax, this.Options.speedMax);
+        if (reset)
+            this.#avgSpeed = this.#toSpeed;
+    }
+
     update() {
         this.#updateRoutePos();
 
         if (this.#lastPos) {
             if (!this.#routePos.equals(this.#lastPos))
-                this.#callback(this.#routePos, this.#avgSpeed > 0 ? this.#routeAngle : (this.#routeAngle + 180) % 360);
+                this.#callback(this.#routePos, this.AvgSpeed > 0 ? this.#routeAngle : (this.#routeAngle + 180) % 360);
         } else this.#callback(this.#routePos);
         this.#lastPos = this.#routePos;
-    }
-
-    SetSpeed(v) {
-
-        if (isStr(v)) v = parseFloat(v);
-        this.#avgSpeed = v.clamp(-this.Options.speedMax, this.Options.speedMax);
     }
 
     #checkCurStep() {
@@ -194,9 +200,14 @@ class Tracer extends EventProvider {
     }
 
     #updateRoutePos() {
-        if (this.#avgSpeed)
-            this.SetNextDistance((this.#routeDistance + this.#avgSpeed * this.#periodTime / 1000)
-                                        .clamp(0, this.#totalLength));
+        let k = this.Options.smoothSpeed;
+        this.#avgSpeed = this.AvgSpeed * (1 - k) + this.#toSpeed * k;
+
+        this.#routeDistance = (this.#routeDistance + this.AvgSpeed * this.#periodTime / 1000)
+                                    .clamp(0, this.#totalLength);
+
+        this.#calcRoutePos();
+        this.#checkCurStep();
     }
 
     #calcDistance(inPath) {
@@ -247,66 +258,70 @@ class Tracer extends EventProvider {
         this.#routePos = path[this.#pathIndex = idx];        
     }
 
-    SetNextDistance(distance) {
+    SetNextPosition(distance) {
 
+        let speed = this.#toSpeed;
         distance = distance.clamp(0, this.TotalLength);
-        let currentTime = Date.now();
-        this.#deltaT = (currentTime - this.#time) / 1000;
 
-        let deltaDist = distance - this.#routeDistance;
+        if (this.#distaneToGeo > -1) {
+            let deltaDist = distance - this.#distaneToGeo;
 
-        let speed = (deltaDist / this.#deltaT)
-                        .clamp(-this.Options.speedMax, this.Options.speedMax);
+            speed = (deltaDist / this.#deltaGeoTime)
+                            .clamp(-this.Options.speedMax, this.Options.speedMax); //  m/s
 
-        let tearedTime = this.#deltaT > this.Options.tearedTime;
-        let tearedDist = Math.abs(deltaDist) > this.Options.tearedDistance;
+            console.log(speed);
+
+            let tearedTime = this.#deltaGeoTime > this.Options.tearedTime;
+            let tearedDist = Math.abs(deltaDist) > this.Options.tearedDistance;
+
+
+            if (tearedTime || tearedDist) {
+
+                if (tearedTime)
+                    this.SendEvent('TEAREDTIME', tearedDist);
+                else this.SendEvent('TEAREDDIST', tearedDist);
+                    
+                this.SetSpeed(speed);
+
+                console.log('Teared path, time: ' + this.#deltaGeoTime + ', distance: ' + distance);
+            } else {
+                let k = deltaDist < 0 ? 0.3 : 0.5;
+                this.SetSpeed(this.#toSpeed ? (this.#toSpeed * (1 - k) + speed * k) : speed);
+            }
+        }
             
-        this.#routeDistance = distance;
-
+        this.#routeDistance = this.#distaneToGeo = distance;
         this.#calcRoutePos();
         this.#checkCurStep();
+    }
 
-        if (tearedTime || tearedDist) {
-
-            if (tearedTime)
-                this.SendEvent('TEAREDTIME', tearedDist);
-            else this.SendEvent('TEAREDDIST', tearedDist);
-                
-            this.SetSpeed(speed);
-
-            console.log('Teared path, time: ' + this.#deltaT + ', distance: ' + distance);
-        } else {
-            let k = deltaDist < 0 ? 0.3 : 0.5;
-            this.SetSpeed(this.#avgSpeed ? (this.#avgSpeed * (1 - k) + speed * k) : speed);
-        }
-
-        this.#time = currentTime;
-        this.#timeTooFar = 0;
+    #snapshotGeoTime() {
+        let currentTime = Date.now();
+        this.#deltaGeoTime = (currentTime - this.#lastCalcTime) / 1000;
+        this.#lastCalcTime = currentTime;
     }
 
     #setGeoPos(latLng) {
 
         if (this.#routes && (this.#routes.length > 0)) {
-
-            let currentTime = Date.now();
-            this.#deltaT = (currentTime - this.#time) / 1000;
+            this.#snapshotGeoTime();
 
             let path = this.Route.overview_path;
             let inPath = {};
             let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance, this.#routeDistance);
             //let p = this.CalcPointInLeg(this.#curLegIdx, latLng, inPath);
 
-            if (p)
-                this.SetNextDistance(inPath.distance);
+            if (p) {
+                this.SetNextPosition(inPath.distance);
+                this.#lastCalcTimeTooFar = 0;
+            }
             else {
-                this.#timeTooFar += this.#deltaT;
-                if (this.#timeTooFar > this.Options.waitTooFar)
+                this.#lastCalcTimeTooFar += this.#deltaGeoTime;
+                if (this.#lastCalcTimeTooFar > this.Options.waitTooFar)
                     this.SendEvent('TOOFAR', this.Options.magnetDistance);
                 
                 console.log('Distance more that ' + this.Options.magnetDistance + 'm');
             }
-
-            this.#time = currentTime;
         }
     }
 
