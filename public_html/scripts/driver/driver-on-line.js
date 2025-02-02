@@ -38,14 +38,6 @@ class DMap extends VMap {
         if (this.tracer)
             this.tracer.ReceivePoint(latLng);
         else super.setMainPosition(latLng, angle);
-        /*
-        let mp = toLatLngF(v_map.getMainPosition());
-        angle = CalcAngleRad(toLatLngF(latLng), mp);//Math.abs(CalcAngleRad(latLng, mp) - CalcAngleRad(p1, p));
-
-        v_map.MarkerManager.CreateMarkerDbg(mp);
-        v_map.MarkerManager.CreateMarkerDbg(latLng);
-
-        console.log(angle / Math.PI * 180);*/
     }
 
     onGeoPos(latLng) {
