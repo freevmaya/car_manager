@@ -1,4 +1,4 @@
-class ViewPath extends View {
+class ViewPath extends BottomView {
     routes;
     rpath;
     travelMode = travelMode;
@@ -122,8 +122,16 @@ class OrderView extends ViewPath {
 
                 transport.SendStatusNotify(list[i], 'read');
 
-                if (list[i].content_id == this.Order.id)
-                    this.changeOrder(part_order);
+                if (list[i].content_id == this.Order.id) {
+                    if (['accepted', 'driver_move'].includes(part_order.state) && !this.Order.driver_id) {
+                        Ajax({
+                            action: 'getOrder',
+                            data: {id: this.Order.id}
+                        }).then(((order)=>{
+                            this.changeOrder(order);
+                        }).bind(this));
+                    } else this.changeOrder(part_order);
+                }
             }
         }
     }
@@ -180,7 +188,7 @@ class OrderView extends ViewPath {
                         data: JSON.stringify({id: this.Order.id, state: 'cancel'})
                     }).then(((data)=>{
 
-                        if (data.result == 'ok')
+                        if (data.result && (data.result.state == 'cancel'))
                             super.prepareToClose(afterPrepare);
                         else console.error(data);
 
@@ -266,7 +274,7 @@ class SelectPathView extends ViewPath {
             this.fillText(finishPlace, 'finishPlace');
             this.footerElement.find('button').prop('disabled', false);
             
-            ViewManager.resizeMap();
+            ViewManager.resizeMap(this.windows);
 
         }).bind(this));
     }
@@ -313,7 +321,7 @@ class OrderAccepedView extends OrderView {
     SetOrder(order) {
         super.SetOrder(order);
 
-        if (!this.orderLayer || (order.state == 'accepted')) 
+        if (!this.orderLayer || ['accepted', 'driver_move'].includes(order.state)) 
             this.resetLayer();
 
         this.view
@@ -324,7 +332,7 @@ class OrderAccepedView extends OrderView {
             .find('.state').text(toLang(this.orderState))
             .find('.distance').text(DistanceToStr(this.Order.meters));
 
-        ViewManager.resizeMap();
+        ViewManager.resizeMap(this.windows);
 
         if ((this.LastState == 'accepted') && (this.pathToStartNotify)) {
             this.closePathToStart();

@@ -1,4 +1,4 @@
-<div class="view shadow radius target-view" data-id="<?=html::fieldIdx()?>">
+<div class="view target-view" data-id="<?=html::fieldIdx()?>">
 	<div class="header empty"><button class="close button-flat"></button></div>
 	<div class="cols">
 		<div class="content">

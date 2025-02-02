@@ -56,9 +56,6 @@ class MarkerOrderManager extends MarkerManager {
             orderManager.AddListener('CREATED_ORDER', this.onAfterCreateOrder.bind(this));
             orderManager.AddListener('CHANGE_ORDER', this.onChangeOrder.bind(this));
         }).bind(this));
-
-        //transport.AddListener('notificationList', this.onNotificationList.bind(this));
-        //$.extend([], jsdata.all_orders, jsdata.taken_orders));
     }
 
     onAfterCreateOrder(e) {

@@ -29,6 +29,4 @@
 			<div class="text overflow-dot"></div>
 		</div>
 	</div>
-	
-	<div class="footer btn-block"></div>
 </div>
