@@ -42,6 +42,7 @@ class DMap extends VMap {
 
     onGeoPos(latLng) {
         this.setMainPosition(latLng);
+        v_map.MarkerManager.CreateMarkerDbg(latLng, 20000);
     }
 }
 

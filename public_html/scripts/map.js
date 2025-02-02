@@ -31,7 +31,11 @@ class MarkerManager {
 
 	CreateMarkerDbg(position, timeout=10000, color=false) {
 		let marker = this.CreateMarker(position, null, 'debug');
-		if (color) $(marker.content).css('background', color);
+		let cnt = $(marker.content);
+		if (color) cnt.css('background', color);
+		let ws = timeout / 1000 * 0.5;
+		cnt.css({'animation-delay': ws + 's' ,'animation-duration': ws + 's'});
+
 		setTimeout(()=>{
 			marker.setMap(null);
 		}, timeout);
