@@ -1379,7 +1379,7 @@ form .field .container {
 
 
 .tracerInfo {
-    margin: 0px !important;
+    margin: 0px 15px !important;
 }
 
 .active .tracerInfo {
@@ -1417,10 +1417,6 @@ form .field .container {
 
 .orderView.collaps .routeInfo {
     display: none;
-}
-
-.orderView.collaps .tracerInfo{
-    margin: 5px !important;
 }
 
 .orderView.expand.execution,
@@ -1605,7 +1601,7 @@ form .field .container {
 
 .marker .tip {
     position: absolute;
-    height: 20px;
+    height: 25px;
     width: 50px;
     border-radius: 5px;
     text-align: center;

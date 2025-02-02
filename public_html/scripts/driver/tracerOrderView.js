@@ -339,6 +339,10 @@ class TracerOrderView extends PathView {
         }
     }
 
+    onToofar(e) {
+        console.log('TOOFAR ', e);
+    }
+
     onChangeLeg(e) {
         if (e.value) this.doCheckRoutePoints(e.value);
     }
@@ -435,6 +439,7 @@ class TracerOrderView extends PathView {
                 this.Tracer.AddListener('FINISHPATH', this.onFinishPathOrder.bind(this));
                 this.Tracer.AddListener('CHANGESTEP', this.onChangeStep.bind(this));
                 this.Tracer.AddListener('CHANGELEG', this.onChangeLeg.bind(this));
+                this.Tracer.AddListener('TOOFAR', this.onToofar.bind(this));
             } else this.Tracer.SetRoutes(this.Path.routes, options);
 
             this.#createTLMarkers();

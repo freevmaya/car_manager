@@ -952,10 +952,6 @@ function GetPath(routes, startPlace, finishPlace) {
     } return null;
 }
 
-Number.prototype.clamp = function(min, max) {
-  return Math.min(Math.max(this, min), max);
-};
-
 function getClassName(obj) { 
    var funcNameRegex = /function (.{1,})\(/;
    var results = (funcNameRegex).exec((obj).constructor.toString());
@@ -1008,6 +1004,10 @@ function afterCondition(checkFunc, resolve) {
         }
     }, 10);
 }
+
+Number.prototype.clamp = function(min, max) {
+  return Math.min(Math.max(this, min), max);
+};
 
 $(window).ready(()=>{
 
