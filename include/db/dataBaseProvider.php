@@ -53,7 +53,7 @@ class dataBaseProvider {
 	}
 
 	public function error($text) {
-		trace($text, 'file', 3, true);
+		trace_error($text);
 		//throw new Exception($text, 1);
 	}
 

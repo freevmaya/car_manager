@@ -81,6 +81,7 @@ class Ajax extends Page {
 
 			//trace(array_merge($data, $user));
 			(new UserModel())->UpdatePosition($user['id'], $data, isset($data['angle']) ? $data['angle'] : 0);
+			(new LogGeoPosModel())->Update(['user_id'=>intval($user['id']), 'lat'=>$data['lat'], 'lng'=>$data['lng']]);
 
 			$user['lat'] = $data['lat'];
 			$user['lng'] = $data['lng'];

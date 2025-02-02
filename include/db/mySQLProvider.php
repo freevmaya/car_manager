@@ -40,7 +40,7 @@
 
 				$stmt->close();
 			} catch (Exception $e) {
-				trace('mysql_error='.$e->getMessage().' query='.$query);
+				$this->error('mysql_error='.$e->getMessage().' query='.$query);
 			}
 
 			return $result;
