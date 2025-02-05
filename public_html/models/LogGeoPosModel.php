@@ -13,7 +13,13 @@ class LogGeoPosModel extends BaseModel {
 	public function getItems($options) {
 		GLOBAL $dbp;
 		$where = BaseModel::GetConditions($options, ['user_id']);
-		return $dbp->asArray("SELECT * FROM {$this->getTable()} WHERE ".implode(" AND ", $where));
+
+		if (isset($options['dateTime'])) {
+			$where[] = "`date` >= '".date('Y-m-d', strtotime($options['dateTime']))."'";
+		}
+
+		$query = "SELECT `date`, `time`, `lat`, `lng` FROM {$this->getTable()} WHERE ".implode(" AND ", $where);
+		return $dbp->asArray($query);
 	}
 }
 ?>

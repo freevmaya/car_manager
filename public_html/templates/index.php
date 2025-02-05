@@ -9,7 +9,7 @@ html::AddJsData(json_encode(
     BaseModel::FullItems((new NotificationModel())->getItems($options), ['content_id'=>new OrderModel()])
 ), 'notificationList');
 
-html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId')
+html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId');
 
 ?>
 <!DOCTYPE html>

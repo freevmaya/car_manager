@@ -6,6 +6,9 @@
 	$orderModel = new OrderModel();
 	$routeModel = new RouteModel();
 
+	if (isset(Page::$request['logplay']))
+		html::AddScriptFile("utils/logplayer.js");
+
 	if ($this->asDriver) {
 //------------------------------DRIVER---------------------------------------------
 
