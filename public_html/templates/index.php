@@ -2,7 +2,7 @@
 GLOBAL $devUser, $user, $lang, $anti_cache;
 include_once(MODULESPATH.'/views.php');
 
-$anti_cache = '?=41';
+$anti_cache = '?=42';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
 html::AddJsData(json_encode(
