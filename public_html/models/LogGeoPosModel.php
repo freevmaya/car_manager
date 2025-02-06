@@ -6,8 +6,9 @@ class LogGeoPosModel extends BaseModel {
 	}
 
 	public function Update($values) {
-		GLOBAL $dbp;
-		$result = $dbp->query("INSERT INTO {$this->getTable()} (`user_id`, `date`, `time`, `lat`, `lng`) VALUES ({$values['user_id']}, NOW(), NOW(), {$values['lat']}, {$values['lng']})");		
+		GLOBAL $dbp, $user;
+		
+		$result = $dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `lat`, `lng`) VALUES (?, ?, ?)", 'idd', [$user['id'], $values['lat'], $values['lng']]);		
 	}
 
 	public function getItems($options) {
@@ -15,10 +16,10 @@ class LogGeoPosModel extends BaseModel {
 		$where = BaseModel::GetConditions($options, ['user_id']);
 
 		if (isset($options['dateTime'])) {
-			$where[] = "`date` >= '".date('Y-m-d', strtotime($options['dateTime']))."'";
+			$where[] = "`time` >= '".date('Y-m-d H:k:s', strtotime($options['dateTime']))."'";
 		}
 
-		$query = "SELECT `date`, `time`, `lat`, `lng` FROM {$this->getTable()} WHERE ".implode(" AND ", $where);
+		$query = "SELECT `time`, `lat`, `lng` FROM {$this->getTable()} WHERE ".implode(" AND ", $where);
 		return $dbp->asArray($query);
 	}
 }

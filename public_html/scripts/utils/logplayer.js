@@ -1,5 +1,8 @@
 class LogPlayer {
 	#startDate;
+	#timerId;
+	#points;
+	#index;
 	constructor(startDate) {
 		
 		this.#startDate = Date.parse(startDate)
@@ -11,17 +14,31 @@ class LogPlayer {
 			action: 'getLog',
 			data: {dateTime: dateTime}
 		}).then(((e)=>{
-			this.showPoints(e);
+			this.beginPlay(e);
 		}).bind(this));
 	}
 
-	showPoints(e) {
-		for (let i=0; i<e.length; i++)
-			v_map.MarkerManager.CreateMarkerDbg(toLatLngF(e[i]));
+	beginPlay(e) {
+		this.#points = e;
+		this.#index = 0;
+		this.#timerId = setInterval(this.nextPoint.bind(this), 500);
+	}
+
+	nextPoint() {
+		if (this.#index < this.#points.length - 1) {
+			v_map.MarkerManager.CreateMarkerDbg(toLatLngF(this.#points[this.#index]));
+			this.#index++;
+		} else this.Stop();
+	}
+
+	Stop() {
+		clearInterval(this.#timerId);
+		delete this;
 	}
 }
 
 $(window).ready(()=>{
+	let player;
 	let view = viewManager.Create({
 		title: 'Log player',
         template: 'view',
@@ -35,8 +52,8 @@ $(window).ready(()=>{
         ],
         actions: {
         	Begin: ()=>{
-        		new LogPlayer(view.getValues().StartTime);
-        		view.Close();
+        		if (player) player.Stop();
+        		player = new LogPlayer(view.getValues().StartTime);
         	}
         }
     }, BottomView, (()=>{

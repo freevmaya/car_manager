@@ -53,6 +53,7 @@ class App extends EventProvider {
     #geoPos;
     #listeners;
     #question;
+    #screenLock;
 
     get Question() { return this.#question; }
 
@@ -146,6 +147,14 @@ class App extends EventProvider {
         } else if (!enable && (this.#geoId > 0)) {
             clearWatchPosition(this.#geoId);
             this.#geoId = false;
+        }
+    }
+
+    async ScreenLock() {
+        try {
+            this.#screenLock = await navigator.wakeLock.request('screen');
+        } catch (err) {
+            console.log('Error with wake lock: ', err);
         }
     }
 }
