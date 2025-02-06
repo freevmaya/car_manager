@@ -25,6 +25,7 @@ class Ajax extends Page {
 	protected function setPosition($data) {
 		GLOBAL $user;
 		(new UserModel())->UpdatePosition($user['id'], $data, isset($data['angle']) ? $data['angle'] : 0);
+		(new LogGeoPosModel())->Update(['user_id'=>$user['id'], 'lat'=>$data['lat'], 'lng'=>$data['lng']]);
 	}
 
 	protected function setValue($data) {

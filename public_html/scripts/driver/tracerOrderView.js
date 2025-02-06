@@ -27,7 +27,16 @@ class TracerOrderView extends PathView {
     
     get Order() { return null; }
 
-
+    afterConstructor() {
+        super.afterConstructor();
+        document.addEventListener('visibilitychange', async () => {
+            try {
+                screenLock = await navigator.wakeLock.request('screen');
+            } catch (err) {
+                console.log('Error with wake lock: ', err);
+            }
+        });
+    }
 
     #onCreatedOrder(order) {
         this.RequireRefresh();
@@ -187,9 +196,11 @@ class TracerOrderView extends PathView {
 
         this.#lastSpeed = jsdata.driver.avgSpeed;
 
-        //Надо както удалять в destroy
+        /*
+        //Надо как то удалять в destroy
         $(window).on('blur', this.onBlur.bind(this));
         $(window).on('focus', this.onFocus.bind(this));
+        */
     }
 
     onBlur(e) {
