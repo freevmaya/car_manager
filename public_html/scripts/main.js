@@ -66,7 +66,7 @@ class App extends EventProvider {
             if (data && data['asDriver'])
                 user.asDriver = data['asDriver'];
         });
-        $.getScript('scripts/language/' + user.language_code + '.js');
+        //$.getScript('scripts/language/' + user.language_code + '.js');
     }
 
     AddListener(event, action) {
@@ -135,7 +135,7 @@ class App extends EventProvider {
 
     receiveGeo(position) {
         if (position) {
-            this.#geoPos = toLatLngF(position);
+            this.#geoPos = position;
             this.SendEvent('GEOPOS', this.#geoPos);
         }
     }
@@ -197,6 +197,7 @@ class AjaxTransport extends EventProvider {
     statusesToReturn;
     periodTime;
     serverTime;
+    #lastPos;
 
     constructor(periodTime) {
         super();
@@ -210,6 +211,20 @@ class AjaxTransport extends EventProvider {
             this.onRecive(jsdata.notificationList);
 
         this.initTimer();
+
+        afterCondition(()=>{return app;}, (()=>{
+            app.AddListener('GEOPOS', this.onGeoPos.bind(this));
+        }).bind(this));
+    }
+
+    onGeoPos(p) {
+        if (!this.#lastPos || (Distance(this.#lastPos, p) > 1)) {
+            this.addExtRequest({
+                action: 'setPosition',
+                data: toLatLng(p)
+            });
+            this.#lastPos = p;
+        }
     }
 
     initTimer() {
@@ -240,7 +255,7 @@ class AjaxTransport extends EventProvider {
         
             let data = {};
 
-            if (this.extRequest) {
+            if (!isEmpty(this.extRequest)) {
                 data.extend = $.extend({}, this.extRequest);
                 this.extRequest = [];
             }
@@ -252,31 +267,18 @@ class AjaxTransport extends EventProvider {
                 this.statusesToReturn = [];
             }
 
-            if (user.sendCoordinates || this.requireDrivers) {
-                if (typeof(v_map) != 'undefined') {
-                    app.enableGeo(true);
-                    data = $.extend(data, v_map.getMainPosition());
-                } else data = $.extend(data, toLatLng(user));
+            if (this.requireDrivers)
+                data.requireDrivers = true;
 
-
-                if (this.requireDrivers)
-                    data.requireDrivers = true;
-
-            } else app.enableGeo(false);
-
-            params.data = JSON.stringify(data);
+            if (Object.keys(data).length > 0)
+                params.data = JSON.stringify(data);
+            
             Ajax(params, this.onRecive.bind(this), data.extend);
         } else this.initTimer();
     }
 
     requireRequest() {
-        return (this.listeners.length > 0) || user.sendCoordinates || this.requireDrivers;
-    }
-
-    #toArray(event) {
-        let result = [];
-        if (this.listeners.hasOwnProperty(event)) {
-        }
+        return (Object.keys(this.listeners).length > 0) || !isEmpty(this.extRequest) || this.requireDrivers;
     }
 
     onRecive(value, responseTime, extList) {

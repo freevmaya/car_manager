@@ -4,6 +4,7 @@ class DMap extends VMap {
 
     constructor(elem, callback) {
         super(elem, callback, {markerManagerClass: MarkerOrderManager});
+        app.enableGeo(true);
     }
 
     afterInitMap() {

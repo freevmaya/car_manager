@@ -22,6 +22,11 @@ class Ajax extends Page {
 		return Page::$request;
 	}
 
+	protected function setPosition($data) {
+		GLOBAL $user;
+		(new UserModel())->UpdatePosition($user['id'], $data, isset($data['angle']) ? $data['angle'] : 0);
+	}
+
 	protected function setValue($data) {
 		$result = false;
 		if ($nameModel 	= @$data['model']) {

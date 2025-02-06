@@ -47,7 +47,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
         function watchPosition(action) {
             <?if (DEV) {
                 ?>
-                let latLng = toLatLng(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
+                let latLng = toLatLngF(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
 
                 user = $.extend(user, latLng);
                 return setInterval(()=>{
@@ -60,7 +60,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
                 }, 500);
             <?} else {?>
                 return navigator.geolocation.watchPosition((result)=>{
-                    let latLng = toLatLng(result.coords);
+                    let latLng = toLatLngF(result.coords);
                     user = $.extend(user, latLng);
                     action(latLng);
                 });
@@ -78,13 +78,13 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
         function getLocation(action) {
             <?if (DEV) {
                 ?>
-                let latLng = toLatLng(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
+                let latLng = toLatLngF(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
 
                 user = $.extend(user, latLng);
                 action(latLng);
             <?} else {?>
                 navigator.geolocation.getCurrentPosition((result)=>{
-                    let latLng = toLatLng(result.coords);
+                    let latLng = toLatLngF(result.coords);
                     user = $.extend(user, latLng);
                     action(latLng);
                 });
@@ -95,7 +95,6 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
 
         var user = <?=json_encode($user)?>;
         <?=$this->asDriver() ? "user.asDriver = {$this->asDriver()};\n" : ''?>
-        <?=$this->sendCoordinates() ? "user.sendCoordinates = true;\n" : ''?>
 
     <?} else if (DEV) {?>
 

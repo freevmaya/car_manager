@@ -11,8 +11,13 @@ class LogPlayer {
 			action: 'getLog',
 			data: {dateTime: dateTime}
 		}).then(((e)=>{
-
+			this.showPoints(e);
 		}).bind(this));
+	}
+
+	showPoints(e) {
+		for (let i=0; i<e.length; i++)
+			v_map.MarkerManager.CreateMarkerDbg(toLatLngF(e[i]));
 	}
 }
 

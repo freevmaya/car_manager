@@ -138,10 +138,6 @@ class Page {
 		return $this->haveActiveOrder > 0;
 	}
 
-	public function sendCoordinates() {
-		return $this->asDriver() || $this->haveActiveOrder();
-	}
-
 	public static function link($params = null) {
 		$result = BASEURL;
 		if ($params) {
