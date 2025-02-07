@@ -226,20 +226,6 @@ class AjaxTransport extends EventProvider {
             this.onRecive(jsdata.notificationList);
 
         this.initTimer();
-
-        afterCondition(()=>{return app;}, (()=>{
-            app.AddListener('GEOPOS', this.onGeoPos.bind(this));
-        }).bind(this));
-    }
-
-    onGeoPos(p) {
-        if (!this.#lastPos || (Distance(this.#lastPos, p) > 1)) {
-            this.addExtRequest({
-                action: 'setPosition',
-                data: toLatLng(p)
-            });
-            this.#lastPos = p;
-        }
     }
 
     initTimer() {
@@ -282,8 +268,11 @@ class AjaxTransport extends EventProvider {
                 this.statusesToReturn = [];
             }
 
-            if (this.requireDrivers)
+            if (this.requireDrivers) {
+                data.lat = user.lat;
+                data.lng = user.lng;
                 data.requireDrivers = true;
+            }
 
             if (Object.keys(data).length > 0)
                 params.data = JSON.stringify(data);

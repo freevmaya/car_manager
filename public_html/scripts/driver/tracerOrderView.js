@@ -390,13 +390,14 @@ class TracerOrderView extends PathView {
             this.#stepInfo.toggle((speedKms > 0) && (tracer.Step != null));
 
             jsdata.driver.avgSpeed = tracer.AvgSpeed;
+
             transport.addExtRequest({
-                action: 'setValue',
+                action: 'setPosition',
                 data: {
-                    model: 'DriverModel',
-                    id: user.asDriver,
-                    name: 'avgSpeed',
-                    value: tracer.AvgSpeed
+                    angle: tracer.Angle, 
+                    avgSpeed: tracer.AvgSpeed,
+                    lat: tracer.RoutePosition.lat(),
+                    lng: tracer.RoutePosition.lng()
                 }
             });
         }

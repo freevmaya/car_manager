@@ -2,7 +2,7 @@
 GLOBAL $devUser, $user, $lang, $anti_cache;
 include_once(MODULESPATH.'/views.php');
 
-$anti_cache = '?=43';
+$anti_cache = '?=44';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
 html::AddJsData(json_encode(
@@ -60,6 +60,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
                 }, 500);
             <?} else {?>
                 return navigator.geolocation.watchPosition((result)=>{
+                    console.log(result.coords);
                     let latLng = toLatLngF(result.coords);
                     user = $.extend(user, latLng);
                     action(latLng);

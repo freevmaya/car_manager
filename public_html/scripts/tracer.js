@@ -41,6 +41,7 @@ class Tracer extends EventProvider {
     get Enabled() { return this.#intervalId != false; }
     set Enabled(value) { this.#setUpdateEnabled(value); }
 
+    get Angle() { return this.#routeAngle; };
     get AvgSpeed() { return this.#avgSpeed; };
     get RouteDistance() { return this.#routeDistance; };
     get StartTime() { return this.Options.startTime; };
