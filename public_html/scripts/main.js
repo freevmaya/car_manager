@@ -60,9 +60,11 @@ class App extends EventProvider {
     constructor() {
         super();
         this.#listeners = {};
+        /* Прятать строку адреса браузера
         window.addEventListener('load', function() {
             setTimeout(scrollTo, 0, 0, 1);
         }, false);
+        */
 
     }
 

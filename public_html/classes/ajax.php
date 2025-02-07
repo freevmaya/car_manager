@@ -87,12 +87,12 @@ class Ajax extends Page {
 		$notificationList = $nModel->getItems(['user_id'=>$user['id'], 'state'=>'active']);
 
 		if (count($notificationList) > 0)
-			$result['notificationList'] = $notificationList;			
+			$result['notificationList'] = $notificationList;	
 
-		if (isset($data['requireDrivers']))
-			$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng'], null, AREA_RADIUS);
+		if (isset($data['lat'])) {		
 
-		if (isset($data['lat'])) {
+			if (isset($data['requireDrivers']))
+				$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng'], null, AREA_RADIUS);
 
 			//trace(array_merge($data, $user));
 			(new UserModel())->UpdatePosition($user['id'], $data, isset($data['angle']) ? $data['angle'] : 0);
