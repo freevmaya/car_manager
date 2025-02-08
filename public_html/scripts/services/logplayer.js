@@ -57,6 +57,7 @@ $(window).ready(()=>{
         	}
         }
     }, BottomView, (()=>{
+    	if (player) player.Stop();
         view = null;
     }).bind(this));
 });

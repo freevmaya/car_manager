@@ -299,11 +299,12 @@ h1, h2, h3 {
     position: absolute;
     bottom: 0px;
     width: 100%;
-    display: flex;
     justify-content: end;
     flex-direction: column;
     z-index: 1;
     padding-top: 20px;
+    max-height: 50%;
+    overflow-y: scroll;
 }
 
 .bottom-layer > .view:nth-child(1) {

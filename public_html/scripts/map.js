@@ -102,7 +102,7 @@ const TIMEUPDATESTEP_VECTORMAP = 5;
 const TIMEUPDATESTEP_RASTERMAP = 50;
 const UPDATESMOOTH = 0.01;
 
-class VMap extends EventProvider {
+class VMap extends Classes([EventProvider, Component]) {
 	#markerManager;
 	#map;
 	#classes;
@@ -162,6 +162,7 @@ class VMap extends EventProvider {
 
 	constructor(elem, callback = null, options) {
 		super();
+
 		v_map = this;
 		this.#mapAngle = this.#toAngle = 0;
 		this.#view = elem;

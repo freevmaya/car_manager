@@ -6,8 +6,12 @@
 	$orderModel = new OrderModel();
 	$routeModel = new RouteModel();
 
-	if (isset(Page::$request['logplay']))
-		html::AddScriptFile("utils/logplayer.js");
+	$services = ['logplayer', 'drawpath'];
+
+	foreach ($services as $service)
+		if (isset(Page::$request[$service])) {
+			html::AddScriptFile("services/{$service}.js");
+		}
 
 	if ($this->asDriver) {
 //------------------------------DRIVER---------------------------------------------
@@ -60,9 +64,6 @@
 
 	    html::AddTemplate(html::RenderField(['type'=>'order'], $order), 'order');
 		html::AddTemplate(html::RenderField(['type'=>'target-view']), 'target-view');
-
 		html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
-	    
-		html::AddJsCode("new VMap($('#map'), Mechanics);");
 	}
 ?>

@@ -23,7 +23,8 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <script type="text/javascript">var DEV = <?=DEV ? 'true' : 'false'?>;</script>
     <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>   
     <script src="<?=SCRIPTURL?>/consts.js<?=$anti_cache?>"></script>    
-    <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>
+    <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>  
+    <script src="<?=SCRIPTURL?>/component.js<?=$anti_cache?>"></script>
     <?=html::RenderJSFiles($anti_cache);?>
     <?=html::RenderStyleFiles();?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>

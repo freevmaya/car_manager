@@ -490,69 +490,66 @@ class OrderAccepedView extends OrderView {
     }
 }
 
-function BeginSelectPath() {
-    var selectPathDialog;
-    var listener;
-
-    function onClickMap(e) {
-        if (e.placeId) {
-            v_map.getPlaceDetails(e.placeId).then((place)=>{
-                place = $.extend(place, e);
-                SelectPlace(place);
-            });
-        } else SelectPlace(e);
-        
-        return StopPropagation(e);
+class Passenger extends Component {
+    constructor(order) {
+        super();
+        if (typeof jsdata.currentOrder == 'object') {
+            this.BeginAcceptedOrder(order);
+        } else this.BeginSelectPath();
     }
 
-    function SelectPlace(place) {
-
-        if (!selectPathDialog) {
-            v_map.setMainPosition(place.latLng);
-
-            selectPathDialog = viewManager.Create({
-                startPlace: place,
-                bottomAlign: true,
-                callback: (order)=>{
-                    listener.remove();
-                    BeginAcceptedOrder(jsdata.currentOrder = order, 
-                                        selectPathDialog.getPathData());
-                }
-            }, SelectPathView, () => {
-                selectPathDialog = null;
-            });
-        } else selectPathDialog.SelectPlace(place);
-    }
-
-    listener = v_map.map.addListener("click", onClickMap);
-}
-
-function BeginAcceptedOrder(order, passedPathData = null) {
-    let dialog = viewManager.Create({
-        path: passedPathData,
-        bottomAlign: true,
-        order: order,
-        title: toLang('Order')
-    }, OrderAccepedView, BeginSelectPath);
-}
-
-function CreateViewFromState(order) {
-    if (typeof jsdata.currentOrder == 'object') {
-        BeginAcceptedOrder(order);
-    } else BeginSelectPath();
-}
-
-function Mechanics() {
-    v_map.driverManagerOn(true);
-    CreateViewFromState(jsdata.currentOrder);
-}
-
-function createOrderList(layer, orders) {
-    for (let i=0; i<orders.length; i++) {
-        viewManager.Create({
-            parent: layer,
-            order: orders[i],
+    BeginAcceptedOrder(order, passedPathData = null) {
+        let dialog = viewManager.Create({
+            path: passedPathData,
+            bottomAlign: true,
+            order: order,
             title: toLang('Order')
-        }, OrderAccepedView);
+        }, OrderAccepedView, this.BeginSelectPath.bind(this));
+    }
+
+    BeginSelectPath() {
+        var selectPathDialog;
+        var listener;
+
+        function onClickMap(e) {
+            if (e.placeId) {
+                v_map.getPlaceDetails(e.placeId).then((place)=>{
+                    place = $.extend(place, e);
+                    SelectPlace(place);
+                });
+            } else SelectPlace(e);
+            
+            return StopPropagation(e);
+        }
+
+        function SelectPlace(place) {
+
+            if (!selectPathDialog) {
+                v_map.setMainPosition(place.latLng);
+
+                selectPathDialog = viewManager.Create({
+                    startPlace: place,
+                    bottomAlign: true,
+                    callback: (order)=>{
+                        listener.remove();
+                        BeginAcceptedOrder(jsdata.currentOrder = order, 
+                                            selectPathDialog.getPathData());
+                    }
+                }, SelectPathView, () => {
+                    selectPathDialog = null;
+                });
+            } else selectPathDialog.SelectPlace(place);
+        }
+
+        listener = v_map.map.addListener("click", onClickMap);
     }
 }
+
+checkCondition(()=>{
+    return typeof(google) != 'undefined';
+}, ()=>{
+    new VMap($('#map'), ()=>{
+        v_map.driverManagerOn(true);
+        v_map.add(new Passenger(jsdata.currentOrder));
+    });
+});
