@@ -863,13 +863,23 @@ function getRoutePoint(routes, idx=0) {
 }
 
 function DrawPath(map, routeData, options = null) {
+    let renderer;
+    if (routeData.routes) {
+        options = $.extend({}, defaultPathOptions, options);
 
-    options = $.extend({}, defaultPathOptions, options);
-
-    var directionsRenderer = new google.maps.DirectionsRenderer(options);
-    directionsRenderer.setMap(map);
-    directionsRenderer.setDirections(routeData);
-    return directionsRenderer;
+        renderer = new google.maps.DirectionsRenderer(options);
+        renderer.setDirections(routeData);
+    } else if (routeData.length > 0) {
+        renderer = new google.maps.Polyline($.extend({
+            path: routeData,
+            geodesic: true,
+            strokeColor: "#FF0000",
+            strokeOpacity: 1.0,
+            strokeWeight: 2,
+        }, options));
+    }
+    renderer.setMap(map);
+    return renderer;
 }
 
 function StopPropagation(e) {
@@ -1010,6 +1020,10 @@ function afterCondition(checkFunc, resolve) {
         }
     }, 10);
 }
+
+function Last(arr) {
+  return arr[arr.length - 1];
+};
 
 Number.prototype.clamp = function(min, max) {
   return Math.min(Math.max(this, min), max);

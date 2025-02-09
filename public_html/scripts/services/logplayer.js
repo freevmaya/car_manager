@@ -1,10 +1,12 @@
-class LogPlayer {
+class LogPlayer extends Component {
 	#startDate;
 	#timerId;
 	#points;
 	#index;
+	#pathPoints;
+	#drawPath;
 	constructor(startDate) {
-		
+		super();
 		this.#startDate = Date.parse(startDate)
 		this.getData(startDate);
 	}
@@ -19,6 +21,7 @@ class LogPlayer {
 	}
 
 	beginPlay(e) {
+		this.#pathPoints = [];
 		this.#points = e;
 		this.#index = 0;
 		this.#timerId = setInterval(this.nextPoint.bind(this), 500);
@@ -26,19 +29,48 @@ class LogPlayer {
 
 	nextPoint() {
 		if (this.#index < this.#points.length - 1) {
-			v_map.MarkerManager.CreateMarkerDbg(toLatLngF(this.#points[this.#index]));
+
+			let p = toLatLngF(this.#points[this.#index]);
 			this.#index++;
+
+			if ((this.#pathPoints.length > 1) && Distance(Last(this.#pathPoints), p) < 1)
+				return;
+				
+			this.#pathPoints.push(p);
+			v_map.MarkerManager.CreateMarkerDbg(p);
+
+			if (this.#pathPoints.length > 1) {
+				this.CloseDrawPath();
+
+				this.#drawPath = DrawPath(v_map.map, this.#pathPoints);
+			}
 		} else this.Stop();
 	}
 
+	CloseDrawPath() {
+		if (this.#drawPath) {
+			this.#drawPath.setMap(null);
+			this.#drawPath = null;
+		}
+	}
+
 	Stop() {
+		this.CloseDrawPath();
 		clearInterval(this.#timerId);
 		delete this;
 	}
+
+	destroy() {
+		this.Stop();
+	}
 }
 
-$(window).ready(()=>{
-	let player;
+afterCondition(()=>{
+	return v_map && v_map.map;
+}, ()=>{
+
+	v_map.extend(Component);
+
 	let view = viewManager.Create({
 		title: 'Log player',
         template: 'view',
@@ -52,12 +84,12 @@ $(window).ready(()=>{
         ],
         actions: {
         	Begin: ()=>{
-        		if (player) player.Stop();
-        		player = new LogPlayer(view.getValues().StartTime);
+        		v_map.remove('LogPlayer');
+        		v_map.LogPlayer = new LogPlayer(view.getValues().StartTime);
         	}
         }
     }, BottomView, (()=>{
-    	if (player) player.Stop();
+    	v_map.remove('LogPlayer');
         view = null;
     }).bind(this));
 });

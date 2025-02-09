@@ -138,6 +138,8 @@ h1, h2, h3 {
 .debug {
     width: 5px;
     height: 5px;
+    margin-left: -2.5px;
+    margin-top: -2.5px;
     position: absolute;
     border-radius: 2px;
     background: black;
@@ -299,10 +301,7 @@ h1, h2, h3 {
     position: absolute;
     bottom: 0px;
     width: 100%;
-    justify-content: end;
-    flex-direction: column;
     z-index: 1;
-    padding-top: 20px;
     max-height: 50%;
     overflow-y: scroll;
 }
