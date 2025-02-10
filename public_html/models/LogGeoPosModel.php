@@ -8,7 +8,7 @@ class LogGeoPosModel extends BaseModel {
 	public function Update($values) {
 		GLOBAL $dbp, $user;
 		
-		return $dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `lat`, `lng`) VALUES (?, ?, ?)", 'idd', [$user['id'], $values['lat'], $values['lng']]);		
+		return $dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `latitude`, `longitude`, `accuracy`, `altitude`, `altitudeAccuracy`, `heading`, `speed`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 'iddddddd', [$user['id'], $values['latitude'], $values['longitude'], $values['accuracy'], $values['altitude'], $values['altitudeAccuracy'], $values['heading'], $values['speed']]);		
 	}
 
 	public function getItems($options) {
@@ -19,7 +19,7 @@ class LogGeoPosModel extends BaseModel {
 			$where[] = "`time` >= '".date('Y-m-d H:k:s', strtotime($options['dateTime']))."'";
 		}
 
-		$query = "SELECT `time`, `lat`, `lng` FROM {$this->getTable()} WHERE ".implode(" AND ", $where);
+		$query = "SELECT * FROM {$this->getTable()} WHERE ".implode(" AND ", $where);
 		return $dbp->asArray($query);
 	}
 }

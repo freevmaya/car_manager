@@ -24,7 +24,7 @@ class Ajax extends Page {
 
 	protected function setGeoPos($data) {
 		GLOBAL $user;
-		return (new LogGeoPosModel())->Update(['user_id'=>$user['id'], 'lat'=>$data['lat'], 'lng'=>$data['lng']]);
+		return (new LogGeoPosModel())->Update(array_merge($data, ['user_id'=>$user['id']]));
 	}
 
 	protected function setPosition($data) {

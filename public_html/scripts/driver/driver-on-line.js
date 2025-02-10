@@ -51,10 +51,7 @@ class DMap extends VMap {
 
         Ajax({
             action: 'setGeoPos',
-            data: {
-                lat: latLng.lat(),
-                lng: latLng.lng()
-            }
+            data: coordinates
         });
 
         if (coordinates.accuracy > 10) {

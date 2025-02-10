@@ -661,10 +661,13 @@ function toLatLng(obj) {
 
 function toCoordinates(ll, accuracy=0, speed=0) {
     return {
-        speed: speed,
-        accuracy: accuracy,
         latitude: isNumeric(ll.lat) ? ll.lat : ll.lat(),
-        longitude: isNumeric(ll.lng) ? ll.lng : ll.lng()
+        longitude: isNumeric(ll.lng) ? ll.lng : ll.lng(),
+        accuracy: accuracy,
+        speed: speed,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0
     }
 }
 
