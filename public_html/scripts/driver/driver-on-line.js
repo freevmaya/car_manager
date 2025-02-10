@@ -49,6 +49,14 @@ class DMap extends VMap {
         
         this.#clearAccuracyCircle();
 
+        Ajax({
+            action: 'setGeoPos',
+            data: {
+                lat: latLng.lat(),
+                lng: latLng.lng()
+            }
+        });
+
         if (coordinates.accuracy > 10) {
             this.#accuracyCircle = new google.maps.Circle({
                 strokeColor: "#0000FF",

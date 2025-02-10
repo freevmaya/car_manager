@@ -8,7 +8,7 @@ class LogGeoPosModel extends BaseModel {
 	public function Update($values) {
 		GLOBAL $dbp, $user;
 		
-		$result = $dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `lat`, `lng`) VALUES (?, ?, ?)", 'idd', [$user['id'], $values['lat'], $values['lng']]);		
+		return $dbp->bquery("INSERT INTO {$this->getTable()} (`user_id`, `lat`, `lng`) VALUES (?, ?, ?)", 'idd', [$user['id'], $values['lat'], $values['lng']]);		
 	}
 
 	public function getItems($options) {
