@@ -1,6 +1,7 @@
 class DMap extends VMap {
 
     tracer;
+    #accuracyCircle;
 
     constructor(elem, callback) {
         super(elem, callback, {markerManagerClass: MarkerOrderManager});
@@ -13,15 +14,15 @@ class DMap extends VMap {
 
         if (DEV) {
             this.map.addListener('click', ((e)=>{
-                this.onGeoPos(e.latLng);
+                this.onGeoPos(toCoordinates(e.latLng, Math.random() * 400));
             }).bind(this));
         } else app.AddListener('GEOPOS', this.onGeoPos.bind(this));
     }
 
     createTracer(routes, options) {
         this.removeTracer();
-        this.tracer = new Tracer(routes, this.superSetPosition.bind(this), 200, options);
-        this.tracer.ReceivePoint(new google.maps.LatLng(this.getMainPosition()));
+        this.tracer = new Tracer(routes, this.setMainPosition.bind(this), 200, options);
+        this.tracer.ReceivePoint(toCoordinates(this.getMainPosition()));
         return this.tracer;
     }
 
@@ -32,18 +33,35 @@ class DMap extends VMap {
         }
     }
 
-    superSetPosition(latLng, angle = undefined) {
-        super.setMainPosition(latLng, angle);
+    #clearAccuracyCircle() {
+        if (this.#accuracyCircle) {
+            this.#accuracyCircle.setMap(null);
+            this.#accuracyCircle = null;
+        }
     }
 
-    setMainPosition(latLng, angle = undefined) {
+    onGeoPos(coordinates) {
+
+        let latLng = toLatLngF(coordinates);
         if (this.tracer)
-            this.tracer.ReceivePoint(latLng);
-        else super.setMainPosition(latLng, angle);
-    }
+            this.tracer.ReceivePoint(coordinates);
+        else this.setMainPosition(latLng, this.tracer ? this.tracer.Angle : 0);
+        
+        this.#clearAccuracyCircle();
 
-    onGeoPos(latLng) {
-        this.setMainPosition(latLng);
+        if (coordinates.accuracy > 10) {
+            this.#accuracyCircle = new google.maps.Circle({
+                strokeColor: "#0000FF",
+                strokeOpacity: 0.15,
+                strokeWeight: 1,
+                fillColor: "#0000FF",
+                fillOpacity: 0.08,
+                clickable: false,
+                map: this.map,
+                center: latLng,
+                radius: coordinates.accuracy
+            });
+        }
         v_map.MarkerManager.CreateMarkerDbg(latLng, 20000);
     }
 }

@@ -22,9 +22,9 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <link rel="stylesheet" type="text/css" href="<?=BASEURL?>/css/colors-<?=$this->colorSheme('01')?>.css<?=$anti_cache?>">
     <script type="text/javascript">var DEV = <?=DEV ? 'true' : 'false'?>;</script>
     <script src="<?=DEV ? SCRIPTURL : 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1'?>/jquery.min.js"></script>   
-    <script src="<?=SCRIPTURL?>/consts.js<?=$anti_cache?>"></script>    
-    <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script>  
-    <script src="<?=SCRIPTURL?>/component.js<?=$anti_cache?>"></script>
+    <script src="<?=SCRIPTURL?>/consts.js<?=$anti_cache?>"></script> 
+    <script src="<?=SCRIPTURL?>/component.js<?=$anti_cache?>"></script>    
+    <script src="<?=SCRIPTURL?>/main.js<?=$anti_cache?>"></script> 
     <?=html::RenderJSFiles($anti_cache);?>
     <?=html::RenderStyleFiles();?>
     <script src="https://telegram.org/js/telegram-web-app.js" async></script>
@@ -56,15 +56,13 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
                     if (typeof(v_map) != 'undefined')
                         latLng = v_map.getMainPosition();
 
-                    action(latLng);
+                    action(toCoordinates(latLng, Math.random() * 400));
                     
                 }, 500);
             <?} else {?>
                 return navigator.geolocation.watchPosition((result)=>{
-                    console.log(result.coords);
-                    let latLng = toLatLngF(result.coords);
-                    user = $.extend(user, latLng);
-                    action(latLng);
+                    user = $.extend(user, toLatLngF(result.coords));
+                    action(result.coords);
                 });
             <?}?>
         }
@@ -83,12 +81,11 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
                 let latLng = toLatLngF(<?=$this->asDriver() ? "{latitude: 55.190449, longitude: 61.279631 }" : "{latitude: 55.19068764669877, longitude: 61.28231993933741}"?>);
 
                 user = $.extend(user, latLng);
-                action(latLng);
+                action(toCoordinates(latLng, Math.random() * 400));
             <?} else {?>
                 navigator.geolocation.getCurrentPosition((result)=>{
-                    let latLng = toLatLngF(result.coords);
-                    user = $.extend(user, latLng);
-                    action(latLng);
+                    user = $.extend(user, toLatLngF(result.coords));
+                    action(result.coords);
                 });
             <?}?>
         }

@@ -37,6 +37,7 @@ class Tracer extends EventProvider {
     #nextStep;
     #curLegIdx;
     #toofarPoints;
+    #receiveCoordinates;
 
     get Enabled() { return this.#intervalId != false; }
     set Enabled(value) { this.#setUpdateEnabled(value); }
@@ -324,14 +325,19 @@ class Tracer extends EventProvider {
         } 
     }
 
-    #setGeoPos(latLng) {
-
+    #setGeoPos(coordinates) {
+        this.#receiveCoordinates = coordinates;
+        let latLng = toLatLngF(this.#receiveCoordinates);
         if (this.#routes && (this.#routes.length > 0)) {
             this.#snapshotGeoTime();
 
             let path = this.Route.overview_path;
             let inPath = {};
-            let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance, this.#routeDistance);
+
+            if (coordinates.speed != 0) // Пока усредняем скорость от полученной с датчика и вычесленной ранее
+                this.#toSpeed = (this.#toSpeed + coordinates.speed) / 2;
+
+            let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance + coordinates.accuracy, this.#routeDistance);
             //let p = this.CalcPointInLeg(this.#curLegIdx, latLng, inPath);
 
             if (p) {
@@ -345,8 +351,8 @@ class Tracer extends EventProvider {
         }
     }
 
-    ReceivePoint(latLng) {
-        this.#setGeoPos(latLng);
+    ReceivePoint(coordinates) {
+        this.#setGeoPos(coordinates);
     }
 
     CalcPointInLeg = function (LegIdx, p, ResultData) {

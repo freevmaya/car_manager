@@ -1,5 +1,9 @@
 class Component {
 
+	constructor() {
+
+	}
+
 	get(name) {
 		return this[name];
 	}
@@ -35,14 +39,10 @@ class Component {
 	destroy() {
 		delete this.parent[this.constructor.name];
 	}
-
-	extends(base, ...params) {
-		Object.assign(this, new base(params));
-	}
 }
 
-Object.prototype.extend = function(base) {
+Component.extend = function(obj, base) {
 	Object.getOwnPropertyNames(base.prototype)
     .filter(prop => prop != 'constructor')
-    .forEach(prop => { if (!this.hasOwnProperty(prop)) this[prop] = base.prototype[prop]; })
+    .forEach(prop => { if (!obj.hasOwnProperty(prop)) obj[prop] = base.prototype[prop]; })
 }

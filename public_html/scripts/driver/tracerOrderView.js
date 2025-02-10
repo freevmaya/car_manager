@@ -374,7 +374,7 @@ class TracerOrderView extends PathView {
     onUpdateMap() {
 
         let tracer = this.Tracer;
-        if (tracer) {
+        if (tracer && tracer.RoutePosition) {
 
             this.view.find('.orderDetail .remaindDistance').text(DistanceToStr(tracer.RemaindDistance));
             this.view.find('.orderDetail .remaindTime').text(tracer.RemaindTime.toHHMMSS());

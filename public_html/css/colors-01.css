@@ -401,8 +401,16 @@ form > .footer{
     color: coral;
 }
 
-.order.execution {
+.execution .state {
     color: coral;
+}
+
+.rejected .state {
+    color: orange;
+}
+
+.cancel .state {
+    color: orange;
 }
 
 .view .settings {

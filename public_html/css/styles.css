@@ -586,7 +586,7 @@ input, select, .datetime {
     border-width: 1px;
     padding: 0.8em 1em;
     border-radius: 1.5em;
-    height: 3em;
+    /* height: 3em; */
     font-size: 0.9em;
 }
 
@@ -1443,7 +1443,7 @@ form .field .container {
     width: max-content;
 }
 
-.trips .data .block {
+.trips .view .data .block {
     margin: 2em 0.5em;
 }
 
@@ -1462,7 +1462,7 @@ form .field .container {
 
 .view.order .block {
     transition: width 0.5s, height 0.5s;
-    max-width: 50%;
+    /* max-width: 50%; */
 }
 
 .header .separator {
@@ -1493,7 +1493,7 @@ form .field .container {
 
 .data .block h3 {
     margin-top: -1.5em;
-    margin: -2em 2em 0 2em;
+    /* margin: -2em 2em 0 2em; */
     align-content: center;
     padding: 0 1em;
     font-style: italic;

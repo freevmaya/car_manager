@@ -1,6 +1,7 @@
-class EventProvider {
+class EventProvider extends Component {
     #incIndex;  
     constructor() {
+        super();
         this.listeners = {};
         this.#incIndex = 0;
     }
@@ -50,7 +51,6 @@ class EventProvider {
 class App extends EventProvider {
 
     #geoId;
-    #geoPos;
     #listeners;
     #question;
     #screenLock;
@@ -140,11 +140,9 @@ class App extends EventProvider {
         return false;
     }
 
-    receiveGeo(position) {
-        if (position) {
-            this.#geoPos = position;
-            this.SendEvent('GEOPOS', this.#geoPos);
-        }
+    receiveGeo(coordinates) {
+        if (coordinates)
+            this.SendEvent('GEOPOS', coordinates);
     }
 
     enableGeo(enable) {
@@ -620,9 +618,9 @@ function isEmpty(v) {
     return (typeof(v) === 'undefined') || (v == null) || (v.length == 0);
 }
 
-function isNumeric(str) {
-  if (typeof str != "string") return false;
-  return !isNaN(str) && !isNaN(parseFloat(str));
+function isNumeric(v) {
+  if (typeof(v) == "number") return true;
+  return !isNaN(v) && !isNaN(parseFloat(v));
 }
 
 function toLatLngF(obj) {
@@ -661,9 +659,17 @@ function toLatLng(obj) {
     return null;
 }
 
+function toCoordinates(ll, accuracy=0, speed=0) {
+    return {
+        speed: speed,
+        accuracy: accuracy,
+        latitude: isNumeric(ll.lat) ? ll.lat : ll.lat(),
+        longitude: isNumeric(ll.lng) ? ll.lng : ll.lng()
+    }
+}
+
+
 var EARTHRADIUS = 6378.137; // Radius of earth in KM
-
-
 
 function LerpRad (A, B, w){
     let CS = (1-w)*Math.cos(A) + w*Math.cos(B);

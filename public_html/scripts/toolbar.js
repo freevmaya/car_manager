@@ -6,6 +6,11 @@ class ToolbarUser {
 	#notifyList;
 	#view;
 	#listView;
+
+	get isMap() {
+		return typeof(v_map) != 'undefined';
+	}
+
 	constructor(toolbarElem) {
 		this.#view = toolbarElem;
 		this.#wicon = this.#view.find('.warning');
@@ -93,8 +98,6 @@ class ToolbarUser {
 			content.append(option);
 		}
 
-		let map = $('#map');
-
 		this.#listView = viewManager.Create({modal: true,
 						title: toLang('Notifications'),
 						content: content}, View, (()=>{
@@ -152,18 +155,19 @@ class ToolbarUser {
 		
 		let option = $(e.currentTarget).closest('.option');
 		let order_id = this.#getOrderId(option.data('id'));
-		if (order_id && v_map) {
-
-			if (user.asDriver) {
-				if (!orderManager.selOrderView) {
+		if (order_id) {
+			if (this.isMap) {
+				if (user.asDriver) {
+					if (!orderManager.selOrderView) {
+						this.#listView.Close();
+						orderManager.ShowInfoOrder(order_id);
+					}
+					else this.showOfferView(order_id);
+	 			} else {
 					this.#listView.Close();
-					orderManager.ShowInfoOrder(order_id);
-				}
-				else this.showOfferView(order_id);
- 			} else {
-				this.#listView.Close();
- 				v_map.MarkerManager.ShowMarkerOfOrder(order_id);
- 			}
+	 				v_map.MarkerManager.ShowMarkerOfOrder(order_id);
+	 			}
+	 		} else document.location.href = "/map";
 		}
 	}
 

@@ -65,5 +65,16 @@
 	    html::AddTemplate(html::RenderField(['type'=>'order'], $order), 'order');
 		html::AddTemplate(html::RenderField(['type'=>'target-view']), 'target-view');
 		html::AddTemplate(html::RenderField(['type'=>'driver']), 'driver');
+
+		html::AddJsCode('
+			checkCondition(()=>{
+			    return typeof(google) != "undefined";
+			}, ()=>{
+			    new VMap($("#map"), ()=>{
+			        v_map.driverManagerOn(true);
+			        v_map.add(new Passenger(jsdata.currentOrder));
+			    });
+			});
+		', 'initMapLayer');
 	}
 ?>

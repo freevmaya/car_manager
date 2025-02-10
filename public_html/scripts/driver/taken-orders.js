@@ -105,6 +105,8 @@ class TakenOrders extends OrderManager {
     ShowOrderPreview(markerOrOrderId, haveActions = true) {
 
         let marker = this.GetMarker(markerOrOrderId);
+        if (!marker) return;
+        
         let order = marker.order;
         let actions = {};
 
@@ -146,10 +148,13 @@ class TakenOrders extends OrderManager {
     }
 
     ShowInfoOrder(markerOrOrderId) {
+        this.ShowOrderPreview(markerOrOrderId);
+        /*
         let marker = this.GetMarker(markerOrOrderId);
         let order = marker.order;
         if (this.#taken_orders.find((e) => e.id == order.id))
             this.showImportantOrder(order.id);
         else this.ShowOrderPreview(markerOrOrderId);
+        */
     }
 }

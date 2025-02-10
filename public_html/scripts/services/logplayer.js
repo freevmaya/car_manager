@@ -68,9 +68,7 @@ class LogPlayer extends Component {
 afterCondition(()=>{
 	return v_map && v_map.map;
 }, ()=>{
-
-	v_map.extend(Component);
-
+	
 	let view = viewManager.Create({
 		title: 'Log player',
         template: 'view',

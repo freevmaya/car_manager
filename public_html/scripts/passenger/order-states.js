@@ -510,6 +510,7 @@ class Passenger extends Component {
     BeginSelectPath() {
         var selectPathDialog;
         var listener;
+        let This = this;
 
         function onClickMap(e) {
             if (e.placeId) {
@@ -532,7 +533,7 @@ class Passenger extends Component {
                     bottomAlign: true,
                     callback: (order)=>{
                         listener.remove();
-                        BeginAcceptedOrder(jsdata.currentOrder = order, 
+                        This.BeginAcceptedOrder(jsdata.currentOrder = order, 
                                             selectPathDialog.getPathData());
                     }
                 }, SelectPathView, () => {
@@ -545,11 +546,12 @@ class Passenger extends Component {
     }
 }
 
-checkCondition(()=>{
-    return typeof(google) != 'undefined';
-}, ()=>{
-    new VMap($('#map'), ()=>{
-        v_map.driverManagerOn(true);
-        v_map.add(new Passenger(jsdata.currentOrder));
-    });
-});
+function createOrderList(layer, orders) {
+    for (let i=0; i<orders.length; i++) {
+        viewManager.Create({
+            parent: layer,
+            order: orders[i],
+            title: toLang('Order')
+        }, OrderAccepedView);
+    }
+}

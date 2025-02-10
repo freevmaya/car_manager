@@ -1,30 +1,20 @@
 <?
-html::AddScriptFile('graph.js');
-html::AddJsCode("
-let graph = {
-  0: {},
-  1: {},
-  2: {},
-  3: {},
-  4: {},
-  5: {},
-  6: {}
-}
+$orders = BaseModel::FullItems((new OrderModel())->getItems(['driver_id'=>$this->asDriver, 'state'=>ACTIVEORDERLIST_ARR]), ['route_id'=>new RouteModel()]);
 
-let keys = Object.keys(graph);
-
-for (let i=0; i<keys.length; i++)
-	for (let n=0; n<keys.length; n++)
-		if (i != n)
-			graph[i][n] = Math.random(0.0, 5.0);
-
-let directions = [
-	{start: 1, finish: 2},
-	{start: 3, finish: 4},
-	{start: 5, finish: 6}
-]
-
-let result = calcPaths(graph, directions);
-console.log(result);
-");
+if (count($orders) > 0) {
 ?>
+<div class="pageContent trips">
+	<div class="sliderView">
+		<div class="form slider">
+			<div class="group">
+				<h2><?=lang('Trips')?></h2>
+				<div id="currentList">
+				<?
+				foreach ($orders as $order)
+					echo html::RenderField(['type'=>'order-for-driver'], $order);
+				?>
+				</div>
+			</div>
+	</div>
+</div>
+<?}?>
