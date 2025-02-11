@@ -43,9 +43,6 @@ class DMap extends VMap {
     onGeoPos(coordinates) {
 
         let latLng = toLatLngF(coordinates);
-        if (this.tracer)
-            this.tracer.ReceivePoint(coordinates);
-        else this.setMainPosition(latLng, this.tracer ? this.tracer.Angle : 0);
         
         this.#clearAccuracyCircle();
 
@@ -68,6 +65,10 @@ class DMap extends VMap {
             });
         }
         v_map.MarkerManager.CreateMarkerDbg(latLng, 20000);
+        
+        if (this.tracer)
+            this.tracer.ReceivePoint(coordinates);
+        else this.setMainPosition(latLng, this.tracer ? this.tracer.Angle : 0);
     }
 }
 
