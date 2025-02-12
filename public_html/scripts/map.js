@@ -423,3 +423,59 @@ VMap.preparePlace = function(p) {
 
 	return result;
 }
+
+class GeoCoordinates {
+	#coordinates;
+	#accuracyCircle;
+	#centerCircle;
+	#map;
+
+	constructor(map) {
+		this.#map = map;
+	}
+
+	set(coordinates) {
+        let latLng = toLatLngF(this.#coordinates = coordinates);
+		if (!this.#accuracyCircle)
+			this.#draw(latLng, coordinates.accuracy);
+		else {
+			this.#accuracyCircle.setRadius(coordinates.accuracy);
+			this.#accuracyCircle.setCenter(latLng);
+			this.#centerCircle.setCenter(latLng);
+		}
+        v_map.MarkerManager.CreateMarkerDbg(latLng, 20000);
+	}
+
+	#draw(latLng, accuracy) {
+        this.#accuracyCircle = new google.maps.Circle({
+            strokeColor: "#0000FF",
+            strokeOpacity: 0.15,
+            strokeWeight: 1,
+            fillColor: "#0000FF",
+            fillOpacity: 0.08,
+            clickable: false,
+            map: this.#map,
+            center: latLng,
+            radius: Number(accuracy)
+        });
+
+        this.#centerCircle = new google.maps.Circle({
+            fillColor: "#000000",
+            fillOpacity: 0.5,
+            clickable: false,
+            map: this.#map,
+            center: latLng,
+            radius: 5
+        });
+	}
+
+	destroy() {
+		if (this.#accuracyCircle) {
+			this.#accuracyCircle.setMap(null);
+			this.#centerCircle.setMap(null);
+
+			this.#accuracyCircle = null;
+			this.#centerCircle = null;
+		}
+	}
+}

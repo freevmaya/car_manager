@@ -5,6 +5,8 @@ class LogPlayer extends Component {
 	#index;
 	#pathPoints;
 	#drawPath;
+	#geoCircle;
+
 	constructor(startDate) {
 		super();
 		this.#startDate = Date.parse(startDate)
@@ -25,12 +27,17 @@ class LogPlayer extends Component {
 		this.#points = e;
 		this.#index = 0;
 		this.#timerId = setInterval(this.nextPoint.bind(this), 500);
+        
+        if (!this.#geoCircle)
+            this.#geoCircle = new GeoCoordinates(v_map.map);
 	}
 
 	nextPoint() {
 		if (this.#index < this.#points.length - 1) {
 
 			let p = toLatLngF(this.#points[this.#index]);
+			this.#geoCircle.set(this.#points[this.#index]);
+			
 			this.#index++;
 
 			if ((this.#pathPoints.length > 1) && Distance(Last(this.#pathPoints), p) < 1)
@@ -55,6 +62,8 @@ class LogPlayer extends Component {
 	}
 
 	Stop() {
+		if (this.#geoCircle)
+			this.#geoCircle.destroy();
 		this.CloseDrawPath();
 		clearInterval(this.#timerId);
 		delete this;

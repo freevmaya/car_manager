@@ -1,7 +1,7 @@
 class DMap extends VMap {
 
     tracer;
-    #accuracyCircle;
+    #geoCircle;
 
     constructor(elem, callback) {
         super(elem, callback, {markerManagerClass: MarkerOrderManager});
@@ -33,38 +33,27 @@ class DMap extends VMap {
         }
     }
 
-    #clearAccuracyCircle() {
-        if (this.#accuracyCircle) {
-            this.#accuracyCircle.setMap(null);
-            this.#accuracyCircle = null;
+    #clearClearCircle() {
+        if (this.#geoCircle) {
+            this.#geoCircle.destroy();;
+            this.#geoCircle = null;
         }
     }
 
     onGeoPos(coordinates) {
 
+        if (!DEV)
+            Ajax({
+                action: 'setGeoPos',
+                data: coordinates
+            });
+
         let latLng = toLatLngF(coordinates);
         
-        this.#clearAccuracyCircle();
+        if (!this.#geoCircle)
+            this.#geoCircle = new GeoCoordinates(this.map);
 
-        Ajax({
-            action: 'setGeoPos',
-            data: coordinates
-        });
-
-        if (coordinates.accuracy > 10) {
-            this.#accuracyCircle = new google.maps.Circle({
-                strokeColor: "#0000FF",
-                strokeOpacity: 0.15,
-                strokeWeight: 1,
-                fillColor: "#0000FF",
-                fillOpacity: 0.08,
-                clickable: false,
-                map: this.map,
-                center: latLng,
-                radius: coordinates.accuracy
-            });
-        }
-        v_map.MarkerManager.CreateMarkerDbg(latLng, 20000);
+        this.#geoCircle.set(coordinates);
         
         if (this.tracer)
             this.tracer.ReceivePoint(coordinates);
