@@ -1,3 +1,5 @@
+const {KalmanFilter} = kalmanFilter;
+
 class LogPlayer extends Component {
 	#startDate;
 	#timerId;
@@ -6,11 +8,22 @@ class LogPlayer extends Component {
 	#pathPoints;
 	#drawPath;
 	#geoCircle;
+	#kFilter;
 
 	constructor(startDate) {
 		super();
 		this.#startDate = Date.parse(startDate)
 		this.getData(startDate);
+  		this.#kFilter = new KalmanFilter({
+			observation: {
+				sensorDimension: 2,
+				name: 'sensor'
+			},
+			dynamic: {
+				name: 'constant-position',// observation.sensorDimension == dynamic.dimension
+				covariance: [1, 1]// equivalent to diag([3, 4])
+			}
+		});
 	}
 
 	getData(dateTime) {
@@ -26,19 +39,40 @@ class LogPlayer extends Component {
 		this.#pathPoints = [];
 		this.#points = e;
 		this.#index = 0;
-		this.#timerId = setInterval(this.nextPoint.bind(this), 500);
+		this.#timerId = setInterval(this.nextPoint.bind(this), 200);
         
         if (!this.#geoCircle)
             this.#geoCircle = new GeoCoordinates(v_map.map);
 	}
 
+	filteringAndDraw(points) {
+		points = this.#kFilter.filterAll(points);
+
+		let result = [];
+		for (let i=0; i<points.length; i++) {
+      		result.push(new google.maps.LatLng(points[i][0], points[i][1]));
+		}
+
+		this.CloseDrawPath();
+		this.#drawPath = DrawPath(v_map.map, result);
+	}
+
 	nextPoint() {
+
 		if (this.#index < this.#points.length - 1) {
 
 			let p = toLatLngF(this.#points[this.#index]);
 			this.#geoCircle.set(this.#points[this.#index]);
 			
 			this.#index++;
+
+//KALMAN TEST
+			this.#pathPoints.push([p.lat(), p.lng()]);
+
+			if (this.#pathPoints.length > 2) 
+				this.filteringAndDraw(this.#pathPoints);
+
+			/*
 
 			if ((this.#pathPoints.length > 1) && Distance(Last(this.#pathPoints), p) < 1)
 				return;
@@ -51,7 +85,9 @@ class LogPlayer extends Component {
 
 				this.#drawPath = DrawPath(v_map.map, this.#pathPoints);
 			}
+			*/
 		} else this.Stop();
+
 	}
 
 	CloseDrawPath() {

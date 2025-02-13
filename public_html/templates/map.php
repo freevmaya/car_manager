@@ -6,16 +6,10 @@
 	$orderModel = new OrderModel();
 	$routeModel = new RouteModel();
 
-	$services = ['logplayer', 'drawpath'];
-
-	foreach ($services as $service)
-		if (isset(Page::$request[$service])) {
-			html::AddScriptFile("services/{$service}.js");
-		}
-
 	if ($this->asDriver) {
 //------------------------------DRIVER---------------------------------------------
 
+		html::AddScriptFile("kalman-filter.min.js");
 		html::AddScriptFile("order.js");
 		html::AddScriptFile("graph.js");
 		html::AddScriptFile("driver/orderView.js");
@@ -77,4 +71,11 @@
 			});
 		', 'initMapLayer');
 	}
+
+	$services = ['logplayer', 'drawpath'];
+
+	foreach ($services as $service)
+		if (isset(Page::$request[$service])) {
+			html::AddScriptFile("services/{$service}.js");
+		}
 ?>

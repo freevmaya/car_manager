@@ -436,12 +436,17 @@ class GeoCoordinates {
 
 	set(coordinates) {
         let latLng = toLatLngF(this.#coordinates = coordinates);
-		if (!this.#accuracyCircle)
-			this.#draw(latLng, coordinates.accuracy);
-		else {
-			this.#accuracyCircle.setRadius(coordinates.accuracy);
-			this.#accuracyCircle.setCenter(latLng);
-			this.#centerCircle.setCenter(latLng);
+
+        let accuracy = Number(coordinates.accuracy);
+
+        if (accuracy) {
+			if (!this.#accuracyCircle)
+				this.#draw(latLng, accuracy);
+			else {
+				this.#accuracyCircle.setRadius(accuracy);
+				this.#accuracyCircle.setCenter(latLng);
+				this.#centerCircle.setCenter(latLng);
+			}
 		}
         v_map.MarkerManager.CreateMarkerDbg(latLng, 20000);
 	}
@@ -456,7 +461,7 @@ class GeoCoordinates {
             clickable: false,
             map: this.#map,
             center: latLng,
-            radius: Number(accuracy)
+            radius: accuracy
         });
 
         this.#centerCircle = new google.maps.Circle({
