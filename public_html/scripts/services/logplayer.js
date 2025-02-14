@@ -1,4 +1,60 @@
-const {KalmanFilter} = kalmanFilter;
+class GPSFilter {
+	#options
+	#timeline;
+
+	get length() { return this.#timeline.length; }
+
+	constructor(options) {
+		this.#options = $.extend(this.getDefaultOptions(), options);
+		this.#timeline = [];
+	}
+
+	calcPosition(latLng, timeSec, accuracy) {
+		let last = this.#timeline[this.#timeline.length - 1];
+		let timeDiff = timeSec - last[1];
+		let distance = Distance(latLng, last[0]);
+		let speedKmH = distance / timeDiff * SPEEDCNV;
+
+		if (speedKmH > this.#options.speedLimit.max) {
+		
+			let direct = LatLngNormal(LatLngSub(latLng, last[0]));
+			distance = (timeDiff / 60 / 60) * this.#options.speedLimit.max;
+
+			latLng = LatLngAdd(last[0], LatLngMul(direct, distance));
+		}
+
+		let ak = Math.min(last[2] / accuracy, 1);
+
+		return LatLngAdd(LatLngMul(latLng, ak), LatLngMul(last[0], 1 - ak));
+	}
+
+	push(latLng, timeSec, accuracy) {
+		let itm = [latLng, timeSec, accuracy];
+		if (this.#timeline.length > 0)
+			itm[0] = this.calcPosition(latLng, timeSec, accuracy);
+
+		this.#timeline.push(itm);
+	}
+
+	getPoints() {
+		let result = [];
+		for (var i = 0; i < this.#timeline.length - 1; i++)
+			result.push(this.#timeline[i][0]);
+
+		return result;
+	}
+
+	getDefaultOptions() {
+		return {
+			speedLimit: { // В км/ч
+				min: -30,
+				max: 100
+			},
+
+			maxAccuracy: 500
+		}
+	}
+}
 
 class LogPlayer extends Component {
 	#startDate;
@@ -8,22 +64,12 @@ class LogPlayer extends Component {
 	#pathPoints;
 	#drawPath;
 	#geoCircle;
-	#kFilter;
+	#filter;
 
 	constructor(startDate) {
 		super();
 		this.#startDate = Date.parse(startDate)
 		this.getData(startDate);
-  		this.#kFilter = new KalmanFilter({
-			observation: {
-				sensorDimension: 2,
-				name: 'sensor'
-			},
-			dynamic: {
-				name: 'constant-position',// observation.sensorDimension == dynamic.dimension
-				covariance: [1, 1]// equivalent to diag([3, 4])
-			}
-		});
 	}
 
 	getData(dateTime) {
@@ -43,18 +89,8 @@ class LogPlayer extends Component {
         
         if (!this.#geoCircle)
             this.#geoCircle = new GeoCoordinates(v_map.map);
-	}
 
-	filteringAndDraw(points) {
-		points = this.#kFilter.filterAll(points);
-
-		let result = [];
-		for (let i=0; i<points.length; i++) {
-      		result.push(new google.maps.LatLng(points[i][0], points[i][1]));
-		}
-
-		this.CloseDrawPath();
-		this.#drawPath = DrawPath(v_map.map, result);
+  		this.#filter = new GPSFilter();
 	}
 
 	nextPoint() {
@@ -63,29 +99,17 @@ class LogPlayer extends Component {
 
 			let p = toLatLngF(this.#points[this.#index]);
 			this.#geoCircle.set(this.#points[this.#index]);
+
+//KALMAN TEST
+			this.#filter.push(p, Number(this.#points[this.#index].timeSec), Number(this.#points[this.#index].accuracy));
+
+			if (this.#filter.length > 2) {
+				this.CloseDrawPath();
+				this.#drawPath = DrawPath(v_map.map, this.#filter.getPoints());
+			}
 			
 			this.#index++;
 
-//KALMAN TEST
-			this.#pathPoints.push([p.lat(), p.lng()]);
-
-			if (this.#pathPoints.length > 2) 
-				this.filteringAndDraw(this.#pathPoints);
-
-			/*
-
-			if ((this.#pathPoints.length > 1) && Distance(Last(this.#pathPoints), p) < 1)
-				return;
-				
-			this.#pathPoints.push(p);
-			v_map.MarkerManager.CreateMarkerDbg(p);
-
-			if (this.#pathPoints.length > 1) {
-				this.CloseDrawPath();
-
-				this.#drawPath = DrawPath(v_map.map, this.#pathPoints);
-			}
-			*/
 		} else this.Stop();
 
 	}

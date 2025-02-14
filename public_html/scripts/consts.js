@@ -78,3 +78,4 @@ const WAITOFFERS = DEV ? 5 : 30; //сек
 
 const windowsLayerId = '#windows';
 const modalLayerId = '#modal-windows';
+const SPEEDCNV = 3.6;

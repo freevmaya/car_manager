@@ -19,7 +19,7 @@ class LogGeoPosModel extends BaseModel {
 			$where[] = "`time` >= '".date('Y-m-d H:k:s', strtotime($options['dateTime']))."'";
 		}
 
-		$query = "SELECT * FROM {$this->getTable()} WHERE ".implode(" AND ", $where);
+		$query = "SELECT *, TIME_TO_SEC(time) AS timeSec FROM {$this->getTable()} WHERE ".implode(" AND ", $where);
 		return $dbp->asArray($query);
 	}
 }
