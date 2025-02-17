@@ -1,61 +1,3 @@
-class GPSFilter {
-	#options
-	#timeline;
-
-	get length() { return this.#timeline.length; }
-
-	constructor(options) {
-		this.#options = $.extend(this.getDefaultOptions(), options);
-		this.#timeline = [];
-	}
-
-	calcPosition(latLng, timeSec, accuracy) {
-		let last = this.#timeline[this.#timeline.length - 1];
-		let timeDiff = timeSec - last[1];
-		let distance = Distance(latLng, last[0]);
-		let speedKmH = distance / timeDiff * SPEEDCNV;
-
-		if (speedKmH > this.#options.speedLimit.max) {
-		
-			let direct = LatLngNormal(LatLngSub(latLng, last[0]));
-			distance = (timeDiff / 60 / 60) * this.#options.speedLimit.max;
-
-			latLng = LatLngAdd(last[0], LatLngMul(direct, distance));
-		}
-
-		let ak = Math.min(last[2] / accuracy, 1);
-
-		return LatLngAdd(LatLngMul(latLng, ak), LatLngMul(last[0], 1 - ak));
-	}
-
-	push(latLng, timeSec, accuracy) {
-		let itm = [latLng, timeSec, accuracy];
-		if (this.#timeline.length > 0)
-			itm[0] = this.calcPosition(latLng, timeSec, accuracy);
-
-		this.#timeline.push(itm);
-	}
-
-	getPoints() {
-		let result = [];
-		for (var i = 0; i < this.#timeline.length - 1; i++)
-			result.push(this.#timeline[i][0]);
-
-		return result;
-	}
-
-	getDefaultOptions() {
-		return {
-			speedLimit: { // В км/ч
-				min: -30,
-				max: 100
-			},
-
-			maxAccuracy: 500
-		}
-	}
-}
-
 class LogPlayer extends Component {
 	#startDate;
 	#timerId;
@@ -90,7 +32,12 @@ class LogPlayer extends Component {
         if (!this.#geoCircle)
             this.#geoCircle = new GeoCoordinates(v_map.map);
 
-  		this.#filter = new GPSFilter();
+  		this.#filter = new GPSFilter({
+  			speedLimit: { // В км/ч
+                min: -20,
+                max: 20
+            }
+  		});
 	}
 
 	nextPoint() {

@@ -37,7 +37,7 @@ class Tracer extends EventProvider {
     #nextStep;
     #curLegIdx;
     #toofarPoints;
-    #receiveCoordinates;
+    #filter;
 
     get Enabled() { return this.#intervalId != false; }
     set Enabled(value) { this.#setUpdateEnabled(value); }
@@ -114,6 +114,7 @@ class Tracer extends EventProvider {
         if (!isEmpty(this.Options.speed))
             this.SetSpeed(this.Options.speed, true);
 
+        this.#filter = new GPSFilter();
         this.Enabled = true;
     }
 
@@ -326,8 +327,13 @@ class Tracer extends EventProvider {
     }
 
     #setGeoPos(coordinates) {
-        this.#receiveCoordinates = coordinates;
-        let latLng = toLatLngF(this.#receiveCoordinates);
+        let latLng = toLatLngF(coordinates);
+
+        if (this.#filter) {
+            this.#filter.push(latLng, coordinates.time, coordinates.accuracy);
+            latLng = this.#filter.lastPoint;
+        }
+
         if (this.#routes && (this.#routes.length > 0)) {
             this.#snapshotGeoTime();
 

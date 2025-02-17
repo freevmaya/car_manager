@@ -568,7 +568,7 @@ h1, h2, h3 {
     display: block;
 }
 
-.pageContent .form {
+.data-model .form {
     display: flex;
     justify-content: center;
     flex-direction: row;
@@ -657,8 +657,36 @@ form > .footer {
 .sliderView::-webkit-scrollbar {
 }
 
-.form .data {
+@media only screen and (max-width: 600px) {
+    .form .data {
+        display: block;
+    }
+
+    .form .view.order .block {
+        width: -webkit-fill-available;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+    .form .data {
+        display: flex;
+    }
+
+    .form .view.order .block {
+        max-width: 50%;
+    }
+}
+
+.bottom-layer .order .block {
+    width: 50%;
+}
+
+.bottom-layer .view .data {
     display: flex;
+    justify-content: center;
+}
+
+.form .data {
     flex-wrap: wrap;
     align-content: center;
 }
@@ -1440,7 +1468,6 @@ form .field .container {
     text-align: left;
     border-radius: 0.5em;
     padding: 0.6em;
-    width: max-content;
 }
 
 .trips .view .data .block {
@@ -1451,18 +1478,12 @@ form .field .container {
     margin: 1em 0.5em 0 0.5em;
 }
 
-.view .data {
-    display: flex;
-    justify-content: center;
-}
-
 .view.order .content{
     margin: 0;
 }
 
 .view.order .block {
     transition: width 0.5s, height 0.5s;
-    /* max-width: 50%; */
 }
 
 .header .separator {
@@ -1631,7 +1652,7 @@ form .field .container {
     flex-wrap: wrap;
 }
 
-/*-----------------Загрузка----------------*/
+/*-----------------Ð—Ð°Ð³Ñ€ÑƒÐ·ÐºÐ°----------------*/
 
 #fountainG{
     position:relative;

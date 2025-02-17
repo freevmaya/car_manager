@@ -414,6 +414,77 @@ class DateTime {
     }
 }
 
+class GPSFilter {
+    #options
+    #timeline;
+
+    get length() { return this.#timeline.length; }
+    get lastPoint() { return this.#timeline[this.#timeline.length - 1][0]; }
+
+    constructor(options) {
+        this.#options = $.extend(this.getDefaultOptions(), options);
+        this.#timeline = [];
+    }
+
+    calcPosition(latLng, timeSec, accuracy) {
+
+        let last = this.#timeline[this.#timeline.length - 1];
+        let timeDiff = timeSec - last[1];
+        let direct = LatLngSub(latLng, last[0]);
+        let distance = Distance(latLng, last[0]);
+        let speedKmH = distance / timeDiff * SPEEDCNV;
+
+        if (speedKmH > this.#options.speedLimit.max) {
+
+            let mma = this.#options.minMaxAccuracy;
+            let newDistance = timeDiff * this.#options.speedLimit.max / SPEEDCNV;
+            if (accuracy < mma.max) {
+                let kaccuracy = 1 - Math.max((accuracy - mma.min) / (mma.max - mma.min), 0);
+                let newDirect = LatLngMul(direct, (newDistance / distance) * kaccuracy);
+
+                latLng = LatLngAdd(last[0], newDirect);
+            } else latLng = last[0];
+        }
+
+        let ak = Math.min(last[2] / accuracy, 1);
+
+        return [
+                LatLngAdd(LatLngMul(latLng, ak), LatLngMul(last[0], 1 - ak)),
+                timeSec,
+                accuracy];
+    }
+
+    push(latLng, timeSec, accuracy) {
+        let itm = [latLng, timeSec, accuracy];
+        if (this.#timeline.length > 0)
+            itm = this.calcPosition(latLng, timeSec, accuracy);
+
+        this.#timeline.push(itm);
+    }
+
+    getPoints() {
+        let result = [];
+        for (var i = 0; i < this.#timeline.length - 1; i++)
+            result.push(this.#timeline[i][0]);
+
+        return result;
+    }
+
+    getDefaultOptions() {
+        return {
+            speedLimit: { // В км/ч
+                min: -30,
+                max: 60
+            },
+
+            minMaxAccuracy: {
+                min: 50,
+                max: 800
+            }
+        }
+    }
+}
+
 Number.prototype.toHHMMSS = function () {
 
     var sec_num = isFinite(this) && (this > 0) ? Math.floor(this) : 0; // don't forget the second param
