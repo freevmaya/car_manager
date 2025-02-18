@@ -26,7 +26,7 @@ class TakenOrders extends OrderManager {
     }
 
     Reset() {
-        this.ResetPath();
+        this.ResetPath(toLatLngF(user));
         if ((this.#taken_orders.length > 0) && (this.#taken_orders[0].state == 'accepted'))
             this.#taken_orders[0].SetState('driver_move');
     }

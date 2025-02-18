@@ -54,6 +54,7 @@ class App extends EventProvider {
     #listeners;
     #question;
     #screenLock;
+    #lastGeoPosition;
 
     get Question() { return this.#question; }
     get isEnableGeo() { return this.#geoId; }
@@ -142,8 +143,14 @@ class App extends EventProvider {
     }
 
     receiveGeo(coordinates) {
-        if (coordinates)
-            this.SendEvent('GEOPOS', coordinates);
+        if (coordinates) {
+            let latLng = toLatLngF(coordinates);
+
+            if (!(this.#lastGeoPosition && LatLngEquals(this.#lastGeoPosition, latLng)))
+                this.SendEvent('GEOPOS', coordinates);
+
+            this.#lastGeoPosition = latLng;
+        }
     }
 
     enableGeo(enable) {

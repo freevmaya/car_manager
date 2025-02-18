@@ -11,7 +11,8 @@ class Tracer extends EventProvider {
         tearedDistance: 180,
         startTime: Date.now(),
         backThreshold: 50, // На каком расстоянии сигнал назад будет разворачивать машинку
-        smoothSpeed: 0.5
+        smoothSpeed: 0.5,
+        decreaseSpeed: 0.05
     };
     #geoPos;
     #routePos;
@@ -203,8 +204,18 @@ class Tracer extends EventProvider {
             this.SendEvent("CHANGELEG", this.Leg);
     }
 
+    calcDeltaGeoTime() {
+        let currentTime = Date.now();
+        return this.#deltaGeoTime = (currentTime - this.#lastCalcTime) / 1000;
+    }
+
     #updateRoutePos() {
+
+        if (this.Options.decreaseSpeed && (this.calcDeltaGeoTime() > 60) && (this.#toSpeed > 0))
+            this.#toSpeed = Math.max(0, this.#toSpeed - this.Options.decreaseSpeed);
+
         let k = this.Options.smoothSpeed;
+
         this.#avgSpeed = this.AvgSpeed * (1 - k) + this.#toSpeed * k;
 
         this.#routeDistance = (this.#routeDistance + this.AvgSpeed * this.#periodTime / 1000)
@@ -265,6 +276,7 @@ class Tracer extends EventProvider {
     SetNextPosition(distance) {
 
         let speed = this.#toSpeed;
+
         distance = distance.clamp(0, this.TotalLength);
 
         if (this.#distaneToGeo > -1) {
@@ -300,9 +312,8 @@ class Tracer extends EventProvider {
     }
 
     #snapshotGeoTime() {
-        let currentTime = Date.now();
-        this.#deltaGeoTime = (currentTime - this.#lastCalcTime) / 1000;
-        this.#lastCalcTime = currentTime;
+        this.calcDeltaGeoTime();
+        this.#lastCalcTime = Date.now();
         console.log("Delta geo time: " + this.#deltaGeoTime);
     }
 

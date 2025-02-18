@@ -21,9 +21,21 @@ class DMap extends VMap {
 
     createTracer(routes, options) {
         this.removeTracer();
-        this.tracer = new Tracer(routes, this.setMainPosition.bind(this), 200, options);
+        this.tracer = new Tracer(routes, this.setTracerPosition.bind(this), 200, options);
         this.tracer.ReceivePoint(toCoordinates(this.getMainPosition()));
         return this.tracer;
+    }
+
+    setTracerPosition(latLng, angle) {
+        this.setMainPosition(latLng, angle);
+        transport.addExtRequest({
+            action: 'setPosition',
+            data: {
+                lat: Lat(latLng),
+                lng: Lng(latLng),
+                angle: angle
+            }
+        });
     }
 
     removeTracer() {
@@ -57,7 +69,14 @@ class DMap extends VMap {
         
         if (this.tracer)
             this.tracer.ReceivePoint(coordinates);
-        else this.setMainPosition(latLng, this.tracer ? this.tracer.Angle : 0);
+        else {
+            this.setMainPosition(latLng, this.tracer ? this.tracer.Angle : 0);
+
+            transport.addExtRequest({
+                action: 'setPosition',
+                data: latLng
+            });
+        }
     }
 }
 
