@@ -56,6 +56,7 @@ class App extends EventProvider {
     #screenLock;
 
     get Question() { return this.#question; }
+    get isEnableGeo() { return this.#geoId; }
 
     constructor() {
         super();
@@ -147,10 +148,16 @@ class App extends EventProvider {
 
     enableGeo(enable) {
         if (enable && !this.#geoId) {
-            this.#geoId = watchPosition(this.receiveGeo.bind(this));
+            //this.#geoId = watchPosition(this.receiveGeo.bind(this));
+
+            this.#geoId = setInterval((()=>{
+                getLocation(this.receiveGeo.bind(this));
+            }).bind(this), 5000);
+
         } else if (!enable && (this.#geoId > 0)) {
-            clearWatchPosition(this.#geoId);
-            this.#geoId = false;
+            //clearWatchPosition(this.#geoId);
+            //this.#geoId = false;
+            clearTimeout(this.#geoId);
         }
     }
 
@@ -266,11 +273,8 @@ class AjaxTransport extends EventProvider {
                 this.statusesToReturn = [];
             }
 
-            if (this.requireDrivers) {
-                data.lat = user.lat;
-                data.lng = user.lng;
+            if (this.requireDrivers)
                 data.requireDrivers = true;
-            }
 
             if (Object.keys(data).length > 0)
                 params.data = JSON.stringify(data);

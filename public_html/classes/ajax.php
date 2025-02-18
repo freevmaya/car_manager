@@ -94,23 +94,12 @@ class Ajax extends Page {
 		$notificationList = $nModel->getItems(['user_id'=>$user['id'], 'state'=>'active']);
 
 		if (count($notificationList) > 0)
-			$result['notificationList'] = $notificationList;	
+			$result['notificationList'] = $notificationList;			
 
-		if (isset($data['lat'])) {		
-
-			if (isset($data['requireDrivers']))
-				$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($data['lat'], $data['lng'], null, AREA_RADIUS);
-
-			//trace(array_merge($data, $user));
-			(new UserModel())->UpdatePosition($user['id'], $data, isset($data['angle']) ? $data['angle'] : 0);
-
-			$user['lat'] = $data['lat'];
-			$user['lng'] = $data['lng'];
-			if (isset($data['angle']))
-					$user['angle'] = $data['angle'];
-			Page::setSession('user', $user);
-		}
-		else $dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");
+		if (isset($data['requireDrivers']))
+			$result['SuitableDrivers'] = (new DriverModel())->SuitableDrivers($user['lat'], $user['lng'], null, AREA_RADIUS);
+		
+		$dbp->query("UPDATE users SET last_time = NOW() WHERE id = {$user['id']}");
 
 		if (isset($data['extend'])) {
 

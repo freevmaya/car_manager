@@ -287,6 +287,7 @@ class OrderAccepedView extends OrderView {
     #time;
     #allowOffers;
     #offersTimerId;
+    listenerPosId;
 
     get allowOffers() { return this.#allowOffers; }
     set allowOffers(value) { 
@@ -338,6 +339,30 @@ class OrderAccepedView extends OrderView {
             this.closePathToStart();
             transport.SendStatusNotify(this.pathToStartNotify, 'read');
         }
+
+        if (this.orderState == 'wait_meeting')
+            this.beginSendMainPosition();
+        else this.stopSendMainPosition();
+    }
+
+    stopSendMainPosition() {
+        if (this.listenerPosId) {
+            app.enableGeo(false);
+            app.RemoveListener(this.listenerPosId);
+            this.listenerPosId = false;
+        }
+    }
+
+    beginSendMainPosition() {
+        app.enableGeo(true);
+        this.listenerPosId = app.AddListener('GEOPOS', this.sendMainPosition.bind(this));
+    }
+
+    sendMainPosition(coordinates) {
+        transport.addExtRequest({
+            action: 'setPosition',
+            data: toLatLng(coordinates)
+        });
     }
 
     checkBestOffer() {
