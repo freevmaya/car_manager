@@ -121,9 +121,10 @@ class BaseParentView {
     }
 
     RequireRefresh() {
-        this.#requireRefresh = true;
-        if (!this.#refreshTimer)
+        if (!this.#requireRefresh) {
+            this.#requireRefresh = true;
             this.#refreshTimer = setInterval(this.#checkRefresh.bind(this), 10);
+        }
     }
 
     _refresh() {
@@ -253,7 +254,10 @@ class View extends BaseParentView {
         this.view.trigger('destroy');
         this.view.remove();
         $(window).off('resize', this.onResize.bind(this));
-        this.afterDestroy();
+        if (this.afterDestroy) {
+            this.afterDestroy();
+            this.afterDestroy = null;
+        }
         super.destroy();
     }
 

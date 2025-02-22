@@ -1,15 +1,16 @@
-function watchPosition(action) {
+function getUserDevPosition() {
     let latLng = toLatLngF(user.asDriver ? {lat: 55.190449, lng: 61.279631 } : 
-                            {lat: 55.19068764669877, lng: 61.28231993933741});
+                                    {lat: 55.19068764669877, lng: 61.28231993933741});
 
-    user = $.extend(user, latLng);
+    if (typeof(v_map) != 'undefined')
+        latLng = v_map.getMainPosition();
+    return latLng;
+}
+
+function watchPosition(action) {
+    user = $.extend(user, getUserDevPosition());
     return setInterval(()=>{
-
-        if (typeof(v_map) != 'undefined')
-            latLng = v_map.getMainPosition();
-
-        action(toCoordinates(latLng, Math.random() * 400));
-        
+        action(toCoordinates(getUserDevPosition(), Math.random() * 400));
     }, 500);
 }
 
@@ -18,9 +19,5 @@ function clearWatchPosition(watchId) {
 }
 
 function getLocation(action) {
-    let latLng = toLatLngF(user.asDriver ? {lat: 55.190449, lng: 61.279631 } : 
-                                    {lat: 55.19068764669877, lng: 61.28231993933741});
-
-    user = $.extend(user, latLng);
-    action(toCoordinates(latLng, Math.random() * 400));
+    action(toCoordinates(getUserDevPosition(), Math.random() * 400));
 }

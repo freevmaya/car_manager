@@ -64,7 +64,8 @@ class ViewPath extends BottomView {
 
 class OrderView extends ViewPath {
     #lastState = 'wait';
-    #listenerId;
+    #listenerNfId;
+    #listenerSdId;
 
     get LastState() { return this.#lastState; }
     get orderState() { return this.Order && this.Order.state ? this.Order.state : 'wait'; };
@@ -84,11 +85,11 @@ class OrderView extends ViewPath {
         if (options.order) 
             this.SetOrder(options.order);
 
-        this.#listenerId = transport.AddListener('notificationList', ((e)=>{
+        this.#listenerNfId = transport.AddListener('notificationList', ((e)=>{
             this.onReceiveNotifyList(e.value);
         }).bind(this));
 
-        this.#listenerId = transport.AddListener('SuitableDrivers', ((e)=>{
+        this.#listenerSdId = transport.AddListener('SuitableDrivers', ((e)=>{
             this.onSuitableDrivers(e.value);
         }).bind(this));
 
@@ -158,8 +159,13 @@ class OrderView extends ViewPath {
 
         if (order) {
 
-            if (order.state == 'finished')
+            if (order.state == 'finished') {
+                let listener = v_map.map.addListener('click', ((e)=>{
+                    listener.remove();
+                    this.Close();
+                }).bind(this));
                 this.closePath();
+            }
             else {
 
                 if (order.travelMode)
@@ -198,7 +204,8 @@ class OrderView extends ViewPath {
     }
 
     destroy() {
-        transport.RemoveListener(this.#listenerId);
+        transport.RemoveListener(this.#listenerNfId);
+        transport.RemoveListener(this.#listenerSdId);
         super.destroy();
     }
 }

@@ -12,7 +12,8 @@ class Tracer extends EventProvider {
         startTime: Date.now(),
         backThreshold: 50, // На каком расстоянии сигнал назад будет разворачивать машинку
         smoothSpeed: 0.5,
-        decreaseSpeed: 0.05
+        decreaseSpeed: 0.05,
+        useFilter: false
     };
     #geoPos;
     #routePos;
@@ -114,8 +115,8 @@ class Tracer extends EventProvider {
 
         if (!isEmpty(this.Options.speed))
             this.SetSpeed(this.Options.speed, true);
-
-        this.#filter = new GPSFilter();
+            
+        this.#filter = this.Options.useFilter ? new GPSFilter() : null;
         this.Enabled = true;
     }
 
