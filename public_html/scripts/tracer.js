@@ -13,7 +13,7 @@ class Tracer extends EventProvider {
         backThreshold: 50, // На каком расстоянии сигнал назад будет разворачивать машинку
         smoothSpeed: 0.5,
         decreaseSpeed: 0.05,
-        useFilter: false
+        useFilter: true
     };
     #geoPos;
     #routePos;
@@ -40,6 +40,7 @@ class Tracer extends EventProvider {
     #curLegIdx;
     #toofarPoints;
     #filter;
+    #magnet;
 
     get Enabled() { return this.#intervalId != false; }
     set Enabled(value) { this.#setUpdateEnabled(value); }
@@ -117,6 +118,7 @@ class Tracer extends EventProvider {
             this.SetSpeed(this.Options.speed, true);
             
         this.#filter = this.Options.useFilter ? new GPSFilter() : null;
+        this.#magnet = new MagnetV1(this);
         this.Enabled = true;
     }
 
@@ -129,8 +131,7 @@ class Tracer extends EventProvider {
 
     ToPoint(latLng) {
         let inPath = {};
-        let p = Tracer.CalcPointInPath(this.Route.overview_path, 
-            latLng, inPath, this.Options.magnetDistance);
+        let p = this.#magnet.Calc(this.Route.overview_path, latLng, inPath);
 
         if (p) {
             this.#routePos = p;
@@ -274,11 +275,11 @@ class Tracer extends EventProvider {
         this.#routePos = path[this.#pathIndex = idx];        
     }
 
-    SetNextPosition(distance) {
+    addDistance(delta) {
 
         let speed = this.#toSpeed;
 
-        distance = distance.clamp(0, this.TotalLength);
+        let distance = (this.RouteDistance + delta).clamp(0, this.TotalLength);
 
         if (this.#distaneToGeo > -1) {
             let deltaDist = distance - this.#distaneToGeo;
@@ -346,7 +347,7 @@ class Tracer extends EventProvider {
             latLng = this.#filter.lastPoint;
         }
 
-        if (this.#routes && (this.#routes.length > 0)) {
+        if (this.#magnet && this.#routes && (this.#routes.length > 0)) {
             this.#snapshotGeoTime();
 
             let path = this.Route.overview_path;
@@ -355,11 +356,11 @@ class Tracer extends EventProvider {
             if (coordinates.speed != 0) // Пока усредняем скорость от полученной с датчика и вычесленной ранее
                 this.#toSpeed = (this.#toSpeed + coordinates.speed) / 2;
 
-            let p = Tracer.CalcPointInPath(path, latLng, inPath, this.Options.magnetDistance + coordinates.accuracy, this.#routeDistance);
+            let p = this.#magnet.Calc(path, coordinates, inPath);
             //let p = this.CalcPointInLeg(this.#curLegIdx, latLng, inPath);
 
             if (p) {
-                this.SetNextPosition(inPath.distance);
+                this.addDistance(inPath.diff);
                 this.#tooFarReset();
             }
             else {
@@ -383,7 +384,7 @@ class Tracer extends EventProvider {
             let inPath = {};
             let path = [step.start_point].concat(step.path, [step.end_point]);
 
-            let point = Tracer.CalcPointInPath(path, p, inPath, magnet);
+            let point = this.#magnet.Calc(path, p, inPath);
             if (point) {
                 variantes.push({
                     i: inPath.idx,
@@ -404,7 +405,7 @@ class Tracer extends EventProvider {
             let inPath = {};
             let path = [step.start_point].concat(step.path, [step.end_point]);
 
-            let point = Tracer.CalcConerInPath(path, p, inPath, magnet);
+            let point = Utils.CalcConerInPath(path, p, inPath, magnet);
             if (point) {
                 variantes.push({
                     i: inPath.idx,
@@ -417,122 +418,157 @@ class Tracer extends EventProvider {
             accumDist += inPath.totalLength;
         });
 
-        $.extend(ResultData, Tracer.GetNearestVariant(variantes, this.#routeDistance, magnet));
+        $.extend(ResultData, Utils.GetNearestVariant(variantes, this.#routeDistance, magnet));
         return ResultData.point;
     }
 }
 
-Tracer.GetNearestVariant = function(variantes, routeDistance, magnet) {
-    let k = 0.7;
-    if (variantes.length > 0) {
-        variantes.sort((v1, v2) => {
+var Utils = {
+    GetNearestVariant: function(variantes, routeDistance, magnet) {
+        let k = 0.7;
+        if (variantes.length > 0) {
+            variantes.sort((v1, v2) => {
 
-            let td1 = Math.abs(v1.distance - routeDistance) / magnet;
-            let td2 = Math.abs(v2.distance - routeDistance) / magnet;
-            let td3 = Math.abs(v1.distanceToLine - v2.distanceToLine) / magnet;
+                let td1 = (v1.distance - routeDistance) / magnet;
+                let td2 = (v2.distance - routeDistance) / magnet;
+                let td3 = (v1.distanceToLine - v2.distanceToLine) / magnet;
 
-            return (td1 - td2) * (1 - k) + td3 * k;
+                return (td1 - td2) * (1 - k) + td3 * k;
 
-        });
-        return variantes[0];
-    }
-    return null;
-}
-
-Tracer.CalcConerInPath = function (path, p, inPath, minDistance = Number.MAX_VALUE) {
-    let min = minDistance;
-    let result = false;
-    accumDist = 0;
-
-    let distList = [];
-    inPath.totalLength = CalcLengths(path, distList);
-
-    for (let i=0; i<path.length; i++) {
-        let h = Distance(path[i], p);
-        if (h < min) {
-            min = h;
-            result = path[i];
-
-            inPath.idx = i;
-            inPath.distance = accumDist;
-            inPath.distanceToLine = h;
+            });
+            return variantes[0];
         }
-        if (i < path.length - 1)
-            accumDist += distList[i];
-    }
+        return null;
+    },
 
-    return result;
+    CalcConerInPath: function (path, p, inPath, minDistance = Number.MAX_VALUE, currenDistance = 0) {
+        let min = minDistance;
+        let result = false;
+        accumDist = 0;
+
+        let distList = [];
+        inPath.totalLength = CalcLengths(path, distList);
+
+        for (let i=0; i<path.length; i++) {
+            let h = Distance(path[i], p);
+            if (h < min) {
+                min = h;
+                result = path[i];
+
+                inPath.idx = i;
+                inPath.diff = accumDist - currenDistance;
+                inPath.distanceToLine = h;
+                inPath.point = path[i];
+            }
+            if (i < path.length - 1)
+                accumDist += distList[i];
+        }
+
+        return result;
+    }
 }
 
-Tracer.CalcPointInPath = function (path, p, ResultData, minDistance = Number.MAX_VALUE, currenDistance = -1) {
+class MagnetV1 {
+    #tracer;
+    constructor(tracer) {
+        this.#tracer = tracer;
+    }
 
-    let accumDist = 0;
-    let distList = [];
-    let pil2 = Math.PI / 2;
-    let toGrad = 1 / Math.PI * 180;
+    Calc(path, coordinates, ResultData) {
+        return this.calcPointInPath(path, toLatLngF(coordinates), ResultData,
+            this.#tracer.Options.magnetDistance + (coordinates.accuracy ? coordinates.accuracy : 0),
+            this.#tracer.RouteDistance);
+    }
 
-    ResultData = $.extend(ResultData, {
-        totalLength: CalcLengths(path, distList),
-        point: false
-    });
+    getNearestVariant = function(variantes, routeDistance, magnet) {
+        let k = 0.7;
+        if (variantes.length > 0) {
+            variantes.sort((v1, v2) => {
 
-    let variantes = [];
+                let td1 = Math.abs(v1.diff) / magnet;
+                let td2 = Math.abs(v2.diff) / magnet;
+                let td3 = (v1.distanceToLine - v2.distanceToLine) / magnet;
 
-    for (let i=0; i<path.length - 1; i++) {
+                return (td1 - td2) * (1 - k) + td3 * k;
 
-        let p1 = path[i];
-        let p2 = path[i + 1];
-        let b = distList[i];
+            });
+            return variantes[0];
+        }
+        return null;
+    }
 
-        let angle = minusRad(CalcAngleRad(p1, p2), CalcAngleRad(p1, p));
-        if (angle < pil2) {
-            let c = Distance(p1, p);
+    calcPointInPath = function (path, p, ResultData, minDistance = Number.MAX_VALUE, currenDistance = -1) {
 
-            let b2 = c * Math.cos(angle);
+        let accumDist = 0;
+        let distList = [];
+        let pil2 = Math.PI / 2;
+        let toGrad = 1 / Math.PI * 180;
 
-            if (b2 < b) {
+        ResultData = $.extend(ResultData, {
+            totalLength: CalcLengths(path, distList),
+            point: false
+        });
 
-                let h = c * Math.sin(angle);
+        let variantes = [];
 
-                //console.log("i: " + i + ", distance to line: " + h + ")");
-                if (h < minDistance) {
-                    let lk = b2 / b;
-                    let result = new google.maps.LatLng(
-                        p1.lat() + (p2.lat() - p1.lat()) * lk,
-                        p1.lng() + (p2.lng() - p1.lng()) * lk
-                    );
+        for (let i=0; i<path.length - 1; i++) {
 
-                    //v_map.MarkerManager.CreateMarkerDbg(p, 3000);
-                    //v_map.MarkerManager.CreateMarkerDbg(p1, 3000, 'blue');
-                    //v_map.MarkerManager.CreateMarkerDbg(p2, 3000, 'blue');
+            let p1 = path[i];
+            let p2 = path[i + 1];
+            let b = distList[i];
 
-                    //v_map.MarkerManager.CreateMarkerDbg(result, 3000);
+            let angle = minusRad(CalcAngleRad(p1, p2), CalcAngleRad(p1, p));
+            if (angle < pil2) {
+                let c = Distance(p1, p);
 
-                    variantes.push({
-                        idx: i,
-                        distance: accumDist + b2,
-                        distanceToLine: h,
-                        point: result
-                    });
+                let b2 = c * Math.cos(angle);
+
+                if (b2 < b) {
+
+                    let h = c * Math.sin(angle);
+
+                    //console.log("i: " + i + ", distance to line: " + h + ")");
+                    if (h < minDistance) {
+                        let lk = b2 / b;
+                        let result = new google.maps.LatLng(
+                            p1.lat() + (p2.lat() - p1.lat()) * lk,
+                            p1.lng() + (p2.lng() - p1.lng()) * lk
+                        );
+
+                        //v_map.MarkerManager.CreateMarkerDbg(p, 3000);
+                        //v_map.MarkerManager.CreateMarkerDbg(p1, 3000, 'blue');
+                        //v_map.MarkerManager.CreateMarkerDbg(p2, 3000, 'blue');
+
+                        //v_map.MarkerManager.CreateMarkerDbg(result, 3000);
+
+                        variantes.push({
+                            idx: i,
+                            diff: accumDist + b2 - currenDistance,
+                            distanceToLine: h,
+                            point: result
+                        });
+                    }
                 }
             }
+            accumDist += b;
         }
-        accumDist += b;
-    }
 
-    //let inPath = {};
-    //if (Tracer.CalcConerInPath(path, p, inPath, minDistance))
-        //variantes.push(inPath);
-
-    if (variantes.length > 0) {
-
-        if (currenDistance > -1)
-            $.extend(ResultData, Tracer.GetNearestVariant(variantes, currenDistance, minDistance));
-        else {
-            variantes.sort((v1, v2) => v2.distanceToLine - v1.distanceToLine);
-            $.extend(ResultData, variantes[0]);
+        let inPath = {};
+        if (Utils.CalcConerInPath(path, p, inPath, minDistance)) {
+            if (!variantes.find((itm) => itm.distanceToLine < inPath.distanceToLine))
+                variantes.push(inPath);
         }
-    }
 
-    return ResultData.point;
+
+        if (variantes.length > 0) {
+            if (currenDistance > -1)
+                $.extend(ResultData, this.getNearestVariant(variantes, currenDistance, minDistance));
+            else {
+                variantes.sort((v1, v2) => v2.distanceToLine - v1.distanceToLine);
+                $.extend(ResultData, variantes[0]);
+            }
+        }
+
+        return ResultData.point;
+    }
 }

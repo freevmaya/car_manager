@@ -25,6 +25,7 @@ class OrderModel extends BaseModel {
 			$where = array_merge(BaseModel::GetConditions($options, ['driver_id', 'user_id', 'id']), $where);
 		} else $where[] = "user_id={$options}";
 		
+		$where[] = 'time > DATE_SUB(NOW(), '.MAXEXPIREORDERRIME.')';
 		$whereStr = implode(" AND ", $where);
 
 		$query = "SELECT * FROM {$this->getTable()} WHERE {$whereStr}";
@@ -45,7 +46,7 @@ class OrderModel extends BaseModel {
 
 		$where = BaseModel::GetConditions($options, ['state', 'o.user_id', 'driver_id', 'o.id']);
 		
-		$where[] = 'o.time > DATE_SUB(NOW(), INTERVAL 2 DAY)';
+		$where[] = 'o.time > DATE_SUB(NOW(), '.MAXEXPIREORDERRIME.')';
 		$whereStr = implode(" AND ", $where);
 
 		$query = "SELECT o.*, o.id AS order_id, u.username, u.first_name, u.last_name, r.start AS start, r.finish AS finish, r.travelMode, r.meters, ROUND(r.meters / 1000, 1) AS distance ".(isset($options['routes'])?', r.routes':'').", driver.id AS driverId, driver.username AS driverName, c.number, c.comfort, c.seating, cb.symbol AS car_body, cc.rgb AS car_color, cc.name AS car_colorName ".

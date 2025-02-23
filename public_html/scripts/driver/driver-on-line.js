@@ -9,6 +9,12 @@ class DMap extends VMap {
         app.ScreenLock();
     }
 
+    defaultMapOptions() {
+        return $.extend(super.defaultMapOptions(), {
+            clickableIcons: false
+        });
+    }
+
     afterInitMap() {
         super.afterInitMap();
 

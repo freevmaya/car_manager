@@ -151,6 +151,17 @@ class VMap extends EventProvider {
 		}
 	}
 
+	defaultMapOptions() {
+		return {
+			zoom: 15,
+			disableDefaultUI: true,
+			mapId: "319511f83a6febb1",
+			//mapId: "151146f0af358053",
+			language: user.language_code,
+			zoomControl: true
+		};
+	}
+
 	defaultOptions() {
 		return {
 			main_marker: true, 
@@ -210,15 +221,7 @@ class VMap extends EventProvider {
 		const { DirectionsService } = await google.maps.importLibrary("routes");
 		const { Place } = await google.maps.importLibrary("places");
 
-		this.#map = new Map(this.#view[0], {
-			zoom: 15,
-			disableDefaultUI: true,
-			center: position,
-			mapId: "319511f83a6febb1",
-			//mapId: "151146f0af358053",
-			language: user.language_code,
-			zoomControl: true
-		});
+		this.#map = new Map(this.#view[0], $.extend(this.defaultMapOptions(), {position: position}, this.#options.mapOptions));
 
 		this.#classes = {
 			AdvancedMarkerElement: AdvancedMarkerElement,

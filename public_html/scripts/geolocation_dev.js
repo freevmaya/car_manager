@@ -10,7 +10,7 @@ function getUserDevPosition() {
 function watchPosition(action) {
     user = $.extend(user, getUserDevPosition());
     return setInterval(()=>{
-        action(toCoordinates(getUserDevPosition(), Math.random() * 400));
+        action(toCoordinates(toLatLngF(user), Math.random() * 400));
     }, 500);
 }
 
@@ -19,5 +19,6 @@ function clearWatchPosition(watchId) {
 }
 
 function getLocation(action) {
-    action(toCoordinates(getUserDevPosition(), Math.random() * 400));
+    user = $.extend(user, getUserDevPosition());
+    action(toCoordinates(toLatLngF(user), Math.random() * 400));
 }
