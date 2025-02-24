@@ -160,11 +160,13 @@ class OrderView extends ViewPath {
         if (order) {
 
             if (order.state == 'finished') {
-                let listener = v_map.map.addListener('click', ((e)=>{
-                    listener.remove();
-                    this.Close();
-                }).bind(this));
-                this.closePath();
+                if (typeof(v_map) != 'undefined') {
+                    let listener = v_map.map.addListener('click', ((e)=>{
+                        listener.remove();
+                        this.Close();
+                    }).bind(this));
+                    this.closePath();
+                }
             }
             else {
 
@@ -374,42 +376,43 @@ class OrderAccepedView extends OrderView {
 
     checkBestOffer() {
 
-        if ((DeltaTime(this.#time) < -WAITOFFERS) && (this.#offers.length > 0)) {
+        if (this.orderState == 'wait') {
+            if ((DeltaTime(this.#time) < -WAITOFFERS) && (this.#offers.length > 0)) {
+                this.allowOffers = false;
+                let nearIx = 0;
+                let bestDistance = Number.MAX_VALUE;
+                let start = toPlace(this.Order.start);
 
-            let nearIx = 0;
-            let bestDistance = Number.MAX_VALUE;
-            let start = toPlace(this.Order.start);
+                if (this.#offers.length > 1) {
+                    for (let i=0; i<this.#offers.length; i++) {
+                        let offer = this.#offers[i];
+                        let driverInfo = JSON.parse(offer.text);
 
-            if (this.#offers.length > 1) {
-                for (let i=0; i<this.#offers.length; i++) {
-                    let offer = this.#offers[i];
-                    let driverInfo = JSON.parse(offer.text);
+                        let distance = Distance(offer.driver, start);
+                        if (driverInfo.remaindDistance)
+                            distance += driverInfo.remaindDistance;
 
-                    let distance = Distance(offer.driver, start);
-                    if (driverInfo.remaindDistance)
-                        distance += driverInfo.remaindDistance;
-
-                    if (distance < bestDistance) {
-                        bestDistance = distance;
-                        nearIx = i;
+                        if (distance < bestDistance) {
+                            bestDistance = distance;
+                            nearIx = i;
+                        }
+                        //transport.SendStatusNotify(offer);
                     }
-                    //transport.SendStatusNotify(offer);
+                } else {
+                    bestDistance = Distance(this.#offers[nearIx].driver, start);
                 }
-            } else {
-                bestDistance = Distance(this.#offers[nearIx].driver, start);
+
+                let bestOffer = this.#offers[nearIx];
+                bestOffer.distance = bestDistance;
+
+                this.#offers.splice(nearIx, 1);
+                for (let i=0; i<this.#offers.length; i++)
+                    transport.SendStatusNotify(this.#offers[i], 'read');
+
+                this.#offers = [];
+                this.takeOffer(bestOffer);
             }
-
-            let bestOffer = this.#offers[nearIx];
-            bestOffer.distance = bestDistance;
-
-            this.#offers.splice(nearIx, 1);
-            for (let i=0; i<this.#offers.length; i++)
-                transport.SendStatusNotify(this.#offers[i], 'read');
-
-            this.#offers = [];
-            this.takeOffer(bestOffer);
-            this.allowOffers = false;
-        }
+        } else this.allowOffers = false;
     }
 
     offersProcess(list) {
@@ -516,6 +519,7 @@ class OrderAccepedView extends OrderView {
     }
 
     destroy() {
+        this.allowOffers = false;
         this.closePath();
         this.closePathToStart();
         super.destroy();

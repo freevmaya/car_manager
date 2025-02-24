@@ -37,7 +37,7 @@ class TracerOrderView extends PathView {
 
     #onChangeOrder(e) {
         let order = e.value;
-        if (order.state == 'wait_meeting') {
+        if ((order.state == 'wait_meeting') && (order.driver_id == user.asDriver)) {
             this.#waitDialog = app.showQuestion("Waiting for a passenger '" + getUserName(order) + "'", {
                 'Complete': ()=>{
                    order.SetState('execution'); 
@@ -103,10 +103,16 @@ class TracerOrderView extends PathView {
         });
     }
 
-    #createTLMarkers() {
-        let layer = this.headerElement.find('.markers');
-        layer.empty();
+    #clearTLMarkers() {
+        this.headerElement.find('.markers').empty();
+        this.#markers = [];
+    }
 
+    #createTLMarkers() {
+
+        this.#clearTLMarkers();
+
+        let layer = this.headerElement.find('.markers');
         let wwidth = $(window).width();
         let spercent = (wwidth - layer.width()) / layer.width() * 100; 
 
@@ -129,9 +135,8 @@ class TracerOrderView extends PathView {
             this.#markers.push(marker);
         }
 
-        if (this.Tracer) {
+        if (tracer) {
             let leg = null;
-            this.#markers = [];
             this.Tracer.forEachSteps(((routes, r, l, s)=>{
                 if (leg != routes[r].legs[l]) {
                     leg = routes[r].legs[l];
@@ -228,7 +233,8 @@ class TracerOrderView extends PathView {
 
     onTraceBarClick(e) {
         if (this.Tracer) {
-            this.Tracer.SetNextPosition(e.offsetX / $(e.currentTarget).width() * this.Tracer.TotalLength);
+            this.Tracer.addDistance(e.offsetX / $(e.currentTarget).width() * this.Tracer.TotalLength - 
+                                        this.Tracer.RouteDistance);
             v_map.setMainPosition(this.Tracer.RoutePosition);
             this.doUpdateTimeLine();
         }
@@ -454,6 +460,8 @@ class TracerOrderView extends PathView {
         super.closePathOrder();
         this.closeSelectOrderPath();
         this.checkAndCloseTrace();
+        this.#clearTLMarkers();
+        this.headerElement.find('.tracerBar > div').css('width', 0);
     }
 
     onFinishPathOrder(tracer) {

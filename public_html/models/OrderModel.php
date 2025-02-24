@@ -140,7 +140,8 @@ class OrderModel extends BaseModel {
 
 		$query = "UPDATE {$this->getTable()} SET `state`=?";
 
-		$driver_id = Page::$current->asDriver();
+		$driver_id = $driver_id ? $driver_id : (isset(Page::$current) ? Page::$current->asDriver() : false);
+
 		if ($driver_id) {
 			$data['driver_id'] = $driver_id;
 			$query .= ", `driver_id`={$driver_id}";

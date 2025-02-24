@@ -142,8 +142,10 @@ class TakenOrders extends OrderManager {
             }).bind(this));
         }
 
-        if (this.selOrderView) 
-            this.selOrderView.Close().then(showPathAndInfo.bind(this));
+        if (this.selOrderView) {
+            if (this.selOrderView.Order.id != order.id)
+                this.selOrderView.Close().then(showPathAndInfo.bind(this));
+        }
         else showPathAndInfo.bind(this)();
     }
 

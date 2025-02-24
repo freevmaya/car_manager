@@ -303,7 +303,7 @@ h1, h2, h3 {
     width: 100%;
     z-index: 1;
     max-height: 50%;
-    overflow-y: scroll;
+    /*overflow-y: scroll;*/
 }
 
 .bottom-layer > .view:nth-child(1) {
@@ -311,13 +311,14 @@ h1, h2, h3 {
 }
 
 .bottom-layer > .view {
+    /*
     animation-name: showView;
     animation-duration: 0.4s;
+    */
 }
 
 .pageContent .view {
     overflow: hidden;
-
     animation-name: appearedIn;
     animation-duration: 1s;
     animation-fill-mode: both;
@@ -370,9 +371,10 @@ h1, h2, h3 {
 
 .show {
     display: block !important;
+    /*
     animation-name: showView !important;
     animation-duration: 0.2s;
-    animation-fill-mode: forwards;
+    animation-fill-mode: forwards;*/
 }
 
 .hide {
@@ -586,7 +588,7 @@ input, select, .datetime {
     border-width: 1px;
     padding: 0.8em 1em;
     border-radius: 1.5em;
-    /* height: 3em; */
+    height: 3em;
     font-size: 0.9em;
 }
 
@@ -864,7 +866,7 @@ form > .footer {
 
 .field .map-layer.show {
     height: 300px !important;
-    margin: 1em 0 1em 1em;
+    margin: 1em 0 1em 0;
 }
 
 .field .map-layer {

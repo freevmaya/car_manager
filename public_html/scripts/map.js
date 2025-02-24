@@ -221,7 +221,7 @@ class VMap extends EventProvider {
 		const { DirectionsService } = await google.maps.importLibrary("routes");
 		const { Place } = await google.maps.importLibrary("places");
 
-		this.#map = new Map(this.#view[0], $.extend(this.defaultMapOptions(), {position: position}, this.#options.mapOptions));
+		this.#map = new Map(this.#view[0], $.extend(this.defaultMapOptions(), {center: position}));
 
 		this.#classes = {
 			AdvancedMarkerElement: AdvancedMarkerElement,

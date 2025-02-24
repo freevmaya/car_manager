@@ -10,13 +10,6 @@ define('BASEURL', '//'.MAINDOMAIN);//'https://'.MAINDOMAIN.((MAINDOMAIN == "test
 define('SCRIPTURL', BASEURL.'/scripts');
 define("APIKEY", "AIzaSyBzErLfg0nBPSCmP2LcYq0Y5A-C0GIuBMM");
 
-define('AREA_RADIUS', 5000);
-define('ACTIVEORDERLIST', "'wait', 'accepted', 'wait_meeting', 'execution', 'driver_move'");
-define('ACTIVEORDERLIST_ARR', ['wait', 'accepted', 'wait_meeting', 'execution', 'driver_move']);
-define('INACTIVEORDERLIST_ARR', ['rejected', 'cancel']);
-define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
-define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
-
 define('_dbhost', 'localhost');
 define('_dbname_default', 'taxi');
 define('_dbuser', 'root');
@@ -31,6 +24,16 @@ define("MODEL_PATH", SITE_PATH."/models");
 
 define("DEFAULTPAGE", "begin");
 define("DEFAULTFORM", "baseForm");
+
+define('AREA_RADIUS', 5000);
+define('ACTIVEORDERLIST', "'wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'expired'");
+define('ACTIVEORDERLIST_ARR', ['wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'expired']);
+define('INACTIVEORDERLIST_ARR', ['rejected', 'cancel', 'finished']);
+define('OFFLINEINTERVAL', 'INTERVAL 15 SECOND');
+define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
+define('MAXEXPIRED_SEC', 60 * 60);
+define('TRAVELMODE', 'DRIVING');
+define('MAXEXPIREORDERRIME', 'INTERVAL 2 DAY');
 
 include(BASEDIR."/classes/Utils.php");
 include(INCLUDE_PATH."/_edbu2.php");

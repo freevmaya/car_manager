@@ -67,13 +67,31 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 		return false;
 	}
 
+	function CheckAndBeginNewRoute($driver) {
+		GLOBAL $drivers;
+
+		if (!$driver['waitUntil'] || (strtotime($driver['waitUntil']) < strtotime('now'))) {
+			// Отдохнули, начинаем новый рейс!
+
+			$routes = (new RouteModel())->getItems([]);
+			$count = count($routes);
+
+			if ($count > 0) {
+				do {
+					$rndRoute = $routes[rand(0, $count - 1)];
+				} while (isNotAllowRoute($rndRoute['id']) || ($count <= count($drivers)));
+				
+				(new SimulateModel())->Start($driver['user_id'], $rndRoute['id']);
+			}
+		}
+	}
+
 	do {
 
 		$drivers = BaseModel::FullItems($simulateModel->getItems(), ['route_id'=>$routeModel]);
 
 		foreach ($drivers as $driver) {
 
-			//print_r($driver);
 			$driverModel->Update($driver);
 
 			$routes = @$driver['route'] ? json_decode($driver['route']['routes'], true) : null;
@@ -162,7 +180,7 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 							if ($distance > 50) {
 
 								print_r("Driver distance to start: ".$distance."\n");
-								$orderModel->SetState($order['id'], 'accepted');
+								$orderModel->SetState($order['id'], 'accepted', $driver['id']);
 							}
 						}
 
@@ -181,58 +199,49 @@ if (flock($fp, LOCK_EX | LOCK_NB)) {
 						}
 					}
 
-				} else if (!$driver['waitUntil'] || (strtotime($driver['waitUntil']) < strtotime('now'))) {
-					// Отдохнули, начинаем новый рейс!
+				} else CheckAndBeginNewRoute($driver);
 
-					$routes = $routeModel->getItems([]);
-					$count = count($routes);
-					if ($count > 0) {
-						do {
-							$rndRoute = $routes[rand(0, $count - 1)];
-						} while (isNotAllowRoute($rndRoute['id']) || ($count <= count($drivers)));
-						
-						$simulateModel->Start($driver['user_id'], $rndRoute['id']);
-					}
-
-				}
 				$userModel->OnLine($driver['user_id']);
 			}
 
 			$items = $nModel->getItems(['user_id'=>$driver['user_id'], 'content_type'=>'changeOrder', 'state'=>'active']);
 
-			foreach ($items as $notify) {
-				
-				$orderChng = json_decode($notify['text'], true);
+			if (count($items) > 0) {
 
-				if (($orderChng['state'] = 'wait') && !$order) {
+				foreach ($items as $notify) {
+					
+					$orderChng = json_decode($notify['text'], true);
 
-					$newOrder = $orderModel->getItem($notify['content_id']);
-					if ($newOrder && ($newOrder['state'] == 'wait')) {
-						$driverDetail = $driverModel->getItem(['user_id'=>$driver['user_id']]);
+					if (($orderChng['state'] = 'wait') && !$order) {
 
-						if (isset($tracers[$driver['id']])) {
-							$tracer = $tracers[$driver['id']];
-							$driverDetail['route_id'] = $driver['route_id'];
-							$driverDetail['remaindDistance'] = $tracer->remaindDistance();
+						$newOrder = $orderModel->getItem($notify['content_id']);
+						if ($newOrder && ($newOrder['state'] == 'wait')) {
+							$driverDetail = $driverModel->getItem(['user_id'=>$driver['user_id']]);
+
+							if (isset($tracers[$driver['id']])) {
+								$tracer = $tracers[$driver['id']];
+								$driverDetail['route_id'] = $driver['route_id'];
+								$driverDetail['remaindDistance'] = $tracer->remaindDistance();
+							}
+
+							$nModel->AddNotify($newOrder['id'], 'offerToPerform', $newOrder['user_id'], json_encode($driverDetail), $driver['id']);
 						}
 
-						$nModel->AddNotify($newOrder['id'], 'offerToPerform', $newOrder['user_id'], json_encode($driverDetail), $driver['id']);
+					} else if ($orderChng['state'] = 'cancel') {
+
+						$order = $orderModel->getItem($notify['content_id']);
+
+						if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
+
+							$simulateModel->Stop($driver['user_id']);
+							if (isset($tracers[$driver['id']]))
+								unset($tracers[$driver['id']]);
+						}
 					}
 
-				} else if ($orderChng['state'] = 'cancel') {
-
-					$order = $orderModel->getItem($notify['content_id']);
-
-					if (($order['driver_id'] == $driver['id']) && isset($tracers[$driver['id']])) {
-
-						$simulateModel->Stop($driver['user_id']);
-						if (isset($tracers[$driver['id']]))
-							unset($tracers[$driver['id']]);
-					}
+					$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
 				}
-
-				$nModel->SetState(['id'=>$notify['id'], 'state'=>'read']);
-			}
+			} else if (!$driver['route_id']) CheckAndBeginNewRoute($driver);
 
 			usleep(100000);
 		}

@@ -910,11 +910,14 @@ function TimeLeft(endTime) {
 }
 
 function DepartureTime(time) {
-    let delta = (Date.parse(time) - Date.now()) / 1000;
-    if (delta < -SOONDELTASEC)
-        return toLang('Expired');
-    return delta <= NOWDELTASEC ? toLang('Now') : 
-            (delta <= SOONDELTASEC ? toLang('Soon') : $.format.date(time, dateTinyFormat));
+    if (typeof(time) != 'undefined') {
+        let delta = (Date.parse(time) - Date.now()) / 1000;
+        if (delta < -SOONDELTASEC)
+            return toLang('Expired');
+        return delta <= NOWDELTASEC ? toLang('Now') : 
+                (delta <= SOONDELTASEC ? toLang('Soon') : $.format.date(time, dateTinyFormat));
+    }
+    return "";
 }
 
 function getOrderInfo(order, callback = null) {

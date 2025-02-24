@@ -19,13 +19,15 @@ class ViewManager {
     
 }
 
-ViewManager.resizeMap = function(layer) {
-
+ViewManager.resizeMap = function(layer, delay=500) {
+    function afterDelay() {
+        let h = v_map.View.height();
+        v_map.View.children().css('height', Math.round((h - layer.outerHeight()) / h * 100) + '%');
+    }
     VMap.AfterInit(()=>{
-        setTimeout((()=>{
-            let h = v_map.View.height();
-            v_map.View.children().css('height', Math.round((h - layer.outerHeight()) / h * 100) + '%');
-        }).bind(this), 500);
+        if (delay > 0)
+            setTimeout(afterDelay, delay);
+        else afterDelay();
     });
 }
 
@@ -262,7 +264,6 @@ class View extends BaseParentView {
     }
 
     Close() {
-
         if (this.options.modal) this.blockBackground(false);
         this.view.addClass("hide");
 
@@ -293,12 +294,15 @@ class BottomView extends View {
     }
 
     toAlign() {
-        ViewManager.resizeMap(this.windows);
+        ViewManager.resizeMap(this.windows, 0);
     }
 
     Close() {
-        ViewManager.resizeMap(this.windows);
-        return super.Close();
+        ViewManager.resizeMap(this.windows, 0);
+        return new Promise(((resolveOuter) => {
+            this.destroy();
+            resolveOuter();
+        }).bind(this));
     }
 }
 

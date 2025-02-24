@@ -44,7 +44,7 @@ html {
 }
 
 .bottom-layer > .view:nth-child(1) {
-    box-shadow: 0px 0px 1em #000000ba;
+    /*box-shadow: 0px 0px 1em #000000ba;*/
 }
 
 .bottom-layer > .view:nth-child(+2)::before {
