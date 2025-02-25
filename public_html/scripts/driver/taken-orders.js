@@ -1,6 +1,7 @@
 class TakenOrders extends OrderManager {
-    #taken_orders;
     selOrderView;
+    takenOrdersView;
+    #taken_orders;
     #path;
     #graph;
 
@@ -10,12 +11,13 @@ class TakenOrders extends OrderManager {
     get TopOrder() { return this.#taken_orders.length > 0 ? this.#taken_orders[0] : null; }
     get Path() { return this.#path; }
     get length() { return this.#taken_orders.length; }
+    get RemaindDistance() { return this.takenOrdersView ? this.takenOrdersView.RemaindDistance : 0; }
 
     constructor(ordersData) {
 
         super(ordersData);
         this.Reset();
-        this.showImportantOrder();
+        this.ShowImportantOrder();
     }
 
     doChangeOrder(order, part_order) {
@@ -39,6 +41,7 @@ class TakenOrders extends OrderManager {
                 if (o.state == 'accepted') {
                     if (o.isPickUpNow)
                         result.push(o);
+                    else console.log(o.pickUpDelta);
                 }
                 else result.push(o);
             }
@@ -71,7 +74,7 @@ class TakenOrders extends OrderManager {
         return this.#path;
     }
 
-    showImportantOrder(order_id = null) {
+    ShowImportantOrder(order_id = null) {
         if (!this.takenOrdersView) {
             this.takenOrdersView = viewManager.Create({
                 bottomAlign: true,
@@ -85,13 +88,6 @@ class TakenOrders extends OrderManager {
 
         if (this.takenOrdersView && order_id) 
             this.takenOrdersView.togglePathOrder(order_id);
-    }
-
-    remaindDistance() {
-        let result = 0;
-        for (let i=0; i<this.#taken_orders.length; i++)
-            result += this.#taken_orders[i].remaindDistance;
-        return result;
     }
 
     isShown(order_id) {
@@ -147,16 +143,5 @@ class TakenOrders extends OrderManager {
                 this.selOrderView.Close().then(showPathAndInfo.bind(this));
         }
         else showPathAndInfo.bind(this)();
-    }
-
-    ShowInfoOrder(markerOrOrderId) {
-        this.ShowOrderPreview(markerOrOrderId);
-        /*
-        let marker = this.GetMarker(markerOrOrderId);
-        let order = marker.order;
-        if (this.#taken_orders.find((e) => e.id == order.id))
-            this.showImportantOrder(order.id);
-        else this.ShowOrderPreview(markerOrOrderId);
-        */
     }
 }

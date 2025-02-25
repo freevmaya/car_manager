@@ -457,7 +457,7 @@ class OrderAccepedView extends OrderView {
                 data: {id: this.Order.id, driver_id: d.id, state: 'accepted' }
             }).then(((data) => {
 
-                if (data.result == 'ok') {
+                if (data.result) {
                     this.SetOrder($.extend(this.Order, {
                         state: 'accepted',
                         driverId: d.id,

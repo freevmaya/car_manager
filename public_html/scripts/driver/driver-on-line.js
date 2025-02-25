@@ -193,7 +193,7 @@ class MarkerOrderManager extends MarkerManager {
                             $('<span>' + DepartureTime(order.pickUpTime) + '</span>');
 
         let m = this.CreateUserMarker(latLng, 'order/user: ' + (order.id + '/' + order.user_id), (()=>{
-            orderManager.ShowInfoOrder(m);
+            orderManager.ShowOrderPreview(m);
         }).bind(this), 'user-marker' + (anim ? ' anim' : '') + ' ' + order.state, extConten);
         m.order = order;
     }

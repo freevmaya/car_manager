@@ -51,8 +51,6 @@ class PathView extends BottomView {
 
 class OrderView extends PathView {
 
-    #listenerId;
-
     get Order() { return this.getOrder(); };
 
     getOrder() {
@@ -62,7 +60,6 @@ class OrderView extends PathView {
     afterConstructor() {
         super.afterConstructor();
         this.#fromState(this.Order.state);
-        this.#listenerId = this.Order.AddListener('CHANGE', this.onChangeOrder.bind(this));
     }
 
     createMainPath() {
@@ -102,15 +99,6 @@ class OrderView extends PathView {
         this.visibleMarker(false);
     }
 
-    onChangeOrder(e) {
-        this.Close();
-        /*
-        if (e.value.state == 'accepted')
-            this.Close();
-        else this.#fromState(e.value.state);
-        */
-    }
-
     visibleMarker(visibility) {
 
          let idx = v_map.MarkerManager.IndexOfByOrder(this.Order.id);
@@ -139,8 +127,16 @@ class OrderView extends PathView {
 
     offerToPerform(e) {
         this.blockClickTemp(e, WAITOFFERS * 1000);
-        orderManager.TakenOrders.length == 0;
-        this.Order.SetState(orderManager.TakenOrders.length == 0 ? 'driver_move' : 'accepted');
+
+        Ajax({
+            action: 'offerToPerform',
+            data: {
+                id: this.Order.id,
+                remaindDistance: orderManager.RemaindDistance
+            }
+        }).then((()=>{
+            this.Close();
+        }).bind(this));
     }
 
     reject() {
@@ -152,7 +148,6 @@ class OrderView extends PathView {
     }
 
     destroy() {
-        this.Order.RemoveListener('CHANGE', this.#listenerId);
         if (this.Order.state != 'finished')
             this.visibleMarker(true);
         this.closePathOrder();

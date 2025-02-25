@@ -7,7 +7,8 @@ class Order extends EventProvider {
                 (this.state == 'wait_meeting' ? Date.parse(this.beganWaitTime) : Date.now());
     }
 
-    get isPickUpNow() { return DeltaTime(this.pickUpTime) <= NOWDELTASEC; };
+    get pickUpDelta() { return DeltaTime(this.pickUpTime); }
+    get isPickUpNow() { return this.pickUpDelta <= NOWDELTASEC; };
 
     constructor(manager, data) {
     	super();

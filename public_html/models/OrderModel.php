@@ -95,7 +95,7 @@ class OrderModel extends BaseModel {
 		
 		if ($order_id = $dbp->lastID()) {
 
-			$users = [$data['user_id']];
+			$users = [];
 
 			if ($distanceToListeners > 0) {
 
@@ -110,6 +110,8 @@ class OrderModel extends BaseModel {
 
 			(new OrderListeners())->AddListener($order_id, $users);
 			(new OrderListeners())->SendNotify($order_id, 'changeOrder', json_encode(['state'=>'wait']));
+
+			(new OrderListeners())->AddListener($order_id, [$data['user_id']]);
 		}
 
 		return $order_id;
