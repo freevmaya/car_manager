@@ -82,7 +82,7 @@ abstract class BaseModel {
 		return $whereList;
 	}
 
-	public static  function GetConditions($values, $paramsNames, $operand = '=') {
+	public static function GetConditions($values, $paramsNames, $operand = '=') {
 		$list = [];
 		foreach ($paramsNames as $key=>$param)
 			$list = BaseModel::AddWhere($list, $values, $param, $operand);

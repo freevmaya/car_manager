@@ -478,7 +478,7 @@ h1, h2, h3 {
     display: flex;
     flex-direction: column;
     border-radius: 0.5em;
-    overflow: hidden;
+    /*overflow: hidden;*/
     margin: 1em;
     transition: 0.5s width;
 }
@@ -625,6 +625,10 @@ input:focus, select:focus {
 
 .pageContent.data-model .sliderView {
     top: 4em;
+}
+
+.scrolling {
+    overflow-y: scroll;
 }
 
 .pageContent .sliderView {
@@ -1814,4 +1818,13 @@ form .field .container {
 
 .expandable {
     cursor: pointer;
+}
+
+
+.article {
+    margin: 1em;
+}
+
+.article p {
+    margin: 1em 0;
 }

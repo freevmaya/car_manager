@@ -13,6 +13,8 @@ class Page {
 	public static $page;
 	public static $request;
 	public static $subpage;
+	
+	public function GetTemplateForm() { return DEFAULTFORM; }
 
 	public static function Run($request) {
 		Page::$request = $request;
@@ -254,7 +256,7 @@ class Page {
 		}
 		else {
 			if ($this->model)
-				$content = $this->RenderContent(TEMPLATES_PATH.'/'.DEFAULTFORM.".php");
+				$content = $this->RenderContent(TEMPLATES_PATH.'/'.$this->GetTemplateForm().".php");
 			else $content = $this->RenderContent(TEMPLATES_PATH.'/'.DEFAULTPAGE.".php");
 		}
 

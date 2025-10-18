@@ -453,6 +453,13 @@ class FormField extends BaseViewField {
     }
 }
 
+class PopupInput extends BaseViewField {
+    initView() {
+        this.view = createField(this.parentElement, this.options, '<input type="text"/>');
+        this.view.append(this.popupWindow = $('<div class="popup-view">'));
+    }
+}
+
 class ButtonField extends BaseViewField {
     initView() {
         this.view = createButton(this.parentElement, this.options.label, (()=>{

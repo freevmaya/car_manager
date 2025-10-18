@@ -28,10 +28,10 @@ class ValidatorList {
 		return -1;
 	}
 
-	isSendAllowed() {
+	isSendAllowed(showMessage=true) {
 		let result = true;
 		for (let i in this.#items) {
-			this.#items[i].refreshFieldMessage();
+			this.#items[i].refreshFieldMessage(showMessage);
 
 			if (!this.#items[i].getAllowed()) 
 				return false;
@@ -77,8 +77,8 @@ class BaseValidator {
 		return '';
 	}
 
-	refreshFieldMessage() {
-		app.ToggleWarning(this.control.view, !this.getAllowed(), this.getMessage());
+	refreshFieldMessage(showWarning = true) {
+		app.ToggleWarning(this.control.view, showWarning && !this.getAllowed(), this.getMessage());
 	}
 }
 
@@ -137,23 +137,23 @@ class uniqueValidator extends requiredValidator {
 
 
 	afterChange(action) {
-		super.afterChange(((allowed)=>{
-			if (allowed) {
-				if (this.control.val() != this.#origin) {
-					Ajax({
-						action:"checkUnique",
-						data: JSON.stringify({
-							model: this.getModel(),
-							value: this.control.val()
-						})
-					}).then(action.bind(this));
-				} else action(allowed);
-			} else action(allowed);
-		}).bind(this));
+		if (this.isNotEmpty()) {
+			if (this.control.val() != this.#origin) {
+				Ajax({
+					action:"checkUnique",
+					data: JSON.stringify({
+						model: this.getModel(),
+						value: this.control.val()
+					})
+				}).then(action.bind(this));
+			} else super.afterChange(action);
+		} else super.afterChange(action);
 	}
 
 	getMessage() {
-		return toLang('This value is already taken. Try entering another value.');
+		if (this.isNotEmpty())
+			return toLang('This value is already taken. Try entering another value.');
+		else return super.getMessage();
 	}
 }
 

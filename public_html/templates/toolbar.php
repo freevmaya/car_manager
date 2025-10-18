@@ -54,9 +54,13 @@
 		<div>
 			<a class="menu" onclick="$('#toolbarMenu').toggleClass('open')"><img src="<?=BASEURL?>/css/images/menu.png"></a>
 		</div>
-		<a class="user<?=$this->asDriver() ? ' driver' : ' passenger'?>">
-			<div class="warning"></div>
-		</a>
+		<div class="block">
+			<a class="search">
+			</a>
+			<a class="user<?=$this->asDriver() ? ' driver' : ' passenger'?>">
+				<div class="warning"></div>
+			</a>
+		</div>
 	</div>
 
 	<div class="submenu shadow">

@@ -31,6 +31,9 @@ class NotificationModel extends BaseModel {
 		GLOBAL $dbp;
 
 		$where = BaseModel::GetConditions($options, ['content_id', 'content_type', 'state', 'user_id']);
+
+		$where[] = "time > (DATE_SUB(CURDATE(), ".EXPIRENOTIFYINTERVAL."))";
+
 		$whereStr = implode(" AND ", $where);
 
 		$query = "SELECT {$fields} FROM {$this->getTable()} WHERE $whereStr";

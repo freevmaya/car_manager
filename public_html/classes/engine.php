@@ -8,7 +8,7 @@ define("MODEL_PATH", SITE_PATH."/models");
 define('MODULESPATH', SITE_PATH."/modules");
 
 define("DEFAULTPAGE", "begin");
-define("DEFAULTFORM", "baseForm");
+define("DEFAULTFORM", "formBase");
 
 define('AREA_RADIUS', 5000);
 define('ACTIVEORDERLIST', "'wait', 'accepted', 'driver_move', 'wait_meeting', 'execution', 'expired'");
@@ -19,6 +19,7 @@ define('LOSTCONNECTINTERVAL', 'INTERVAL 10 MINUTE');
 define('MAXEXPIRED_SEC', 60 * 60);
 define('TRAVELMODE', 'DRIVING');
 define('MAXEXPIREORDERRIME', 'INTERVAL 2 DAY');
+define('EXPIRENOTIFYINTERVAL', 'INTERVAL 7 DAY');
 
 include(BASEDIR."/classes/Utils.php");
 include(INCLUDE_PATH."/_edbu2.php");

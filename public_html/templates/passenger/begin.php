@@ -1,5 +1,6 @@
 <?
-html::AddScriptFiles(['views.js', 'driver-manager.js', 'map.js', 'passenger/order-states.js', 'trips.js', 'validator.js',
+html::AddScriptFiles(['views.js', 'driver-manager.js', 'map.js', 
+						'passenger/order-states.js', 'trips.js', 'validator.js',
 					  'jquery-dateformat.min.js',
 					  'https://code.jquery.com/ui/1.14.0/jquery-ui.js']);
 html::AddStyleFile('css/jquery-ui.css');
@@ -70,6 +71,11 @@ html::AddTemplate('
 				?>
 			</div>
 			<?}?>
+
+			<?
+			if (($ordTripCount == 0) && ($lastTripCount == 0))
+				include(__DIR__.'\welcome.php');
+			?>
 		</div>
 	</div>
 </div>

@@ -2,6 +2,8 @@
 GLOBAL $devUser, $user, $lang, $anti_cache;
 include_once(MODULESPATH.'/views.php');
 
+html::AddScriptFile("search-form.js"); 
+
 $anti_cache = '?=48';
 
 $options = ['user_id' => $user['id'], 'state'=>['receive', 'active']];
@@ -40,7 +42,6 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
             });
         });
         var BASEURL = '<?=BASEURL?>';
-        var lang = <?=preg_replace("/[\r\n]+/", '', json_encode($lang, JSON_PRETTY_PRINT))?>;
         var transport = new AjaxTransport(1000);
         var app = new App();
         var fieldIdx = <?=html::fieldIdx()?>;
@@ -59,6 +60,7 @@ html::AddJsData("'".$this->createRequestId(get_class($this))."'", 'ajaxRequestId
     <?}?>
     <?=html::RenderJSData()?>
     <?=html::RenderJSCode()?>
+        var lang = <?=json_encode($lang)?>;
     </script>
 </head>
 <body>

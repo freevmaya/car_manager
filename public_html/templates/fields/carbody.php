@@ -2,7 +2,7 @@
 	html::AddScriptFile('select-view.js');
 	html::AddScriptFile('views.js');
 
-	$symbol = $value['item']['symbol'];
+	$symbol = isset($value['item']['symbol']) ? $value['item']['symbol'] : false;
 	$id = @$value['item']['id'];
 	
     $fieldIdx = html::fieldIdx();

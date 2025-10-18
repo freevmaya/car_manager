@@ -3,12 +3,6 @@ class Driver extends Page {
 
 	protected function initModel() {
 		GLOBAL $user;
-
-		if (Page::$subpage == 'editcar') {
-			$this->dataId = @Page::$request['id'];
-			return new CarModel();
-		}
-
 		return new DriverModel();
 	}
 

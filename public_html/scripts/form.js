@@ -6,9 +6,9 @@ $(window).ready(()=>{
 		let dataModel = form.data('model');
 		let itemId = form.find('input[name="id"]').val();
 		let blockSubmit = false;
-		let ajaxMode = isNumeric(itemId);
+		let recordExist = isNumeric(itemId);
 
-		if (ajaxMode) {
+		if (recordExist) {
 			function getValue(input) {
 				if (input[0].type == 'checkbox')
 					return input.prop('checked');
@@ -54,7 +54,7 @@ $(window).ready(()=>{
 		} else {
 
 			function afterCheck(allowSubmit) {
-				if (allowSubmit) submit.removeAttr('disabled');
+				if (allowSubmit && validatorList.isSendAllowed(false)) submit.removeAttr('disabled');
 				else submit.prop('disabled', true);
 				blockSubmit = false;
 			}
@@ -71,6 +71,8 @@ $(window).ready(()=>{
 				if (block) e.stopPropagation();
 				return !block;
 			});
+
+			submit.prop('disabled', true);
 		}
 	}
 

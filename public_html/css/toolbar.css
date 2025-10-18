@@ -13,6 +13,10 @@
     transition-timing-function: cubic-bezier(.68,-.3,.32,1.3);
 }
 
+.toolbar .block {
+    display: flex;
+}
+
 .toolbar::-webkit-scrollbar {
 	display: none;
 }
@@ -34,6 +38,10 @@
     height: 2em;
     float: right;
     cursor: pointer;
+}
+
+.toolbar .search {
+    background-image: url(images/search-32.png);
 }
 
 .user.passenger {
